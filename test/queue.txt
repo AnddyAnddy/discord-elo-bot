@@ -1,0 +1,55 @@
+>>> from queue import Queue
+>>> Queue(-1, 0) # negative max_queue
+Traceback (most recent call last):
+    ...
+ValueError: The max queue must be an even number > 2
+>>> Queue(7, 0) # even max_queue
+Traceback (most recent call last):
+    ...
+ValueError: The max queue must be an even number > 2
+>>> Queue(8, -1) # wrong mode
+Traceback (most recent call last):
+    ...
+ValueError: The mode is not correct: [0, 1, 2, 3] = [random teams, balanced random, highest rank cap, rank cap]
+
+>>> q = Queue(4, 0) # correct queue with 4 max players and random team mode
+>>> # Basic tests
+>>> q.is_queue_full()
+False
+>>> q.is_queue_finished()
+False
+>>> q.max_queue
+4
+>>> q.has_queue_been_full
+False
+>>> q.players
+[]
+
+
+
+>>> # Little pushed tests
+>>> from player import Player
+>>> p = Player('p1') # Add twice the same player in the queue
+>>> q.add_player(p)
+'p1 has been added to the queue'
+>>> q.is_queue_full()
+False
+>>> len(q.players)
+1
+>>> q.add_player(p)
+"You can't join twice, maybe you look for !l"
+>>> len(q.players)
+1
+
+>>> q.add_player(Player('p2'))
+'p2 has been added to the queue'
+>>> q.add_player(Player('p3'))
+'p3 has been added to the queue'
+>>> q.add_player(Player('p4'))
+"p4 has been added to the queue\nQueue is full, let's start the next session"
+
+>>> q.has_queue_been_full
+True
+
+>>> len(q.red_team) == len(q.blue_team) == 2
+True
