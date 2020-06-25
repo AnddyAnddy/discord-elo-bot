@@ -128,6 +128,9 @@ async def join(ctx):
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
         await ctx.send(game.queues[mode].add_player(player, game))
+        if game.queues[mode].is_finished():
+            await ctx.send(game.add_game_to_be_played(game.queues[mode]))
+
     else:
         await ctx.send("Make sure you register before joining the queue.")
 

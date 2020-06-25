@@ -24,6 +24,7 @@ class Queue():
         self.has_queue_been_full = False
         self.modes = [self.random_team, self.balanced_random]
         self.pick_fonction = self.modes[mode]
+        self.mode = mode
         self.game_id = Queue.QUEUE_ID
         Queue.QUEUE_ID += 1
 
@@ -53,15 +54,13 @@ class Queue():
 
     def on_queue_full(self, game):
         """Set a game."""
-        if not self.is_queue_full():
-            return
         self.has_queue_been_full = True
         self.pick_fonction()
-        game.add_game_to_be_played(self)
+        # game.add_game_to_be_played(self)
         return message_on_queue_full(self.players, self.red_team, self.blue_team)
 
-    def is_queue_finished(self):
-        """Create new queue after the previous one was completed."""
+    def is_finished(self):
+        """Return true if the teams are full based on the max_queue."""
         return len(self.red_team) == len(self.blue_team) == self.max_queue / 2
 
     def players_to_teams(self):

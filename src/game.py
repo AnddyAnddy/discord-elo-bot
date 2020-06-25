@@ -25,9 +25,11 @@ class Game():
 
     def add_game_to_be_played(self, queue):
         """Add a game to undecided games."""
-        print(self.undecided_games[queue.max_queue / 2])
-        self.undecided_games[queue.max_queue / 2][queue.game_id] =\
+        mode = queue.max_queue / 2
+        self.undecided_games[mode][queue.game_id] =\
             (queue.red_team, queue.blue_team)
+        self.queues[mode] = Queue(2 * mode, queue.mode)
+        return "The teams has been made, a new queue is starting!"
 
     def undecided(self, mode):
         """Return string of undecided game ids."""
