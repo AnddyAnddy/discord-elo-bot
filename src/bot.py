@@ -303,6 +303,26 @@ async def submit(ctx, *args):
         await ctx.send("Error, the format wasn't correct.")
 
 
+@BOT.command(aliases=['c', 'clear'])
+@has_permissions(manage_roles=True)
+@check_category('Elo by Anddy')
+@check_channel('submit')
+@is_arg_in_modes(GAMES)
+async def cancel(ctx, *args):
+    """Cancel the game given in arg. !c [mode] [game_id]
+
+    Example: !cancel 1 3
+    will cancel the game with the id 3 in the mode 1vs1.
+    """
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    mode = int(args[0])
+    id = int(args[1])
+    if game.cancel(mode, id):
+        await ctx.send(f"The game {id} has been canceled")
+    else:
+        await ctx.send(f"Couldn't find the game {id} in the current games.")
+
+
 @BOT.command()
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')

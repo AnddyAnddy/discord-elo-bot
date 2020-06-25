@@ -31,6 +31,10 @@ class Game():
         self.queues[mode] = Queue(2 * mode, queue.mode)
         return "The teams has been made, a new queue is starting!"
 
+    def cancel(self, mode, id):
+        """Cancel the game and return true if it was correctly cancelded."""
+        return self.undecided_games[mode].pop(id, None) is not None
+
     def undecided(self, mode):
         """Return string of undecided game ids."""
         return '\n - '.join([game.id for game in self.undecided_games[mode]])

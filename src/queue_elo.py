@@ -85,9 +85,10 @@ class Queue():
 
     def __str__(self):
         """ToString."""
+        res = f"Game n°{self.game_id}\n"
         if not self.has_queue_been_full:
-            return display_team(self.players, "Queue")
-        return message_on_queue_full(self.players,
+            return res +display_team(self.players, "Queue")
+        return res + message_on_queue_full(self.players,
                                      self.red_team,
                                      self.blue_team)
 
