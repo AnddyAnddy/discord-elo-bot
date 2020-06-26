@@ -4,13 +4,12 @@ from random import shuffle
 
 class Queue():
     """Docstring for Queue."""
-    QUEUE_ID = 0
     RANDOM_TEAM = 0
     BALANCED_RANDOM = 1
     TOP_CAP = 2
     RANDOM_CAP = 3
 
-    def __init__(self, max_queue, mode):
+    def __init__(self, max_queue, mode, last_id = 0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number > 2")
@@ -25,8 +24,7 @@ class Queue():
         self.modes = [self.random_team, self.balanced_random]
         self.pick_fonction = self.modes[mode]
         self.mode = mode
-        self.game_id = Queue.QUEUE_ID
-        Queue.QUEUE_ID += 1
+        self.game_id = last_id + 1
 
     def is_queue_full(self):
         """Return true if the queue is full."""
@@ -87,7 +85,7 @@ class Queue():
         """ToString."""
         res = f"Game n°{self.game_id}\n"
         if not self.has_queue_been_full:
-            return res +display_team(self.players, "Queue")
+            return res + display_team(self.players, "Queue")
         return res + message_on_queue_full(self.players,
                                      self.red_team,
                                      self.blue_team)

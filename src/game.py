@@ -21,18 +21,24 @@ class Game():
         """Archive a game."""
         self.archive[mode].add({queue.game_id:
                                 (queue.red_team, queue.blue_team, winner)})
-        self.undecided_games[mode].pop(queue.id, None)
+        self.undecided_games[mode].pop(queue.game_id, None)
 
     def add_game_to_be_played(self, queue):
         """Add a game to undecided games."""
         mode = queue.max_queue / 2
-        self.undecided_games[mode][queue.game_id] =\
+        last_id = self.queues[mode].game_id
+        self.undecided_games[mode][last_id] =\
             (queue.red_team, queue.blue_team)
-        self.queues[mode] = Queue(2 * mode, queue.mode)
+        self.queues[mode] = Queue(2 * mode, queue.mode, last_id)
         return "The teams has been made, a new queue is starting!"
 
     def cancel(self, mode, id):
         """Cancel the game and return true if it was correctly cancelded."""
+        last_id = self.queues[mode].game_id
+        if id == last_id:
+            self.queues[mode] = Queue(
+                2 * mode, self.queues[mode].mode, last_id)
+            return True
         return self.undecided_games[mode].pop(id, None) is not None
 
     def undecided(self, mode):
