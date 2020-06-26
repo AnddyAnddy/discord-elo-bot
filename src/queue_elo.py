@@ -81,6 +81,7 @@ class Queue():
         self.players.sort(reverse=True, key=lambda p: p.elo)
         self.players_to_teams()
 
+
     def __str__(self):
         """ToString."""
         res = f"Game n°{self.game_id}\n"
@@ -109,6 +110,10 @@ def message_on_queue_full(players, red_team, blue_team):
     string += display_team(players, "Remaining players")
     return string
 
+
+
+def team_to_player_name(team):
+    return "[" + ' '.join([p.name for p in team]) + "]"
 
 HISTORIQUE = []
 if __name__ == '__main__':

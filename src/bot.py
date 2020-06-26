@@ -323,6 +323,21 @@ async def cancel(ctx, *args):
         await ctx.send(f"Couldn't find the game {id} in the current games.")
 
 
+@BOT.command(aliases=['u'])
+@check_category('Elo by Anddy')
+@check_channel('submit')
+@is_arg_in_modes(GAMES)
+async def undecided(ctx, *args):
+    """Display every games of a specific mode, its score or undecided. !u [mode]
+
+    Example: !undecided 2
+    Will show every undecided games in 1vs1, with the format below.
+    id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    mode = int(args[0])
+    await ctx.send("Undecided games: \n" + game.undecided(mode))
+
+
 @BOT.command()
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
@@ -382,6 +397,8 @@ async def role_perm_error(ctx, error):
 # @submit.error
 @add_mode.error
 @modes.error
+@undecided.error
+@cancel.error
 async def wrong_mode_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You used this command with either a wrong channel or \

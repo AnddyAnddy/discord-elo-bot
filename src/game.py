@@ -3,7 +3,7 @@ import operator
 import _pickle as pickle
 from player import Player
 from queue_elo import Queue
-
+from queue_elo import team_to_player_name
 
 class Game():
     """Represent the game available."""
@@ -20,15 +20,14 @@ class Game():
     def add_archive(self, queue, winner, mode):
         """Archive a game."""
         self.archive[mode].add({queue.game_id:
-                                (queue.red_team, queue.blue_team, winner)})
+                                (queue, winner)})
         self.undecided_games[mode].pop(queue.game_id, None)
 
     def add_game_to_be_played(self, queue):
         """Add a game to undecided games."""
         mode = queue.max_queue / 2
         last_id = self.queues[mode].game_id
-        self.undecided_games[mode][last_id] =\
-            (queue.red_team, queue.blue_team)
+        self.undecided_games[mode][last_id] = queue
         self.queues[mode] = Queue(2 * mode, queue.mode, last_id)
         return "The teams has been made, a new queue is starting!"
 
@@ -43,7 +42,12 @@ class Game():
 
     def undecided(self, mode):
         """Return string of undecided game ids."""
-        return '\n - '.join([game.id for game in self.undecided_games[mode]])
+        return "```" + \
+            '\n - '.join([f"id: {str(id)}, \
+Red team: {team_to_player_name(queue.red_team)}, \
+Blue team: {team_to_player_name(queue.blue_team)}"
+                for id, queue in self.undecided_games[mode].items()]) + \
+            "\n```"
 
     def leaderboard(self, mode, key="elo"):
         """Return the string showing the leaderboard of the chosen mode."""
@@ -85,3 +89,6 @@ class Game():
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
+
+    def all_games(self, mode):
+        res = "```\n"
