@@ -82,6 +82,19 @@ class Queue():
         self.players_to_teams()
 
 
+    def get_captain_team(self, name):
+        """Return 1 if red, 2 if blue, 0 if none."""
+        red_cap, blue_cap = self.red_team[0], self.blue_team[0]
+        for i, p in enumerate([red_cap, blue_cap], start=1):
+            if p.name == ctx.author.name:
+                return i
+        return 0
+
+    def set_player_team(self, team_id, player):
+        """Move the player from the players to the team."""
+        team = self.red_team if team_id == 1 else self.blue_team
+        team.append(self.players.pop(self.players.index(player)))
+
     def __str__(self):
         """ToString."""
         res = f"Game n°{self.game_id}\n"

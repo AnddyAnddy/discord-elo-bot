@@ -324,6 +324,29 @@ async def cancel(ctx, *args):
         await ctx.send(f"Couldn't find the game {id} in the current games.")
 
 
+@BOT.command(aliases=['p'])
+@has_permissions(manage_roles=True)
+@check_category('Modes')
+async def pick(ctx, *args):
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    mode = int(ctx.channel.name[0])
+    queue = game.queues[mode]
+    if queue.mode < 2:
+        await ctx.send("The mode is not a captaining mode.")
+        return
+
+    team = queue.get_captain_team(ctx.author.name)
+    if team == 0:
+        await ctx.send("You are not captain.")
+        return
+    player = discord.utils.get(queue.players, name=args[0])
+    if player is None:
+        await ctx.send(f"Couldn't find the player {player.name}.")
+        return
+    queue.set_player_team(player, team)
+    await ctx.send(f"Good pick!")
+
+
 @BOT.command(aliases=['u'])
 @check_category('Elo by Anddy')
 @check_channel('submit')

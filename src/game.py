@@ -106,6 +106,3 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
-
-    def all_games(self, mode):
-        res = "```\n"
