@@ -283,6 +283,30 @@ async def info(ctx, *args):
         await ctx.send(f"No player called {name}")
 
 
+@BOT.command(aliases=['h'])
+@check_category('Elo by Anddy')
+@check_channel('info_chat')
+@is_arg_in_modes(GAMES)
+async def history(ctx, *args):
+    """Show every matches the user played in.
+
+    Example: !h 1 Anddy
+    With no argument, the !info will show the user's stats.
+    With a player_name as argument, if the player exists, this will show
+    is stats in the seized mode.
+    Can be used only in info_chat channel.
+    """
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    mode = int(args[0])
+    name = args[1] if len(args) == 2 else ctx.author.name
+    name = '_'.join(name.split())
+
+    if name in game.leaderboards[mode]:
+        await ctx.send(game.get_history(mode, game.leaderboards[mode][name]))
+    else:
+        await ctx.send(f"No player called {name}")
+
+
 @BOT.command(aliases=['s', 'game'])
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')

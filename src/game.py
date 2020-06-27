@@ -68,6 +68,17 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             for id, (queue, winner) in self.archive[mode].items()]) + \
             "\n```"
 
+    def get_history(self, mode, player):
+        """Return the string showing the history of the chosen mode."""
+        return "```" + \
+            '\n - '.join([f"Id: {str(id)}, \
+Winner: Team {'Red' if winner == 1 else 'Blue'}, \
+Red team: {team_to_player_name(queue.red_team)}, \
+Blue team: {team_to_player_name(queue.blue_team)}"
+            for id, (queue, winner) in self.archive[mode].items() \
+                if player in queue.red_team or player in queue.blue_team]) + \
+            "\n```"
+
 
     def leaderboard(self, mode, key="elo"):
         """Return the string showing the leaderboard of the chosen mode."""
@@ -83,6 +94,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
                                         key=operator.attrgetter(key)), 1)])
         res += '```'
         return res
+
 
     def add_mode(self, mode):
         """Add the mode in the set."""
