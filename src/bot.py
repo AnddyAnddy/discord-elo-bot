@@ -295,12 +295,13 @@ async def submit(ctx, *args):
     This will update the rankings.
     """
     game = GAMES[BOT.get_guild(int(GUILD)).id]
+    args = [int(elem) for elem in args if elem.isdigit()]
+    if len(args) != 3:
+        ctx.send("Wrong format, expected !s [mode] [id_game] [winner]")
+        return
 
-    if args == () or any(arg.isdigit() or int(arg) < 0 for arg in args) or \
-            int(args[2]) not in [0, 1] or \
-            int(args[1]) not in game.undecided_games or \
-            int(args[0]) not in game.available_modes:
-        await ctx.send("Error, the format wasn't correct.")
+    mode, id, winner = args
+    await ctx.send(game.add_archive(mode, id, winner))
 
 
 @BOT.command(aliases=['c', 'clear'])
@@ -331,11 +332,27 @@ async def undecided(ctx, *args):
     """Display every games of a specific mode, its score or undecided. !u [mode]
 
     Example: !undecided 2
-    Will show every undecided games in 1vs1, with the format below.
+    Will show every undecided games in 2vs2, with the format below.
     id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
     game = GAMES[BOT.get_guild(int(GUILD)).id]
     mode = int(args[0])
     await ctx.send("Undecided games: \n" + game.undecided(mode))
+
+
+@BOT.command(aliases=['a'])
+@check_category('Elo by Anddy')
+@check_channel('submit')
+@is_arg_in_modes(GAMES)
+async def archived(ctx, *args):
+    """Display every games of a specific mode, its score or undecided. !u [mode]
+
+    Example: !archived 2
+    Will show every games in 2vs2, with the format below.
+    id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
+    Blue team: [player3, player4]."""
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    mode = int(args[0])
+    await ctx.send("Archived games: \n" + game.archived(mode))
 
 
 @BOT.command()

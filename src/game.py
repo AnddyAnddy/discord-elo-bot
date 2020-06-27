@@ -17,11 +17,18 @@ class Game():
         self.undecided_games = {}
         self.queues = {}
 
-    def add_archive(self, queue, winner, mode):
+    def add_archive(self, mode, id, winner):
         """Archive a game."""
-        self.archive[mode].add({queue.game_id:
-                                (queue, winner)})
+        if mode not in self.available_modes:
+            return "Mode isn't in available modes, check !modes"
+        if id not in self.undecided_games[mode]:
+            return "Id of the game isn't in undecided games, check !u [mode]"
+        if winner not in (1, 2):
+            return "The winner must be 1 (red) or 2 (blue)"
+        queue = self.undecided_games[mode][id]
+        self.archive[mode][queue.game_id] = (queue, winner)
         self.undecided_games[mode].pop(queue.game_id, None)
+        return "The game has been submitted, thanks !"
 
     def add_game_to_be_played(self, queue):
         """Add a game to undecided games."""
@@ -43,11 +50,21 @@ class Game():
     def undecided(self, mode):
         """Return string of undecided game ids."""
         return "```" + \
-            '\n - '.join([f"id: {str(id)}, \
+            '\n - '.join([f"Id: {str(id)}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
                 for id, queue in self.undecided_games[mode].items()]) + \
             "\n```"
+
+    def archived(self, mode):
+        return "```" + \
+            '\n - '.join([f"Id: {str(id)}, \
+Winner: Team {'Red' if winner == 1 else 'Blue'}, \
+Red team: {team_to_player_name(queue.red_team)}, \
+Blue team: {team_to_player_name(queue.blue_team)}"
+            for id, (queue, winner) in self.archive[mode].items()]) + \
+            "\n```"
+
 
     def leaderboard(self, mode, key="elo"):
         """Return the string showing the leaderboard of the chosen mode."""
