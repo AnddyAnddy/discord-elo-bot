@@ -4,6 +4,7 @@ import _pickle as pickle
 from player import Player
 from queue_elo import Queue
 from queue_elo import team_to_player_name
+from elo import Elo
 
 class Game():
     """Represent the game available."""
@@ -16,6 +17,7 @@ class Game():
         self.leaderboards = {}
         self.undecided_games = {}
         self.queues = {}
+        self.elo = Elo()
 
     def add_archive(self, mode, id, winner):
         """Archive a game."""
@@ -28,6 +30,7 @@ class Game():
         queue = self.undecided_games[mode][id]
         self.archive[mode][queue.game_id] = (queue, winner)
         self.undecided_games[mode].pop(queue.game_id, None)
+        self.elo.update(queue, winner)
         return "The game has been submitted, thanks !"
 
     def add_game_to_be_played(self, queue):

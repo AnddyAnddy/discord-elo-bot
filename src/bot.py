@@ -434,11 +434,12 @@ async def role_perm_error(ctx, error):
 @leaderboard.error
 @queue.error
 @info.error
-# @submit.error
+@submit.error
 @add_mode.error
 @modes.error
 @undecided.error
 @cancel.error
+@archived.error
 async def wrong_mode_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You used this command with either a wrong channel or \

@@ -35,13 +35,18 @@ class Elo():
         self.update_team_averages(game_stats)
         self.update_chances_to_win()
 
-    def update_elo(self, game_stats):
+    def update_elo(self, game_stats, winners):
         """Update the elo of every players."""
-        winners = game_stats.red_score > game_stats.blue_score
         self.update_rating(winners, not winners)
+        winners -= 1
         for i in range(len(game_stats.red_team)):
-            game_stats.red_team[i].elo += self.red_rating
-            game_stats.blue_team[i].elo += self.blue_rating
+            game_stats.red_team[i].update(self.red_rating, not winners)
+            game_stats.blue_team[i].update(self.blue_rating, winners)
+
+    def update(self, queue, winners):
+        """Update the stats after a game for every player."""
+        self.handle_elo_calc(queue)
+        self.update_elo(queue, winners)
 
 
 def get_average_rank(team):
