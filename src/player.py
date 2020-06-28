@@ -30,18 +30,21 @@ class Player():
         self.elo = new_value
         return old
 
-    def update(self, elo_boost, winner):
-        """Update the player's stats after a game."""
-        self.elo += elo_boost
-        self.wins += winner
-        self.current_win_streak += winner
-        self.losses += not winner
-        self.nb_matches += 1
+    def update(self, elo_boost, winner, undo = 1):
+        """Update the player's stats after a game.
+
+        undo: if set to -1, the stats earning are reversed, useful to
+        undo a game without writing twice this function."""
+        self.elo += elo_boost * undo
+        self.wins += winner * undo
+        self.current_win_streak += winner * undo
+        self.losses += (not winner) * undo
+        self.nb_matches += 1 * undo
         self.wlr = 0 if self.losses == 0 else self.wins / self.losses
         if winner and self.current_win_streak > self.most_wins_in_a_row:
-            self.most_wins_in_a_row += 1
+            self.most_wins_in_a_row += 1 * undo
         if not winner and self.current_lose_streak > self.most_losses_in_a_row:
-            self.most_wins_in_a_row += 1
+            self.most_wins_in_a_row += 1 * undo
 
 
     def __str__(self):

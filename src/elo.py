@@ -43,6 +43,13 @@ class Elo():
             game_stats.red_team[i].update(self.red_rating, not winners)
             game_stats.blue_team[i].update(self.blue_rating, winners)
 
+    def undo_elo(self, queue, winners, rating):
+        """Reversed operation of update_elo."""
+        winners -= 1
+        for i in range(len(queue.red_team)):
+            queue.red_team[i].update(rating, not winners, -1)
+            queue.blue_team[i].update(-1 * rating, winners, -1)
+
     def update(self, queue, winners):
         """Update the stats after a game for every player."""
         self.handle_elo_calc(queue)

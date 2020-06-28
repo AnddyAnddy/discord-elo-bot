@@ -55,7 +55,9 @@ class Queue():
         self.has_queue_been_full = True
         self.pick_fonction()
         # game.add_game_to_be_played(self)
-        return message_on_queue_full(self.players, self.red_team, self.blue_team)
+        return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
+                                                    self.red_team,
+                                                    self.blue_team)
 
     def is_finished(self):
         """Return true if the teams are full based on the max_queue."""

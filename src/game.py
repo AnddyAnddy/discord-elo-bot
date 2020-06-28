@@ -28,10 +28,19 @@ class Game():
         if winner not in (1, 2):
             return "The winner must be 1 (red) or 2 (blue)"
         queue = self.undecided_games[mode][id]
-        self.archive[mode][queue.game_id] = (queue, winner)
-        self.undecided_games[mode].pop(queue.game_id, None)
         self.elo.update(queue, winner)
+        self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
+        self.undecided_games[mode].pop(queue.game_id, None)
         return "The game has been submitted, thanks !"
+
+    def undo(self, mode, id):
+        """Undo a game."""
+        game = self.archive[mode].pop(id, None)
+        if game is None:
+            return "The game couldn't be found"
+        self.undecided_games[mode][id] = game[0]
+        self.elo.undo_elo(game[0], game[1], game[2])
+        return "The game has been undone, the stats got canceled"
 
     def add_game_to_be_played(self, queue):
         """Add a game to undecided games."""
@@ -52,7 +61,7 @@ class Game():
 
     def undecided(self, mode):
         """Return string of undecided game ids."""
-        return "```" + \
+        return "```\n - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
@@ -60,7 +69,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             "\n```"
 
     def archived(self, mode):
-        return "```" + \
+        return "```\n - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
@@ -70,7 +79,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 
     def get_history(self, mode, player):
         """Return the string showing the history of the chosen mode."""
-        return "```" + \
+        return "```\n - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \

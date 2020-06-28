@@ -328,6 +328,22 @@ async def submit(ctx, *args):
     await ctx.send(game.add_archive(mode, id, winner))
 
 
+@BOT.command()
+@has_permissions(manage_roles=True)
+@check_category('Elo by Anddy')
+@check_channel('submit')
+@is_arg_in_modes(GAMES)
+async def undo(ctx, *args):
+    """Expect a format !undo [mode] [id_game].
+
+    Example: !s 1 7
+    in the mode 1vs1, in the 7th game.
+    This will reset the ranking updates of this match.
+    """
+    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    await ctx.send(game.undo(int(args[0]), int(args[1])))
+
+
 @BOT.command(aliases=['c', 'clear'])
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
