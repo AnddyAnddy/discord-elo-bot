@@ -23,6 +23,14 @@ BOT = commands.Bot(command_prefix='!')
 GAMES = {}
 
 
+def add_attribute(game, attr_name, value):
+    """Add an attribute to every player when I manually update."""
+    for mode in game.leaderboards:
+        for player in game.leaderboards[mode]:
+            if not hasattr(player, attr_name):
+                setattr(player, attr_name, value)
+
+
 def load_file_to_game(guild_id):
     """Load the file from ./data/guild_id to Game if exists, return True."""
     try:
