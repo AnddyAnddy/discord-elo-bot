@@ -43,7 +43,7 @@ class Player():
         self.losses += (not winner) * undo
         self.nb_matches += 1 * undo
         self.double_xp -= (1 * undo) * (self.double_xp > 0)
-        self.wlr = 0 if self.losses == 0 else self.wins / self.losses
+        self.wlr = self.wins if self.losses == 0 else self.wins / self.losses
         if winner and self.current_win_streak > self.most_wins_in_a_row:
             self.most_wins_in_a_row += 1 * undo
         if not winner and self.current_lose_streak > self.most_losses_in_a_row:
