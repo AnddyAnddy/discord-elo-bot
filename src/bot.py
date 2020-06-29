@@ -46,6 +46,26 @@ async def on_ready():
 
 
 @BOT.event
+async def on_member_update(before, after):
+    if len(before.roles) < len(after.roles):
+        new_role = next(
+            role for role in after.roles if role not in before.roles)
+        role_name = new_role.name.lower().split()
+        if "double" in role_name:
+            nb_games = int(role_name[2])
+        game = GAMES[BOT.get_guild(int(GUILD)).id]
+
+        for mode in game.available_modes:
+            if after.name in game.leaderboards[mode]:
+                player = game.leaderboards[mode][after.name]
+                player.double_xp = nb_games
+
+        channel = discord.utils.get(after.guild.channels, name="premium")
+        await channel.send(f"You got your {nb_games} double xp ! \
+    PM Anddy#2086 if you have any issue, this is available for every mode.")
+
+
+@BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
     GAMES[ctx.guild.id].save_to_file()
@@ -105,6 +125,8 @@ async def init_elo_by_anddy(ctx):
         await guild.create_text_channel(name="Bans",
                                         category=base_cat)
         await guild.create_text_channel(name="bye",
+                                        category=base_cat)
+        await guild.create_text_channel(name="premium",
                                         category=base_cat)
 
         await guild.create_category(name="Modes")
