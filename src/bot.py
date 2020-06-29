@@ -16,7 +16,6 @@ from decorators import check_channel
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
 
 
 BOT = commands.Bot(command_prefix='!')
@@ -44,13 +43,12 @@ def load_file_to_game(guild_id):
 async def on_ready():
     """On ready event."""
     print(f'{BOT.user} has connected\n')
-    guild = BOT.get_guild(int(GUILD))
-    GAMES[guild.id] = load_file_to_game(guild.id)
-    if GAMES[guild.id] is not None:
-        print(f"The file from data/{guild.id}.data was correctly loaded.")
-        return
-
-    GAMES[guild.id] = Game(guild.id)
+    for guild in BOT.guilds:
+        GAMES[guild.id] = load_file_to_game(guild.id)
+        if GAMES[guild.id] is not None:
+            print(f"The file from data/{guild.id}.data was correctly loaded.")
+        else:
+            GAMES[guild.id] = Game(guild.id)
 
 
 def check_if_premium(before, after):
@@ -61,7 +59,7 @@ def check_if_premium(before, after):
         nb_games = 0
         if "double" in role_name:
             nb_games = int(role_name[2])
-        game = GAMES[BOT.get_guild(int(GUILD)).id]
+        game = GAMES[after.guild.id]
 
         for mode in game.available_modes:
             if after.name in game.leaderboards[mode]:
@@ -80,7 +78,7 @@ async def on_member_update(before, after):
         PM Anddy#2086 if you have any issue, this is available for every mode.")
 
     elif before.name != after.name or before.nick != after.nick:
-        game = GAMES[BOT.get_guild(int(GUILD)).id]
+        game = GAMES[after.guild.id]
         for mode in game.available_modes:
             if before.name in game.leaderboards[mode]:
                 game.leaderboards[after.name] = game.leaderboards[mode].pop(
@@ -177,7 +175,7 @@ async def join(ctx):
     Can't be used outside Modes category.
     The user can leave afterward by using !l.
     The user needs to have previously registered in this mode."""
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     name = '_'.join(ctx.author.name.split())
     if name in game.leaderboards[mode]:
@@ -200,7 +198,7 @@ async def leave(ctx):
     Can't be used outside Modes category.
     The user needs to be in the queue for using this command.
     The user can't leave a queue after it went full."""
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     name = '_'.join(ctx.author.name.split())
 
@@ -225,7 +223,7 @@ async def register(ctx, *args):
     This command can be used only in the register channel.
     The command will fail if the mode doesn't exist (use !modes to check)."""
 
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     name = '_'.join(ctx.author.name.split())
     if name in game.leaderboards[mode]:
@@ -244,7 +242,7 @@ async def quit_elo(ctx):
     The user will lose all of his data after the command.
     Can be used only in Bye channel.
     Can't be undone."""
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     name = '_'.join(ctx.author.name.split())
 
     for g_queue in game.queues:
@@ -270,7 +268,7 @@ async def force_quit(ctx, *args):
     if args == ():
         await ctx.send("Missing the name of the player you want to remove")
         return
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
 
     for g_queue in game.queues:
         g_queue.remove_player(args[0])
@@ -294,7 +292,7 @@ async def leaderboard(ctx, *args):
     most_wins_in_a_row, most_losses_in_a_row.
     By default, if the stats key is missing, the bot will show the elo lb.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     if len(args) != 2:
         args = (args[0], "elo")
     await ctx.send(game.leaderboard(int(args[0]), args[1]))
@@ -309,7 +307,7 @@ async def queue(ctx):
     current queue with everyone's Elo.
     Can't be used outside Modes category.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     await ctx.send(game.queues[int(mode)])
 
@@ -327,7 +325,7 @@ async def info(ctx, *args):
     is stats in the seized mode.
     Can be used only in info_chat channel.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     name = args[1] if len(args) == 2 else ctx.author.name
     name = '_'.join(name.split())
@@ -351,7 +349,7 @@ async def history(ctx, *args):
     is stats in the seized mode.
     Can be used only in info_chat channel.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     name = args[1] if len(args) == 2 else ctx.author.name
     name = '_'.join(name.split())
@@ -373,7 +371,7 @@ async def submit(ctx, *args):
     in the mode 1vs1, in the 7th game, the team 1 (red) won.
     This will update the rankings.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     args = [int(elem) for elem in args if elem.isdigit()]
     if len(args) != 3:
         ctx.send("Wrong format, expected !s [mode] [id_game] [winner]")
@@ -395,7 +393,7 @@ async def undo(ctx, *args):
     in the mode 1vs1, in the 7th game.
     This will reset the ranking updates of this match.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     await ctx.send(game.undo(int(args[0]), int(args[1])))
 
 
@@ -410,7 +408,7 @@ async def cancel(ctx, *args):
     Example: !cancel 1 3
     will cancel the game with the id 3 in the mode 1vs1.
     """
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     id = int(args[1])
     if game.cancel(mode, id):
@@ -423,7 +421,7 @@ async def cancel(ctx, *args):
 @has_permissions(manage_roles=True)
 @check_category('Modes')
 async def pick(ctx, *args):
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
     if queue.mode < 2:
@@ -452,7 +450,7 @@ async def undecided(ctx, *args):
     Example: !undecided 2
     Will show every undecided games in 2vs2, with the format below.
     id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     await ctx.send("Undecided games: \n" + game.undecided(mode))
 
@@ -468,7 +466,7 @@ async def archived(ctx, *args):
     Will show every games in 2vs2, with the format below.
     id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
     Blue team: [player3, player4]."""
-    game = GAMES[BOT.get_guild(int(GUILD)).id]
+    game = GAMES[ctx.guild.id]
     mode = int(args[0])
     await ctx.send("Archived games: \n" + game.archived(mode))
 
@@ -486,7 +484,7 @@ async def add_mode(ctx, *args):
     Can be used only in init channel by a manage_roles having user."""
     if args != () and args[0].isdigit() and int(args[0]) > 0:
         nb_p = int(args[0])
-        if GAMES[BOT.get_guild(int(GUILD)).id].add_mode(nb_p):
+        if GAMES[ctx.guild.id].add_mode(nb_p):
             guild = ctx.message.guild
             category = discord.utils.get(guild.categories, name="Modes")
             await guild.create_text_channel(f'{nb_p}vs{nb_p}',
@@ -504,7 +502,7 @@ async def add_mode(ctx, *args):
 @is_arg_in_modes(GAMES)
 async def delete_mode(ctx, *args):
     mode = int(args[0])
-    GAMES[BOT.get_guild(int(GUILD)).id].remove_mode(mode)
+    GAMES[ctx.guild.id].remove_mode(mode)
     await ctx.send("The mode has been deleted, please delete the channel.")
 
 
@@ -513,7 +511,7 @@ async def delete_mode(ctx, *args):
 @check_channel('info_chat')
 async def modes(ctx):
     """Print available modes."""
-    await ctx.send(GAMES[BOT.get_guild(int(GUILD)).id].available_modes)
+    await ctx.send(GAMES[ctx.guild.id].available_modes)
 
 
 @BOT.event
