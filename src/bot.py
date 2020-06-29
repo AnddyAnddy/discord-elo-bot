@@ -53,12 +53,12 @@ async def on_ready():
     GAMES[guild.id] = Game(guild.id)
 
 
-@BOT.event
-async def on_member_update(before, after):
+def check_if_premium(before, after):
     if len(before.roles) < len(after.roles):
         new_role = next(
             role for role in after.roles if role not in before.roles)
         role_name = new_role.name.lower().split()
+        nb_games = 0
         if "double" in role_name:
             nb_games = int(role_name[2])
         game = GAMES[BOT.get_guild(int(GUILD)).id]
@@ -69,8 +69,22 @@ async def on_member_update(before, after):
                 player.double_xp = nb_games
 
         channel = discord.utils.get(after.guild.channels, name="premium")
+        return True
+    return False
+
+
+@BOT.event
+async def on_member_update(before, after):
+    if check_if_premium(before, after):
         await channel.send(f"You got your {nb_games} double xp ! \
-    PM Anddy#2086 if you have any issue, this is available for every mode.")
+        PM Anddy#2086 if you have any issue, this is available for every mode.")
+
+    elif before.name != after.name or before.nick != after.nick:
+        game = GAMES[BOT.get_guild(int(GUILD)).id]
+        for mode in game.available_modes:
+            if before.name in game.leaderboards[mode]:
+                game.leaderboards[after.name] = game.leaderboards[mode].pop(
+                        before.name)
 
 
 @BOT.event
@@ -89,11 +103,12 @@ async def on_guild_channel_create(channel):
         print("Data has been saved since a new mode was added.")
 
 
-@BOT.command()
+@BOT.command(hidden=True)
 @has_permissions(manage_roles=True)
 async def init_elo_by_anddy(ctx):
-    """Initialize the bot to be ready on a guild.
+    """Can't be used by humans.
 
+    Initialize the bot to be ready on a guild.
     This command creates every channel needed for the Bot to work.
     This also build two categories Elo by Anddy and Modes
     Can be used anywhere. No alias, Need to have manage_roles
@@ -140,6 +155,16 @@ async def init_elo_by_anddy(ctx):
         await guild.create_category(name="Modes")
 
         print("Elo by Anddy created, init done, use !help !")
+
+
+@BOT.command()
+async def cmds(ctx):
+    """Show every command."""
+    nl = '\n'
+    res = '\n - '.join([f'{command.name:<18}: {command.help.split(nl)[0]}'
+        for command in sorted(BOT.commands, key=lambda c: c.name)
+            if command.help is not None and not command.hidden])
+    await ctx.send(f"```\n - {res} ```")
 
 
 @BOT.command(pass_context=True, aliases=['j'])
@@ -491,37 +516,16 @@ async def modes(ctx):
     await ctx.send(GAMES[BOT.get_guild(int(GUILD)).id].available_modes)
 
 
-@submit.error
-@add_mode.error
-async def role_perm_error(ctx, error):
-    """Force to have manage_roles to submit the score."""
-    if isinstance(error, MissingPermissions):
-        await ctx.send("You must have manage_roles permission to run that.")
-
-
-@join.error
-@register.error
-@leaderboard.error
-@queue.error
-@info.error
-@submit.error
-@add_mode.error
-@modes.error
-@undecided.error
-@cancel.error
-@archived.error
-async def wrong_mode_error(ctx, error):
-    if isinstance(error, commands.errors.CheckFailure):
+@BOT.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.CommandNotFound):
+        await ctx.send("The command doesn't exist, check !help !")
+    elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You used this command with either a wrong channel or \
 a wrong argument. Or maybe you don't have the permission...")
+    elif isinstance(error, MissingPermissions):
+        await ctx.send("You must have manage_roles permission to run that.")
+
     else:
-        print(error)
-
-
-@force_quit.error
-async def force_quit_error(error, ctx):
-    """Missing permissions."""
-    if isinstance(error, MissingPermissions):
-        await ctx.send("Missing permissions to remove him snif.")
-
+        raise error
 BOT.run(TOKEN)
