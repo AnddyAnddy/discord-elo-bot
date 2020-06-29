@@ -44,6 +44,7 @@ async def on_ready():
     """On ready event."""
     print(f'{BOT.user} has connected\n')
     for guild in BOT.guilds:
+        print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             print(f"The file from data/{guild.id}.data was correctly loaded.")
@@ -89,7 +90,7 @@ async def on_member_update(before, after):
 async def on_command_completion(ctx):
     """Save the data after every command."""
     GAMES[ctx.guild.id].save_to_file()
-    print(f"The data has been saved after the command: {ctx.message.content}")
+    # print(f"The data has been saved after the command: {ctx.message.content}")
 
 
 @BOT.event
@@ -123,8 +124,6 @@ async def init_elo_by_anddy(ctx):
                 discord.PermissionOverwrite(read_messages=False),
             guild.me:
                 discord.PermissionOverwrite(read_messages=True),
-            discord.utils.get(guild.roles, name="Elo Admin"):
-                discord.PermissionOverwrite(read_messages=True)
         }
 
         base_cat = await guild.create_category(name="Elo by Anddy")
@@ -374,7 +373,7 @@ async def submit(ctx, *args):
     game = GAMES[ctx.guild.id]
     args = [int(elem) for elem in args if elem.isdigit()]
     if len(args) != 3:
-        ctx.send("Wrong format, expected !s [mode] [id_game] [winner]")
+        await ctx.send("Wrong format, expected !s [mode] [id_game] [winner]")
         return
 
     mode, id, winner = args
