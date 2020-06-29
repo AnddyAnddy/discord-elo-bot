@@ -74,7 +74,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
-            for id, (queue, winner) in self.archive[mode].items()]) + \
+            for id, (queue, winner, elo_boost) in self.archive[mode].items()]) + \
             "\n```"
 
     def get_history(self, mode, player):

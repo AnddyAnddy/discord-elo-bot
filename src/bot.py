@@ -513,7 +513,7 @@ async def role_perm_error(ctx, error):
 async def wrong_mode_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You used this command with either a wrong channel or \
-a wrong argument.")
+a wrong argument. Or maybe you don't have the permission...")
     else:
         print(error)
 
