@@ -251,11 +251,11 @@ async def register(ctx, mode):
 async def register_all(ctx):
     """Register to every available modes in one command."""
     game = GAMES[ctx.guild.id]
-    mode = int(mode)
     name = ctx.author.id
     for mode in game.leaderboards:
         game.leaderboards[mode][name] = Player(ctx.author.name)
-
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=f"<@{name}> has been registered for every modes."))
 
 @BOT.command(aliases=['quit'])
 @check_category('Elo by Anddy')
