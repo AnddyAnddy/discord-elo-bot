@@ -225,7 +225,7 @@ async def leave(ctx):
 @check_channel('register')
 @check_category('Elo by Anddy')
 @is_arg_in_modes(GAMES)
-async def register(ctx, mode, all=""):
+async def register(ctx, mode):
     """Register the player to the elo leaderboard from the mode in arg.
 
     Example: !r N or !r N all
@@ -242,12 +242,19 @@ async def register(ctx, mode, all=""):
             description=f"There's already a played called <@{name}>."))
         return
     game.leaderboards[mode][name] = Player(ctx.author.name)
-    if all == "all":
-        for mode in game.leaderboards:
-            game.leaderboards[mode][name] = Player(ctx.author.name)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"<@{name}> has been registered."))
 
+@BOT.command(aliases=['r_all', 'reg_all'])
+@check_channel('register')
+@check_category('Elo by Anddy')
+@is_arg_in_modes(GAMES)
+async def register_all(ctx, mode):
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    name = ctx.author.id
+    for mode in game.leaderboards:
+        game.leaderboards[mode][name] = Player(ctx.author.name)
 
 @BOT.command(aliases=['quit'])
 @check_category('Elo by Anddy')
