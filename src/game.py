@@ -103,9 +103,9 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             res += "Argument not found so imma show you the elo lb !\n - "
         res += '\n - '.join([f'{i}) {v.name}: {getattr(v, key)}'
                              for i, v in enumerate(
-                                 sorted(self.leaderboards[mode][:20].values(),
+                                 sorted(self.leaderboards[mode].values(),
                                         reverse=True,
-                                        key=operator.attrgetter(key)), 1)])
+                                        key=operator.attrgetter(key))[:20], 1)])
         res += '```'
         return res
 
