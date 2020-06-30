@@ -145,9 +145,9 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         """Ban the player for a certain time in seconds."""
         self.bans[name] = Ban(name, time_left, reason)
         self.erase_player_from_queues(name)
-        Timer(self.bans[name].time_end - time.time(),
-                self.unban_player,
-                (name, )).start()
+        # Timer(self.bans[name].time_end - time.time(),
+        #         self.unban_player,
+        #         (name, )).start()
 
     def erase_player_from_queues(self, name):
         """Remove the player from every queues if the queue hasn't been full."""

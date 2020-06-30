@@ -4,6 +4,7 @@
 import os
 import _pickle as pickle
 import discord
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from dotenv import load_dotenv
@@ -20,7 +21,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 BOT = commands.Bot(command_prefix='!')
 GAMES = {}
-
 
 def add_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
@@ -78,18 +78,24 @@ async def on_member_update(before, after):
         await channel.send(f"You got your {nb_games} double xp ! \
         PM Anddy#2086 if you have any issue, this is available for every mode.")
 
-    elif before.name != after.name or before.nick != after.nick:
-        game = GAMES[after.guild.id]
-        for mode in game.available_modes:
-            if before.name in game.leaderboards[mode]:
-                game.leaderboards[after.name] = game.leaderboards[mode].pop(
-                        before.name)
+    # elif before.name != after.name or before.nick != after.nick:
+    #     game = GAMES[after.guild.id]
+    #     old = before.nick if before.nick is not None else before.name
+    #     new = after.nick if after.nick is not None else after.name
+    #     for mode in game.available_modes:
+    #
+    #         if old in game.leaderboards[mode]:
+    #             game.leaderboards[new] = game.leaderboards[mode].pop(old)
+    #             game.leaderboards[new].name = new
 
 
 @BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
-    GAMES[ctx.guild.id].save_to_file()
+    print(ctx.invoked_with)
+    if not ctx.invoked_with in ("j", "join", "ban"):
+        GAMES[ctx.guild.id].save_to_file()
+
     # print(f"The data has been saved after the command: {ctx.message.content}")
 
 
@@ -161,7 +167,7 @@ async def cmds(ctx):
     res = '\n - '.join([f'{command.name:<18}: {command.help.split(nl)[0]}'
         for command in sorted(BOT.commands, key=lambda c: c.name)
             if command.help is not None and not command.hidden])
-    await ctx.send(f"```\n - {res} ```")
+    await ctx.send(embed=Embed(color=0x00FF00, description=f"```\n - {res} ```"))
 
 
 @BOT.command(pass_context=True, aliases=['j'])
@@ -176,18 +182,21 @@ async def join(ctx):
     The user needs to have previously registered in this mode."""
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
-    name = '_'.join(ctx.author.name.split())
+    name = ctx.author.id
     if name in game.bans:
-        await ctx.send(game.bans[name])
+        await ctx.send(embed=Embed(color=0xFF0000, description=game.bans[name]))
         return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
-        await ctx.send(game.queues[mode].add_player(player, game))
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=game.queues[mode].add_player(player, game)))
         if game.queues[mode].is_finished():
-            await ctx.send(game.add_game_to_be_played(game.queues[mode]))
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description=game.add_game_to_be_played(game.queues[mode])))
 
     else:
-        await ctx.send("Make sure you register before joining the queue.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="Make sure you register before joining the queue."))
 
 
 @BOT.command(pass_context=True, aliases=['l'])
@@ -202,14 +211,15 @@ async def leave(ctx):
     The user can't leave a queue after it went full."""
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
-    name = '_'.join(ctx.author.name.split())
+    name = ctx.author.id
 
     if name in game.leaderboards[mode]:
-        await ctx.send(game.queues[mode].
+        await ctx.send(embed=Embed(color=0x00FF00, description=game.queues[mode].
                        remove_player(game.leaderboards[mode]
-                                     [name]))
+                                     [name])))
     else:
-        await ctx.send("You didn't even register lol.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="You didn't even register lol."))
 
 
 @BOT.command(aliases=['r', 'reg'])
@@ -227,12 +237,14 @@ async def register(ctx, mode):
 
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = '_'.join(ctx.author.name.split())
+    name = ctx.author.id
     if name in game.leaderboards[mode]:
-        await ctx.send(f"There's already a played called {name}.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=f"There's already a played called <@{name}>."))
         return
-    game.leaderboards[mode][name] = Player(name)
-    await ctx.send(f"{name} has been registered.")
+    game.leaderboards[mode][name] = Player(ctx.author.name)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=f"<@{name}> has been registered."))
 
 
 @BOT.command(aliases=['quit'])
@@ -245,12 +257,13 @@ async def quit_elo(ctx):
     Can be used only in Bye channel.
     Can't be undone."""
     game = GAMES[ctx.guild.id]
-    name = '_'.join(ctx.author.name.split())
+    name = ctx.author.id
 
     game.erase_player_from_queues(name)
     game.erase_player_from_leaderboards(name)
 
-    await ctx.send(f'{name} has been removed from the rankings')
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=f'<@{name}> has been removed from the rankings'))
 
 
 @BOT.command()
@@ -260,19 +273,18 @@ async def quit_elo(ctx):
 async def force_quit(ctx, name):
     """Delete the seized user from the registered players.
 
-    Example: !force_quit "Anddy"
+    Example: !force_quit @Anddy
     The command is the same than quit_elo except that the user has to make
     someone else quit the Elo.
     This can be used only in Bye channel.
     Can't be undone."""
-    if not name:
-        await ctx.send("Missing the name of the player you want to remove")
-        return
     game = GAMES[ctx.guild.id]
+    name = name[3: -1]
     game.erase_player_from_queues(name)
     game.erase_player_from_leaderboards(name)
 
-    await ctx.send(f'{name} has been removed from the rankings')
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=f'<@{name}> has been removed from the rankings'))
 
 
 @BOT.command(aliases=['lb'])
@@ -291,7 +303,8 @@ async def leaderboard(ctx, mode, stat_key="elo"):
     By default, if the stats key is missing, the bot will show the elo lb.
     """
     game = GAMES[ctx.guild.id]
-    await ctx.send(game.leaderboard(int(mode), stat_key))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=game.leaderboard(int(mode), stat_key)))
 
 
 @BOT.command(aliases=['q'])
@@ -305,7 +318,7 @@ async def queue(ctx):
     """
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
-    await ctx.send(game.queues[int(mode)])
+    await ctx.send(embed=Embed(color=0x00FF00, description=game.queues[int(mode)]))
 
 
 @BOT.command(aliases=['stats'])
@@ -315,7 +328,7 @@ async def queue(ctx):
 async def info(ctx, mode, name=""):
     """Show the info of a player. !info [mode], !info [mode] [player]
 
-    Example: !info 1 Anddy
+    Example: !info 1 @Anddy
     With no argument, the !info will show the user's stats.
     With a player_name as argument, if the player exists, this will show
     is stats in the seized mode.
@@ -323,13 +336,14 @@ async def info(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.name if not name else name
-    name = '_'.join(name.split())
-
+    name = ctx.author.id if not name else name[3: -1]
     if name in game.leaderboards[mode]:
-        await ctx.send(game.leaderboards[mode][name])
+        await ctx.send("coucou")
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=str(game.leaderboards[mode][name])))
     else:
-        await ctx.send(f"No player called {name}")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=f"No player called <@{name}>"))
 
 
 @BOT.command(aliases=['h'])
@@ -347,13 +361,14 @@ async def history(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.name if not name else name
-    name = '_'.join(name.split())
+    name = ctx.author.name if not name else name[3: -1]
 
     if name in game.leaderboards[mode]:
-        await ctx.send(game.get_history(mode, game.leaderboards[mode][name]))
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=game.get_history(mode, game.leaderboards[mode][name])))
     else:
-        await ctx.send(f"No player called {name}")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=f"No player called <@{name}>"))
 
 
 @BOT.command(aliases=['s', 'game'])
@@ -369,7 +384,8 @@ async def submit(ctx, mode, id_game, winner):
     """
     game = GAMES[ctx.guild.id]
     mode, id_game, winner = int(mode), int(id_game), int(winner)
-    await ctx.send(game.add_archive(mode, id_game, winner))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=game.add_archive(mode, id_game, winner)))
 
 
 @BOT.command()
@@ -385,7 +401,8 @@ async def undo(ctx, mode, id_game):
     This will reset the ranking updates of this match.
     """
     game = GAMES[ctx.guild.id]
-    await ctx.send(game.undo(int(mode), int(id_game)))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=game.undo(int(mode), int(id_game))))
 
 
 @BOT.command(aliases=['c', 'clear'])
@@ -401,9 +418,11 @@ async def cancel(ctx, mode, id_game):
     """
     game = GAMES[ctx.guild.id]
     if game.cancel(int(mode), int(id_game)):
-        await ctx.send(f"The game {id_game} has been canceled")
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=f"The game {id_game} has been canceled"))
     else:
-        await ctx.send(f"Couldn't find the game {id_game} in the current games.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=f"Couldn't find the game {id_game} in the current games."))
 
 
 @BOT.command(aliases=['p'])
@@ -414,19 +433,23 @@ async def pick(ctx, *args):
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
     if queue.mode < 2:
-        await ctx.send("The mode is not a captaining mode.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="The mode is not a captaining mode."))
         return
 
     team = queue.get_captain_team(ctx.author.name)
     if team == 0:
-        await ctx.send("You are not captain.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="You are not captain."))
         return
     player = discord.utils.get(queue.players, name=args[0])
     if player is None:
-        await ctx.send(f"Couldn't find the player {player.name}.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=f"Couldn't find the player {player.name}."))
         return
     queue.set_player_team(player, team)
-    await ctx.send(f"Good pick!")
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=f"Good pick!"))
 
 
 @BOT.command(aliases=['u'])
@@ -440,7 +463,8 @@ async def undecided(ctx, mode):
     Will show every undecided games in 2vs2, with the format below.
     id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    await ctx.send("Undecided games: \n" + game.undecided(int(mode)))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="Undecided games: \n" + game.undecided(int(mode))))
 
 
 @BOT.command(aliases=['a'])
@@ -455,7 +479,8 @@ async def archived(ctx, mode):
     id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
     Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    await ctx.send("Archived games: \n" + game.archived(int(mode)))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="Archived games: \n" + game.archived(int(mode))))
 
 
 @BOT.command()
@@ -476,10 +501,12 @@ async def add_mode(ctx, mode):
             category = discord.utils.get(guild.categories, name="Modes")
             await guild.create_text_channel(f'{nb_p}vs{nb_p}',
                                             category=category)
-            await ctx.send("The game mode has been added.")
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description="The game mode has been added."))
             return
 
-    await ctx.send("Couldn't add the game mode.")
+    await ctx.send(embed=Embed(color=0xFF0000,
+        description="Couldn't add the game mode."))
 
 
 @BOT.command()
@@ -489,7 +516,8 @@ async def add_mode(ctx, mode):
 @is_arg_in_modes(GAMES)
 async def delete_mode(ctx, mode):
     GAMES[ctx.guild.id].remove_mode(int(mode))
-    await ctx.send("The mode has been deleted, please delete the channel.")
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The mode has been deleted, please delete the channel."))
 
 
 @BOT.command()
@@ -497,7 +525,8 @@ async def delete_mode(ctx, mode):
 @check_channel('info_chat')
 async def modes(ctx):
     """Print available modes."""
-    await ctx.send(GAMES[ctx.guild.id].available_modes)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=GAMES[ctx.guild.id].available_modes))
 
 
 @BOT.command()
@@ -512,8 +541,9 @@ async def ban(ctx, name, time, unity, reason=""):
     """
     formats = { "s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24 }
     total_sec = int(time) * formats[unity]
-    GAMES[ctx.guild.id].ban_player(name, total_sec, reason)
-    await ctx.send("The player has been banned ! Check !bans")
+    GAMES[ctx.guild.id].ban_player(name[3: -1], total_sec, reason)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The player has been banned ! Check !bans"))
 
 
 @BOT.command()
@@ -526,8 +556,9 @@ async def unban(ctx, name):
     unity must be in s, m, h, d (secs, mins, hours, days).
     reason must be into " "
     """
-    GAMES[ctx.guild.id].unban_player(name)
-    await ctx.send("The player has been unbanned ! Check !bans")
+    GAMES[ctx.guild.id].unban_player(name[3: -1])
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The player has been unbanned ! Check !bans"))
 
 
 
@@ -535,21 +566,26 @@ async def unban(ctx, name):
 @check_category('Elo by Anddy')
 @check_channel('bans')
 async def all_bans(ctx):
-    await ctx.send(GAMES[ctx.guild.id].all_bans())
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=GAMES[ctx.guild.id].all_bans()))
 
 
 @BOT.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CommandNotFound):
-        await ctx.send("The command doesn't exist, check !help !")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="The command doesn't exist, check !help !"))
     elif isinstance(error, commands.errors.CheckFailure):
-        await ctx.send("You used this command with either a wrong channel or \
-a wrong argument. Or maybe you don't have the permission...")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="You used this command with either a wrong channel or \
+a wrong argument. Or maybe you don't have the permission..."))
     elif isinstance(error, MissingPermissions):
-        await ctx.send("You must have manage_roles permission to run that.")
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description="You must have manage_roles permission to run that."))
 
     elif isinstance(error, commands.errors.MissingRequiredArgument):
-        await ctx.send(error)
+        await ctx.send(embed=Embed(color=0xFF0000,
+            description=error))
     else:
         raise error
 BOT.run(TOKEN)

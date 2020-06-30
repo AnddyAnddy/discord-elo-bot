@@ -39,8 +39,8 @@ class Queue():
         if self.is_queue_full() or self.has_queue_been_full:
             return "Queue is full..."
         self.players.append(player)
-        self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
-        self.timeout[player].start()
+        # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
+        # self.timeout[player].start()
         res = f'{player.name} has been added to the queue, you will be kicked \
 in 10 mins if the queue has not been full.'
         if self.is_queue_full():
@@ -58,8 +58,8 @@ in 10 mins if the queue has not been full.'
     def on_queue_full(self, game):
         """Set a game."""
         self.has_queue_been_full = True
-        for t in self.timeout.values():
-            t.cancel()
+        # for t in self.timeout.values():
+        #     t.cancel()
         self.timeout = {}
         self.pick_fonction()
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
