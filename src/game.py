@@ -1,10 +1,13 @@
 """A class for a guild."""
 import operator
 import _pickle as pickle
+import time
+from threading import Timer
 from player import Player
 from queue_elo import Queue
 from queue_elo import team_to_player_name
 from elo import Elo
+from ban import Ban
 
 class Game():
     """Represent the game available."""
@@ -17,6 +20,7 @@ class Game():
         self.leaderboards = {}
         self.undecided_games = {}
         self.queues = {}
+        self.bans = {}
         self.elo = Elo()
 
     def add_archive(self, mode, id, winner):
@@ -96,10 +100,10 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 
         res = '```\n - '
         if key not in Player.STATS:
-            res += "Argument not found so imma show you the elo lb !\n"
+            res += "Argument not found so imma show you the elo lb !\n - "
         res += '\n - '.join([f'{i}) {v.name}: {getattr(v, key)}'
                              for i, v in enumerate(
-                                 sorted(self.leaderboards[mode].values(),
+                                 sorted(self.leaderboards[mode][:20].values(),
                                         reverse=True,
                                         key=operator.attrgetter(key)), 1)])
         res += '```'
@@ -131,3 +135,36 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
+
+
+    def unban_player(self, name):
+        """Unban a player."""
+        self.bans.pop(name, None)
+
+    def ban_player(self, name, time_left, reason=""):
+        """Ban the player for a certain time in seconds."""
+        self.bans[name] = Ban(name, time_left, reason)
+        self.erase_player_from_queue(name)
+        Timer(self.bans[name].time_end - time.time(),
+                self.unban_player,
+                (name, )).start()
+
+    def erase_player_from_queues(self, name):
+        """Remove the player from every queues if the queue hasn't been full."""
+        for mode in self.queues:
+            if name in self.leaderboards[mode]:
+                self.queues[mode].remove_player(self.leaderboards[mode][name])
+
+
+    def erase_player_from_leaderboards(self, name):
+        """Remove the player from every leaderboards."""
+        for mode in self.leaderboards:
+            print(mode, self.leaderboards[mode])
+            # self.leaderboards[mode].pop(name, None)
+        print("still here")
+
+    def all_bans(self):
+        return "```\n - " + '\n - '.join([str(p) for p in self.bans.values()]) + "```"
+
+def f():
+    print("coucou")

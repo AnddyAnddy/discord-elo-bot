@@ -177,6 +177,9 @@ async def join(ctx):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     name = '_'.join(ctx.author.name.split())
+    if name in game.bans:
+        await ctx.send(game.bans[name])
+        return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
         await ctx.send(game.queues[mode].add_player(player, game))
@@ -244,10 +247,8 @@ async def quit_elo(ctx):
     game = GAMES[ctx.guild.id]
     name = '_'.join(ctx.author.name.split())
 
-    for g_queue in game.queues:
-        g_queue.remove_player(name)
-    for ld_board in game.leaderboards:
-        ld_board.pop(name, None)
+    game.erase_player_from_queues(name)
+    game.erase_player_from_leaderboards(name)
 
     await ctx.send(f'{name} has been removed from the rankings')
 
@@ -268,11 +269,9 @@ async def force_quit(ctx, *args):
         await ctx.send("Missing the name of the player you want to remove")
         return
     game = GAMES[ctx.guild.id]
+    game.erase_player_from_queues(args[0])
+    game.erase_player_from_leaderboards(args[0])
 
-    for g_queue in game.queues:
-        g_queue.remove_player(args[0])
-    for ld_board in game.leaderboards:
-        ld_board.pop(args[0], None)
     await ctx.send(f'{args[0]} has been removed from the rankings')
 
 
@@ -513,6 +512,44 @@ async def modes(ctx):
     await ctx.send(GAMES[ctx.guild.id].available_modes)
 
 
+@BOT.command()
+@check_category('Elo by Anddy')
+@check_channel('bans')
+@has_permissions(manage_roles=True)
+async def ban(ctx, name, time, unity, reason=""):
+    """Bans the player for a certain time in a certain unity.
+
+    unity must be in s, m, h, d (secs, mins, hours, days).
+    reason must be into " "
+    """
+    formats = { "s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24 }
+    total_sec = int(time) * formats[unity]
+    GAMES[ctx.guild.id].ban_player(name, total_sec, reason)
+    await ctx.send("The player has been banned ! Check !bans")
+
+
+@BOT.command()
+@check_category('Elo by Anddy')
+@check_channel('bans')
+@has_permissions(manage_roles=True)
+async def unban(ctx, name):
+    """Bans the player for a certain time in a certain unity.
+
+    unity must be in s, m, h, d (secs, mins, hours, days).
+    reason must be into " "
+    """
+    GAMES[ctx.guild.id].unban_player(name)
+    await ctx.send("The player has been unbanned ! Check !bans")
+
+
+
+@BOT.command(aliases=['bans'])
+@check_category('Elo by Anddy')
+@check_channel('bans')
+async def all_bans(ctx):
+    await ctx.send(GAMES[ctx.guild.id].all_bans())
+
+
 @BOT.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CommandNotFound):
@@ -523,6 +560,8 @@ a wrong argument. Or maybe you don't have the permission...")
     elif isinstance(error, MissingPermissions):
         await ctx.send("You must have manage_roles permission to run that.")
 
+    elif isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send(error)
     else:
         raise error
 BOT.run(TOKEN)
