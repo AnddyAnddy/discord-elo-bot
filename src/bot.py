@@ -92,7 +92,6 @@ async def on_member_update(before, after):
 @BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
-    print(ctx.invoked_with)
     if not ctx.invoked_with in ("j", "join", "ban"):
         GAMES[ctx.guild.id].save_to_file()
 
