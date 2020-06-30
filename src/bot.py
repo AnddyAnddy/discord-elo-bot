@@ -216,7 +216,7 @@ async def leave(ctx):
 @check_channel('register')
 @check_category('Elo by Anddy')
 @is_arg_in_modes(GAMES)
-async def register(ctx, *args):
+async def register(ctx, mode):
     """Register the player to the elo leaderboard from the mode in arg.
 
     Example: !r N
@@ -226,7 +226,7 @@ async def register(ctx, *args):
     The command will fail if the mode doesn't exist (use !modes to check)."""
 
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
+    mode = int(mode)
     name = '_'.join(ctx.author.name.split())
     if name in game.leaderboards[mode]:
         await ctx.send(f"There's already a played called {name}.")
@@ -257,7 +257,7 @@ async def quit_elo(ctx):
 @has_permissions(kick_members=True)
 @check_category('Elo by Anddy')
 @check_channel('bye')
-async def force_quit(ctx, *args):
+async def force_quit(ctx, name):
     """Delete the seized user from the registered players.
 
     Example: !force_quit "Anddy"
@@ -265,22 +265,22 @@ async def force_quit(ctx, *args):
     someone else quit the Elo.
     This can be used only in Bye channel.
     Can't be undone."""
-    if args == ():
+    if not name:
         await ctx.send("Missing the name of the player you want to remove")
         return
     game = GAMES[ctx.guild.id]
-    game.erase_player_from_queues(args[0])
-    game.erase_player_from_leaderboards(args[0])
+    game.erase_player_from_queues(name)
+    game.erase_player_from_leaderboards(name)
 
-    await ctx.send(f'{args[0]} has been removed from the rankings')
+    await ctx.send(f'{name} has been removed from the rankings')
 
 
 @BOT.command(aliases=['lb'])
 @is_arg_in_modes(GAMES)
 @check_category('Elo by Anddy')
 @check_channel('info_chat')
-async def leaderboard(ctx, *args):
-    """Show current leaderboard: !lb [mode] [stats key].
+async def leaderboard(ctx, mode, stat_key="elo"):
+    """Show current leaderboard: !lb [mode] [stat key].
 
     Example: !lb 1 wins
     Will show the leaderboard of the mode 1vs1 based on the wins.
@@ -291,9 +291,7 @@ async def leaderboard(ctx, *args):
     By default, if the stats key is missing, the bot will show the elo lb.
     """
     game = GAMES[ctx.guild.id]
-    if len(args) != 2:
-        args = (args[0], "elo")
-    await ctx.send(game.leaderboard(int(args[0]), args[1]))
+    await ctx.send(game.leaderboard(int(mode), stat_key))
 
 
 @BOT.command(aliases=['q'])
@@ -314,7 +312,7 @@ async def queue(ctx):
 @check_category('Elo by Anddy')
 @check_channel('info_chat')
 @is_arg_in_modes(GAMES)
-async def info(ctx, *args):
+async def info(ctx, mode, name=""):
     """Show the info of a player. !info [mode], !info [mode] [player]
 
     Example: !info 1 Anddy
@@ -324,8 +322,8 @@ async def info(ctx, *args):
     Can be used only in info_chat channel.
     """
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
-    name = args[1] if len(args) == 2 else ctx.author.name
+    mode = int(mode)
+    name = ctx.author.name if not name else name
     name = '_'.join(name.split())
 
     if name in game.leaderboards[mode]:
@@ -338,7 +336,7 @@ async def info(ctx, *args):
 @check_category('Elo by Anddy')
 @check_channel('info_chat')
 @is_arg_in_modes(GAMES)
-async def history(ctx, *args):
+async def history(ctx, mode, name=""):
     """Show every matches the user played in.
 
     Example: !h 1 Anddy
@@ -348,8 +346,8 @@ async def history(ctx, *args):
     Can be used only in info_chat channel.
     """
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
-    name = args[1] if len(args) == 2 else ctx.author.name
+    mode = int(mode)
+    name = ctx.author.name if not name else name
     name = '_'.join(name.split())
 
     if name in game.leaderboards[mode]:
@@ -362,7 +360,7 @@ async def history(ctx, *args):
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
 @check_channel('submit')
-async def submit(ctx, *args):
+async def submit(ctx, mode, id_game, winner):
     """Expect a format !s [mode] [id_game] [winner].
 
     Example: !s 1 7 1
@@ -370,13 +368,8 @@ async def submit(ctx, *args):
     This will update the rankings.
     """
     game = GAMES[ctx.guild.id]
-    args = [int(elem) for elem in args if elem.isdigit()]
-    if len(args) != 3:
-        await ctx.send("Wrong format, expected !s [mode] [id_game] [winner]")
-        return
-
-    mode, id, winner = args
-    await ctx.send(game.add_archive(mode, id, winner))
+    mode, id_game, winner = int(mode), int(id_game), int(winner)
+    await ctx.send(game.add_archive(mode, id_game, winner))
 
 
 @BOT.command()
@@ -384,7 +377,7 @@ async def submit(ctx, *args):
 @check_category('Elo by Anddy')
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
-async def undo(ctx, *args):
+async def undo(ctx, mode, id_game):
     """Expect a format !undo [mode] [id_game].
 
     Example: !s 1 7
@@ -392,7 +385,7 @@ async def undo(ctx, *args):
     This will reset the ranking updates of this match.
     """
     game = GAMES[ctx.guild.id]
-    await ctx.send(game.undo(int(args[0]), int(args[1])))
+    await ctx.send(game.undo(int(mode), int(id_game)))
 
 
 @BOT.command(aliases=['c', 'clear'])
@@ -400,19 +393,17 @@ async def undo(ctx, *args):
 @check_category('Elo by Anddy')
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
-async def cancel(ctx, *args):
+async def cancel(ctx, mode, id_game):
     """Cancel the game given in arg. !c [mode] [game_id]
 
     Example: !cancel 1 3
     will cancel the game with the id 3 in the mode 1vs1.
     """
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
-    id = int(args[1])
-    if game.cancel(mode, id):
-        await ctx.send(f"The game {id} has been canceled")
+    if game.cancel(int(mode), int(id_game)):
+        await ctx.send(f"The game {id_game} has been canceled")
     else:
-        await ctx.send(f"Couldn't find the game {id} in the current games.")
+        await ctx.send(f"Couldn't find the game {id_game} in the current games.")
 
 
 @BOT.command(aliases=['p'])
@@ -442,22 +433,21 @@ async def pick(ctx, *args):
 @check_category('Elo by Anddy')
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
-async def undecided(ctx, *args):
+async def undecided(ctx, mode):
     """Display every games of a specific mode, its score or undecided. !u [mode]
 
     Example: !undecided 2
     Will show every undecided games in 2vs2, with the format below.
     id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
-    await ctx.send("Undecided games: \n" + game.undecided(mode))
+    await ctx.send("Undecided games: \n" + game.undecided(int(mode)))
 
 
 @BOT.command(aliases=['a'])
 @check_category('Elo by Anddy')
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
-async def archived(ctx, *args):
+async def archived(ctx, mode):
     """Display every games of a specific mode, its score or undecided. !u [mode]
 
     Example: !archived 2
@@ -465,23 +455,22 @@ async def archived(ctx, *args):
     id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
     Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    mode = int(args[0])
-    await ctx.send("Archived games: \n" + game.archived(mode))
+    await ctx.send("Archived games: \n" + game.archived(int(mode)))
 
 
 @BOT.command()
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
 @check_channel('init')
-async def add_mode(ctx, *args):
+async def add_mode(ctx, mode):
     """Add a mode to the game modes.
 
     Example: !add_mode 4
     Will add the mode 4vs4 into the available modes, a channel will be
     created and the leaderboard will now have a 4 key.
     Can be used only in init channel by a manage_roles having user."""
-    if args != () and args[0].isdigit() and int(args[0]) > 0:
-        nb_p = int(args[0])
+    if mode.isdigit() and int(mode) > 0:
+        nb_p = int(mode)
         if GAMES[ctx.guild.id].add_mode(nb_p):
             guild = ctx.message.guild
             category = discord.utils.get(guild.categories, name="Modes")
@@ -498,9 +487,8 @@ async def add_mode(ctx, *args):
 @check_category('Elo by Anddy')
 @check_channel('init')
 @is_arg_in_modes(GAMES)
-async def delete_mode(ctx, *args):
-    mode = int(args[0])
-    GAMES[ctx.guild.id].remove_mode(mode)
+async def delete_mode(ctx, mode):
+    GAMES[ctx.guild.id].remove_mode(int(mode))
     await ctx.send("The mode has been deleted, please delete the channel.")
 
 
