@@ -248,13 +248,14 @@ async def register(ctx, mode):
 @BOT.command(aliases=['r_all', 'reg_all'])
 @check_channel('register')
 @check_category('Elo by Anddy')
-@is_arg_in_modes(GAMES)
-async def register_all(ctx, mode):
+async def register_all(ctx):
+    """Register to every available modes in one command."""
     game = GAMES[ctx.guild.id]
     mode = int(mode)
     name = ctx.author.id
     for mode in game.leaderboards:
         game.leaderboards[mode][name] = Player(ctx.author.name)
+
 
 @BOT.command(aliases=['quit'])
 @check_category('Elo by Anddy')
