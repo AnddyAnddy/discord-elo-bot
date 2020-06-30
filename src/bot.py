@@ -225,10 +225,10 @@ async def leave(ctx):
 @check_channel('register')
 @check_category('Elo by Anddy')
 @is_arg_in_modes(GAMES)
-async def register(ctx, mode):
+async def register(ctx, mode, all=""):
     """Register the player to the elo leaderboard from the mode in arg.
 
-    Example: !r N
+    Example: !r N or !r N all
     This command will register the user into the game mode set in argument.
     The game mode needs to be the N in NvsN, and it needs to already exist.
     This command can be used only in the register channel.
@@ -242,6 +242,9 @@ async def register(ctx, mode):
             description=f"There's already a played called <@{name}>."))
         return
     game.leaderboards[mode][name] = Player(ctx.author.name)
+    if all == "all":
+        for mode in game.leaderboards:
+            game.leaderboards[mode][name] = Player(ctx.author.name)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"<@{name}> has been registered."))
 
