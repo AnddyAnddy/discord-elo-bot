@@ -613,7 +613,7 @@ a wrong argument. Or maybe you don't have the permission..."))
 
     elif isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send(embed=Embed(color=0xFF0000,
-            description=error))
+            description=str(error)))
     else:
         raise error
 BOT.run(TOKEN)
