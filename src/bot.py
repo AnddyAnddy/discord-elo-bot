@@ -74,10 +74,10 @@ def check_if_premium(before, after):
 
 @BOT.event
 async def on_member_update(before, after):
-    if check_if_premium(before, after):
-        channel = discord.utils.get(after.guild.channels, name="premium")
-        await channel.send(f"You got your {nb_games} double xp ! \
-        PM Anddy#2086 if you have any issue, this is available for every mode.")
+    # if check_if_premium(before, after):
+    #     channel = discord.utils.get(after.guild.channels, name="premium")
+    #     await channel.send(f"You got your {nb_games} double xp ! \
+    #     PM Anddy#2086 if you have any issue, this is available for every mode.")
 
     # elif before.name != after.name or before.nick != after.nick:
     #     game = GAMES[after.guild.id]
