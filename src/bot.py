@@ -554,7 +554,7 @@ async def delete_mode(ctx, mode):
 async def modes(ctx):
     """Print available modes."""
     await ctx.send(embed=Embed(color=0x00FF00,
-        description=GAMES[ctx.guild.id].available_modes))
+        description=str(GAMES[ctx.guild.id].available_modes)))
 
 
 @BOT.command()
