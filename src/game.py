@@ -159,12 +159,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
     def erase_player_from_leaderboards(self, name):
         """Remove the player from every leaderboards."""
         for mode in self.leaderboards:
-            print(mode, self.leaderboards[mode])
-            # self.leaderboards[mode].pop(name, None)
-        print("still here")
+            self.leaderboards[mode].pop(name, None)
 
     def all_bans(self):
         return "```\n - " + '\n - '.join([str(p) for p in self.bans.values()]) + "```"
-
-def f():
-    print("coucou")

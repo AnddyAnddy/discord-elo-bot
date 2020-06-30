@@ -1,4 +1,5 @@
 """Simulation of queue."""
+from threading import Timer
 from random import shuffle
 
 
@@ -17,6 +18,7 @@ class Queue():
             raise ValueError("The mode is not correct: [0, 1, 2, 3] = \
 [random teams, balanced random, highest rank cap, rank cap]")
         self.players = []
+        self.timeout = {}
         self.red_team = []
         self.blue_team = []
         self.max_queue = max_queue
@@ -37,7 +39,10 @@ class Queue():
         if self.is_queue_full() or self.has_queue_been_full:
             return "Queue is full..."
         self.players.append(player)
-        res = f'{player.name} has been added to the queue'
+        self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
+        self.timeout[player].start()
+        res = f'{player.name} has been added to the queue, you will be kicked \
+in 10 mins if the queue has not been full.'
         if self.is_queue_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game)
@@ -53,8 +58,10 @@ class Queue():
     def on_queue_full(self, game):
         """Set a game."""
         self.has_queue_been_full = True
+        for t in self.timeout.values():
+            t.cancel()
+        self.timeout = {}
         self.pick_fonction()
-        # game.add_game_to_be_played(self)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
                                                     self.red_team,
                                                     self.blue_team)
