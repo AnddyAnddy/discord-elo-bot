@@ -363,7 +363,6 @@ async def info(ctx, mode, name=""):
     mode = int(mode)
     name = ctx.author.id if not name else name[3: -1]
     if name in game.leaderboards[mode]:
-        await ctx.send("coucou")
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(game.leaderboards[mode][name])))
     else:
