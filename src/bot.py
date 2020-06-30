@@ -74,6 +74,7 @@ def check_if_premium(before, after):
 
 @BOT.event
 async def on_member_update(before, after):
+    pass
     # if check_if_premium(before, after):
     #     channel = discord.utils.get(after.guild.channels, name="premium")
     #     await channel.send(f"You got your {nb_games} double xp ! \
