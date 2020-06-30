@@ -35,7 +35,8 @@ class Game():
         self.elo.update(queue, winner)
         self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
         self.undecided_games[mode].pop(queue.game_id, None)
-        return "The game has been submitted, thanks !"
+        return f"The game has been submitted, thanks !\n\
+{'Red' if winner == 1 else 'Blue'} won the game."
 
     def undo(self, mode, id):
         """Undo a game."""

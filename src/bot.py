@@ -10,6 +10,7 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from dotenv import load_dotenv
 from player import Player
 from game import Game
+from queue_elo import Queue
 from decorators import is_arg_in_modes
 from decorators import check_category
 from decorators import check_channel
@@ -328,7 +329,21 @@ async def queue(ctx):
     """
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
-    await ctx.send(embed=Embed(color=0x00FF00, description=game.queues[int(mode)]))
+    await ctx.send(embed=Embed(color=0x00FF00, description=str(game.queues[int(mode)])))
+
+
+@BOT.command(aliases=['cq', 'c_queue'])
+@has_permissions(manage_roles=True)
+@check_category('Modes')
+async def clear_queue(ctx):
+    """Clear the current queue."""
+    game = GAMES[ctx.guild.id]
+    mode = int(ctx.channel.name[0])
+    last_id = game.queues[mode].game_id
+    game.queues[mode] = Queue(2 * mode, game.queues[mode].mode, last_id)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The queue is now empty"))
+
 
 
 @BOT.command(aliases=['stats'])
@@ -385,6 +400,7 @@ async def history(ctx, mode, name=""):
 @has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
 @check_channel('submit')
+@is_arg_in_modes(GAMES)
 async def submit(ctx, mode, id_game, winner):
     """Expect a format !s [mode] [id_game] [winner].
 
@@ -393,8 +409,10 @@ async def submit(ctx, mode, id_game, winner):
     This will update the rankings.
     """
     game = GAMES[ctx.guild.id]
+    if not id_game.isdigit() or not winner.isdigit():
+        raise commands.errors.MissingRequiredArgument
     mode, id_game, winner = int(mode), int(id_game), int(winner)
-    await ctx.send(embed=Embed(color=0x00FF00,
+    await ctx.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
         description=game.add_archive(mode, id_game, winner)))
 
 
