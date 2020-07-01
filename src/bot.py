@@ -319,7 +319,8 @@ async def leaderboard(ctx, mode, stat_key="elo"):
     By default, if the stats key is missing, the bot will show the elo lb.
     """
     game = GAMES[ctx.guild.id]
-    await ctx.send(embed=Embed(color=0x00FF00,
+    await ctx.send(embed=Embed(color=0x00AAFF,
+        title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
         description=game.leaderboard(int(mode), stat_key)))
 
 
