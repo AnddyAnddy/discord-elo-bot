@@ -35,13 +35,17 @@ class Elo():
         self.update_team_averages(game_stats)
         self.update_chances_to_win()
 
-    def update_elo(self, game_stats, winners):
-        """Update the elo of every players."""
-        self.update_rating(winners, not winners)
+    def update_elo(self, queue, winners):
+        """Update the elo of every players.
+
+        :param: queue must be a queue in undecided games
+        :param: winners must be the id of the winning team [1, 2]
+        """
         winners -= 1
-        for i in range(len(game_stats.red_team)):
-            game_stats.red_team[i].update(self.red_rating, not winners)
-            game_stats.blue_team[i].update(self.blue_rating, winners)
+        self.update_rating(winners, not winners)
+        for i in range(len(queue.red_team)):
+            queue.red_team[i].update(self.red_rating, not winners)
+            queue.blue_team[i].update(self.blue_rating, winners)
 
     def undo_elo(self, queue, winners, rating):
         """Reversed operation of update_elo."""

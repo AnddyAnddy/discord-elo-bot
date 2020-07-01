@@ -185,18 +185,22 @@ async def join(ctx):
     mode = int(ctx.channel.name[0])
     name = ctx.author.id
     if name in game.bans:
-        await ctx.send(embed=Embed(color=0xFF0000, description=game.bans[name]))
+        await ctx.send(embed=Embed(color=0x000000, description=game.bans[name]))
         return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
+        res = game.queues[mode].add_player(player, game)
         await ctx.send(embed=Embed(color=0x00FF00,
-            description=game.queues[mode].add_player(player, game)))
+            description=res))
         if game.queues[mode].is_finished():
             await ctx.send(embed=Embed(color=0x00FF00,
                 description=game.add_game_to_be_played(game.queues[mode])))
+            await discord.utils.get(ctx.guild.channels,
+                name="game_announcement").send(embed=Embed(color=0x00FF00,
+                    description=res))
 
     else:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="Make sure you register before joining the queue."))
 
 
@@ -219,7 +223,7 @@ async def leave(ctx):
                        remove_player(game.leaderboards[mode]
                                      [name])))
     else:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="You didn't even register lol."))
 
 
@@ -240,7 +244,7 @@ async def register(ctx, mode):
     mode = int(mode)
     name = ctx.author.id
     if name in game.leaderboards[mode]:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"There's already a played called <@{name}>."))
         return
     game.leaderboards[mode][name] = Player(ctx.author.name)
@@ -341,7 +345,8 @@ async def clear_queue(ctx):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     last_id = game.queues[mode].game_id
-    game.queues[mode] = Queue(2 * mode, game.queues[mode].mode, last_id)
+    if not game.queues[mode].has_queue_been_full:
+        game.queues[mode] = Queue(2 * mode, game.queues[mode].mode, last_id)
     await ctx.send(embed=Embed(color=0x00FF00,
         description="The queue is now empty"))
 
@@ -367,7 +372,7 @@ async def info(ctx, mode, name=""):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(game.leaderboards[mode][name])))
     else:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"No player called <@{name}>"))
 
 
@@ -392,7 +397,7 @@ async def history(ctx, mode, name=""):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=game.get_history(mode, game.leaderboards[mode][name])))
     else:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"No player called <@{name}>"))
 
 
@@ -449,7 +454,7 @@ async def cancel(ctx, mode, id_game):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=f"The game {id_game} has been canceled"))
     else:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"Couldn't find the game {id_game} in the current games."))
 
 
@@ -461,18 +466,18 @@ async def pick(ctx, *args):
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
     if queue.mode < 2:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="The mode is not a captaining mode."))
         return
 
     team = queue.get_captain_team(ctx.author.name)
     if team == 0:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="You are not captain."))
         return
     player = discord.utils.get(queue.players, name=args[0])
     if player is None:
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"Couldn't find the player {player.name}."))
         return
     queue.set_player_team(player, team)
@@ -533,7 +538,7 @@ async def add_mode(ctx, mode):
                 description="The game mode has been added."))
             return
 
-    await ctx.send(embed=Embed(color=0xFF0000,
+    await ctx.send(embed=Embed(color=0x000000,
         description="Couldn't add the game mode."))
 
 
@@ -601,18 +606,18 @@ async def all_bans(ctx):
 @BOT.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CommandNotFound):
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="The command doesn't exist, check !help !"))
     elif isinstance(error, commands.errors.CheckFailure):
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="You used this command with either a wrong channel or \
 a wrong argument. Or maybe you don't have the permission..."))
     elif isinstance(error, MissingPermissions):
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description="You must have manage_roles permission to run that."))
 
     elif isinstance(error, commands.errors.MissingRequiredArgument):
-        await ctx.send(embed=Embed(color=0xFF0000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=str(error)))
     else:
         raise error
