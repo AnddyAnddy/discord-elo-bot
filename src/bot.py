@@ -27,8 +27,8 @@ def add_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
     for mode in game.leaderboards:
         for player in game.leaderboards[mode]:
-            if not hasattr(player, attr_name):
-                setattr(player, attr_name, value)
+            if not hasattr(game.leaderboards[mode][player], attr_name):
+                setattr(game.leaderboards[mode][player], attr_name, value)
 
 
 def load_file_to_game(guild_id):
