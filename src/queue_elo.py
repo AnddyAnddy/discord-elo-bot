@@ -41,7 +41,7 @@ class Queue():
         self.players.append(player)
         # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
         # self.timeout[player].start()
-        res = f'{player.name} has been added to the queue.\n\
+        res = f'{player.name} has been added to the queue.\
 **{len(self.players)}/{int(self.max_queue)}**'
         if self.is_queue_full():
             res += "\nQueue is full, let's start the next session.\n"
