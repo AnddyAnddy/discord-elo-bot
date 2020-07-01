@@ -53,7 +53,7 @@ class Game():
         last_id = self.queues[mode].game_id
         self.undecided_games[mode][last_id] = queue
         self.queues[mode] = Queue(2 * mode, queue.mode, last_id)
-        return "The teams has been made, a new queue is starting!"
+        return "The teams have been made, a new queue is starting!"
 
     def cancel(self, mode, id):
         """Cancel the game and return true if it was correctly cancelded."""
