@@ -475,7 +475,7 @@ async def pick(ctx, name):
             description="The mode is not a captaining mode."))
         return
 
-    team = queue.get_captain_team_and_len(ctx.author.id)
+    team = queue.get_captain_team(ctx.author.id)
     if team == 0:
         await ctx.send(embed=Embed(color=0x000000,
             description="You are not captain."))
