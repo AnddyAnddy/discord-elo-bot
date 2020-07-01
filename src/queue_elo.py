@@ -118,16 +118,16 @@ class Queue():
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
-    return f'```\n{team_name}\n - ' +\
-        '\n - '.join([f"{p.name:<20}: {p.elo}" for p in team]) +\
-        f'```\n**{len(team)}/{int(max_queue)}**'
+    return f'\n{team_name}\n - ' +\
+        '\n - '.join([f"<@{p.name}>: {p.elo:>5}" for p in team]) +\
+        f'\n**{len(team)}/{int(max_queue)}**'
 
 
 def message_on_queue_full(players, red_team, blue_team, max_queue):
     """Start the captain menu."""
     string = 'Two captains have been randomly picked !\n'
-    string += f'{red_team[0].name} is the red cap\n'
-    string += f'{blue_team[0].name} is the blue cap\n'
+    string += f'<@{red_team[0].name}> is the red cap\n'
+    string += f'<@{blue_team[0].name}> is the blue cap\n'
 
     string += display_team(red_team, "Red team", max_queue / 2)
     string += display_team(blue_team, "Blue team", max_queue / 2)
