@@ -488,10 +488,12 @@ async def pick(ctx, name):
             description="Not your turn to pick."))
         return
     player = discord.utils.get(queue.players, id_user=name)
-    if player is None or queue.set_player_team(team, player) == False:
+
+    if player is None:
         await ctx.send(embed=Embed(color=0x000000,
             description=f"Couldn't find the player <@{name}>."))
         return
+    queue.set_player_team(team, player)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"Good pick!"))
     await ctx.send(embed=Embed(color=0x00FF00,
