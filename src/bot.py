@@ -498,7 +498,7 @@ async def pick(ctx, name):
 
     team_length = (0, len(queue.red_team),
         len(queue.blue_team))
-    if team_length[team] > team_length[1 if team == 2 else 2] or team == 2:
+    if team_length[team] > team_length[1 if team == 2 else 2] and team == 1:
         await ctx.send(embed=Embed(color=0x000000,
             description="Not your turn to pick."))
         return
