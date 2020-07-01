@@ -118,9 +118,9 @@ class Queue():
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
-    return f'```\n{team_name}\n - ' +\
+    return f'\n{team_name}\n - ' +\
         '\n - '.join([f"<@{p.id_user}>: {p.elo:>5}" for p in team]) +\
-        f'```\n**[{len(team)}/{int(max_queue)}]**'
+        f'\n**[{len(team)}/{int(max_queue)}]**'
 
 
 def message_on_queue_full(players, red_team, blue_team, max_queue):
