@@ -116,6 +116,7 @@ class Queue():
         """Move the player from the players to the team."""
         team = self.red_team if team_id == 1 else self.blue_team
         if player not in team:
+            print(False)
             return False
         team.append(self.players.pop(self.players.index(player)))
         return True
