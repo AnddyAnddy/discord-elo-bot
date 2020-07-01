@@ -499,7 +499,7 @@ async def pick(ctx, name):
     await ctx.send(embed=Embed(color=0x00FF00,
         description=str(queue)))
     if len(queue.players) == 1:
-        queue.set_player_team(2, queue.blue_team[0])
+        queue.set_player_team(2, queue.players[0])
     if queue.is_finished():
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
