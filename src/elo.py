@@ -51,8 +51,8 @@ class Elo():
         """Reversed operation of update_elo."""
         winners -= 1
         for i in range(len(queue.red_team)):
-            queue.red_team[i].update(rating, winners, -1)
-            queue.blue_team[i].update(-1 * rating, not winners, -1)
+            queue.red_team[i].update(rating, not winners, -1)
+            queue.blue_team[i].update(-1 * rating, winners, -1)
 
     def update(self, queue, winners):
         """Update the stats after a game for every player."""
