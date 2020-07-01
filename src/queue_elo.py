@@ -132,7 +132,7 @@ def message_on_queue_full(players, red_team, blue_team, max_queue):
 
     string += display_team(red_team, "Red team", max_queue / 2)
     string += display_team(blue_team, "Blue team", max_queue / 2)
-    string += display_team(players, "Remaining players")
+    string += display_team(players, "Remaining players", max_queue / 2)
     return string
 
 
