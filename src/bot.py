@@ -463,7 +463,6 @@ async def cancel(ctx, mode, id_game):
 
 
 @BOT.command(aliases=['p'])
-@has_permissions(manage_roles=True)
 @check_category('Modes')
 async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
@@ -476,10 +475,17 @@ async def pick(ctx, name):
             description="The mode is not a captaining mode."))
         return
 
-    team = queue.get_captain_team(ctx.author.id)
+    team = queue.get_captain_team_and_len(ctx.author.id)
     if team == 0:
         await ctx.send(embed=Embed(color=0x000000,
             description="You are not captain."))
+        return
+
+    team_length = (0, len(queue[mode].red_team),
+        len(queue[mode].blue_team))
+    if team_length[team] > team_length[1 if team == 2 else 2] or team == 2:
+        await ctx.send(embed=Embed(color=0x000000,
+            description="Not your turn to pick."))
         return
     player = discord.utils.get(queue.players, id_user=name)
     if player is None:
@@ -491,6 +497,8 @@ async def pick(ctx, name):
         description=f"Good pick!"))
     await ctx.send(embed=Embed(color=0x00FF00,
         description=str(queue)))
+    if len(queue.players) == 1:
+        queue.set_player_team(queue.blue_team[0], 2)
     if queue.is_finished():
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
@@ -617,7 +625,7 @@ async def all_bans(ctx):
 
 @BOT.command()
 @check_channel('init')
-async def pickmode(ctx, mode, new_mode):
+async def setpickmode(ctx, mode, new_mode):
     """Set the pickmode to the new_mode set
 
     :param: new_mode must be a number [0, 1, 2, 3]:
