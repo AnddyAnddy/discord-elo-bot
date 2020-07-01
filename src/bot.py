@@ -375,7 +375,7 @@ async def info(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.id if not name else name[3: -1]
+    name = str(ctx.author.id) if not name else name[3: -1]
     if not name.isdigit():
         await ctx.send("You better ping the player !")
         return
@@ -403,7 +403,7 @@ async def history(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.id if not name else name[3: -1]
+    name = str(ctx.author.id) if not name else name[3: -1]
     if not name.isdigit():
         await ctx.send("You better ping the player !")
         return
