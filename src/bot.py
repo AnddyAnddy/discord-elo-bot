@@ -48,6 +48,7 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            add_attribute(GAMES[guild.id], "id_user", 0)
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -189,6 +190,7 @@ async def join(ctx):
         return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
+        player.id_user = ctx.author.id
         res = game.queues[mode].add_player(player, game)
         await ctx.send(embed=Embed(color=0x00FF00,
             description=res))
@@ -248,7 +250,7 @@ async def register(ctx, mode):
         await ctx.send(embed=Embed(color=0x000000,
             description=f"There's already a played called <@{name}>."))
         return
-    game.leaderboards[mode][name] = Player(ctx.author.name)
+    game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"<@{name}> has been registered."))
 
@@ -260,7 +262,7 @@ async def register_all(ctx):
     game = GAMES[ctx.guild.id]
     name = ctx.author.id
     for mode in game.leaderboards:
-        game.leaderboards[mode][name] = Player(ctx.author.name)
+        game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"<@{name}> has been registered for every mode."))
 

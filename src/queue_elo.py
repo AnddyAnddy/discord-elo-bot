@@ -42,7 +42,7 @@ class Queue():
         # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
         # self.timeout[player].start()
         res = f'{player.name} has been added to the queue.  \
-**{len(self.players)}/{int(self.max_queue)}**'
+**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_queue_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game)
@@ -119,15 +119,15 @@ class Queue():
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
     return f'```\n{team_name}\n - ' +\
-        '\n - '.join([f"<@{p.name}>: {p.elo:>5}" for p in team]) +\
-        f'```\n**{len(team)}/{int(max_queue)}**'
+        '\n - '.join([f"<@{p.id_user}>: {p.elo:>5}" for p in team]) +\
+        f'```\n**[{len(team)}/{int(max_queue)}]**'
 
 
 def message_on_queue_full(players, red_team, blue_team, max_queue):
     """Start the captain menu."""
     string = 'Two captains have been randomly picked !\n'
-    string += f'{red_team[0].name} is the red cap\n'
-    string += f'{blue_team[0].name} is the blue cap\n'
+    string += f'<@{red_team[0].id_user}> is the red cap\n'
+    string += f'<@{blue_team[0].id_user}> is the blue cap\n'
 
     string += display_team(red_team, "Red team", max_queue / 2)
     string += display_team(blue_team, "Blue team", max_queue / 2)

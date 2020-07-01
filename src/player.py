@@ -10,10 +10,11 @@ class Player():
              "current_win_streak", "current_lose_streak", "double_xp"]
     newid = itertools.count()
 
-    def __init__(self, name):
+    def __init__(self, name, id_user):
         """Init."""
         self.name = name
         self.id_player = next(Player.newid)
+        self.id_user = id_user
         self.wins = 0
         self.losses = 0
         self.wlr = 0
