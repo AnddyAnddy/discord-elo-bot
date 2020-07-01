@@ -630,7 +630,7 @@ async def pickmode(ctx, mode, new_mode):
         await ctx.send("Wrong new_mode given, read help pickmode")
         return
     game.queues[mode].mode = new_mode
-    game.queues[mode].pick_function = game.queues.modes[new_mode]
+    game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
 
 @BOT.event
 async def on_command_error(ctx, error):
