@@ -298,7 +298,11 @@ async def force_quit(ctx, name):
     This can be used only in Bye channel.
     Can't be undone."""
     game = GAMES[ctx.guild.id]
-    name = int(name[3: -1])
+    name = name[3: -1]
+    if not name.isdigit():
+        await ctx.send("You better ping the player !")
+        return
+    name = int(name)
     game.erase_player_from_queues(name)
     game.erase_player_from_leaderboards(name)
 
@@ -371,7 +375,11 @@ async def info(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.id if not name else int(name[3: -1])
+    name = ctx.author.id if not name else name[3: -1]
+    if not name.isdigit():
+        await ctx.send("You better ping the player !")
+        return
+    name = int(name)
     if name in game.leaderboards[mode]:
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(game.leaderboards[mode][name])))
@@ -395,7 +403,11 @@ async def history(ctx, mode, name=""):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
-    name = ctx.author.name if not name else int(name[3: -1])
+    name = ctx.author.id if not name else name[3: -1]
+        if not name.isdigit():
+            await ctx.send("You better ping the player !")
+            return
+        name = int(name)
 
     if name in game.leaderboards[mode]:
         await ctx.send(embed=Embed(color=0x00FF00,
@@ -468,8 +480,11 @@ async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
-    name = int(name[3: -1])
-
+    name = ctx.author.id if not name else name[3: -1]
+    if not name.isdigit():
+        await ctx.send("You better ping the player !")
+        return
+    name = int(name)
     if queue.mode < 2:
         await ctx.send(embed=Embed(color=0x000000,
             description="The mode is not a captaining mode."))
@@ -501,6 +516,8 @@ async def pick(ctx, name):
     if len(queue.players) == 1:
         queue.set_player_team(2, queue.players[0])
     if queue.is_finished():
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=str(queue)))
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
                 description=game.add_game_to_be_played(game.queues[mode])))
@@ -593,9 +610,14 @@ async def ban(ctx, name, time, unity, reason=""):
     unity must be in s, m, h, d (secs, mins, hours, days).
     reason must be into " "
     """
+    name = name[3: -1]
+    if not name.isdigit():
+        await ctx.send("You better ping the player !")
+        return
+    name = int(name)
     formats = { "s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24 }
     total_sec = int(time) * formats[unity]
-    GAMES[ctx.guild.id].ban_player(int(name[3: -1]), total_sec, reason)
+    GAMES[ctx.guild.id].ban_player(name, total_sec, reason)
     await ctx.send(embed=Embed(color=0x00FF00,
         description="The player has been banned ! Check !bans"))
 
@@ -610,7 +632,12 @@ async def unban(ctx, name):
     unity must be in s, m, h, d (secs, mins, hours, days).
     reason must be into " "
     """
-    GAMES[ctx.guild.id].unban_player(int(name[3: -1]))
+    name = name[3: -1]
+    if not name.isdigit():
+        await ctx.send("You better ping the player !")
+        return
+    name = int(name)
+    GAMES[ctx.guild.id].unban_player(name)
     await ctx.send(embed=Embed(color=0x00FF00,
         description="The player has been unbanned ! Check !bans"))
 
