@@ -115,7 +115,10 @@ class Queue():
     def set_player_team(self, team_id, player):
         """Move the player from the players to the team."""
         team = self.red_team if team_id == 1 else self.blue_team
+        print(player, self.players)
+        print(self.players.index(player))
         team.append(self.players.pop(self.players.index(player)))
+        print("ici")
 
     def __str__(self):
         """ToString."""
