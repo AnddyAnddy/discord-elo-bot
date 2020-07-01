@@ -629,8 +629,10 @@ async def pickmode(ctx, mode, new_mode):
     if new_mode not in [0, 1, 2, 3]:
         await ctx.send("Wrong new_mode given, read help pickmode")
         return
+    modes = ["random teams", "balanced random", "best cap", "random cap"]
     game.queues[mode].mode = new_mode
     game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
+    await ctx.send(f"Pickmode changed to {modes[new_mode]}!")
 
 @BOT.event
 async def on_command_error(ctx, error):
