@@ -65,7 +65,8 @@ in 10 mins if the queue has not been full.\n\
         self.pick_fonction()
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
                                                     self.red_team,
-                                                    self.blue_team)
+                                                    self.blue_team,
+                                                    self.max_queue)
 
     def is_finished(self):
         """Return true if the teams are full based on the max_queue."""
