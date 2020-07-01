@@ -195,9 +195,10 @@ async def join(ctx):
         if game.queues[mode].is_finished():
             await ctx.send(embed=Embed(color=0x00FF00,
                 description=game.add_game_to_be_played(game.queues[mode])))
-            await discord.utils.get(ctx.guild.channels,
-                name="game_announcement").send(embed=Embed(color=0x00FF00,
-                    description=res))
+            if res != "Queue is full...":
+                await discord.utils.get(ctx.guild.channels,
+                    name="game_announcement").send(embed=Embed(color=0x00FF00,
+                        description=res))
 
     else:
         await ctx.send(embed=Embed(color=0x000000,
