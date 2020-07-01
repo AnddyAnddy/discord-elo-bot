@@ -43,9 +43,10 @@ class Elo():
         """
         winners -= 1
         self.update_rating(winners, not winners)
+        print(self.red_rating, self.blue_rating, winners, not winners)
         for i in range(len(queue.red_team)):
-            queue.red_team[i].update(self.red_rating, winners)
-            queue.blue_team[i].update(self.blue_rating, not winners)
+            queue.red_team[i].update(self.red_rating, not winners)
+            queue.blue_team[i].update(self.blue_rating, winners)
 
     def undo_elo(self, queue, winners, rating):
         """Reversed operation of update_elo."""
