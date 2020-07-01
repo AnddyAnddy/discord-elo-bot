@@ -488,17 +488,16 @@ async def pick(ctx, name):
             description="Not your turn to pick."))
         return
     player = discord.utils.get(queue.players, id_user=name)
-    if player is None:
+    if player is None or not queue.set_player_team(team, player):
         await ctx.send(embed=Embed(color=0x000000,
             description=f"Couldn't find the player {player.name}."))
         return
-    queue.set_player_team(player, team)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"Good pick!"))
     await ctx.send(embed=Embed(color=0x00FF00,
         description=str(queue)))
     if len(queue.players) == 1:
-        queue.set_player_team(queue.blue_team[0], 2)
+        queue.set_player_team(2, queue.blue_team[0])
     if queue.is_finished():
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
