@@ -465,21 +465,23 @@ async def cancel(ctx, mode, id_game):
 @BOT.command(aliases=['p'])
 @has_permissions(manage_roles=True)
 @check_category('Modes')
-async def pick(ctx, *args):
+async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
+    name = int(name[3: -1])
+
     if queue.mode < 2:
         await ctx.send(embed=Embed(color=0x000000,
             description="The mode is not a captaining mode."))
         return
 
-    team = queue.get_captain_team(ctx.author.name)
+    team = queue.get_captain_team(ctx.author.id)
     if team == 0:
         await ctx.send(embed=Embed(color=0x000000,
             description="You are not captain."))
         return
-    player = discord.utils.get(queue.players, name=args[0])
+    player = discord.utils.get(queue.players, id_user=name)
     if player is None:
         await ctx.send(embed=Embed(color=0x000000,
             description=f"Couldn't find the player {player.name}."))
@@ -487,6 +489,12 @@ async def pick(ctx, *args):
     queue.set_player_team(player, team)
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"Good pick!"))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=str(queue)))
+    if queue.is_finished():
+        await discord.utils.get(ctx.guild.channels,
+            name="game_announcement").send(embed=Embed(color=0x00FF00,
+                description=game.add_game_to_be_played(game.queues[mode])))
 
 
 @BOT.command(aliases=['u'])
@@ -606,6 +614,22 @@ async def all_bans(ctx):
     await ctx.send(embed=Embed(color=0x00FF00,
         description=GAMES[ctx.guild.id].all_bans()))
 
+
+@BOT.command()
+@check_channel('init')
+async def pickmode(ctx, mode, new_mode):
+    """Set the pickmode to the new_mode set
+
+    :param: new_mode must be a number [0, 1, 2, 3]:
+        [random teams, balanced random, best cap, random cap]
+    """
+    if new_mode not in [0, 1, 2, 3]:
+        await ctx.send("Wrong new_mode given, read help pickmode")
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    new_mode = int(new_mode)
+    game.queues[mode].mode = new_mode
+    game.queues[mode].pick_function = game.queues.modes[new_mode]
 
 @BOT.event
 async def on_command_error(ctx, error):

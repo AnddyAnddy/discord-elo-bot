@@ -23,7 +23,7 @@ class Queue():
         self.blue_team = []
         self.max_queue = max_queue
         self.has_queue_been_full = False
-        self.modes = [self.random_team, self.balanced_random]
+        self.modes = [self.random_team, self.balanced_random, self.random_cap, self.best_cap]
         self.pick_fonction = self.modes[mode]
         self.mode = mode
         self.game_id = last_id + 1
@@ -91,12 +91,24 @@ class Queue():
         self.players.sort(reverse=True, key=lambda p: p.elo)
         self.players_to_teams()
 
+    def best_cap(self):
+        """Get the 2 best players and make them captain."""
+        self.players.sort(key=lambda p: p.elo)
+        self.red_team.append(self.players.pop())
+        self.blue_team.append(self.players.pop())
 
-    def get_captain_team(self, name):
+    def random_cap(self):
+        """Get 2 random players and make them captain."""
+        shuffle(self.players)
+        self.red_team.append(self.players.pop())
+        self.blue_team.append(self.players.pop())
+
+
+    def get_captain_team(self, id):
         """Return 1 if red, 2 if blue, 0 if none."""
         red_cap, blue_cap = self.red_team[0], self.blue_team[0]
         for i, p in enumerate([red_cap, blue_cap], start=1):
-            if p.name == ctx.author.name:
+            if p.id_user == id:
                 return i
         return 0
 
