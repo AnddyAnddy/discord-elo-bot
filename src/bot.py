@@ -623,11 +623,12 @@ async def pickmode(ctx, mode, new_mode):
     :param: new_mode must be a number [0, 1, 2, 3]:
         [random teams, balanced random, best cap, random cap]
     """
-    if new_mode not in [0, 1, 2, 3]:
-        await ctx.send("Wrong new_mode given, read help pickmode")
     game = GAMES[ctx.guild.id]
     mode = int(mode)
     new_mode = int(new_mode)
+    if new_mode not in [0, 1, 2, 3]:
+        await ctx.send("Wrong new_mode given, read help pickmode")
+        return
     game.queues[mode].mode = new_mode
     game.queues[mode].pick_function = game.queues.modes[new_mode]
 
