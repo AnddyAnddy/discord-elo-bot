@@ -101,7 +101,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
 
         res = '```\n'
         if key not in Player.STATS:
-            res += "Argument not found so imma show you the elo lb !\n - "
+            res += "Argument not found so imma show you the elo lb !\n"
             key="elo"
         if key == "wlr":
             res += "Only showing > 20 games played for wlr leaderboard\n"
