@@ -106,7 +106,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             res += "Only showing > 20 games played for wlr leaderboard\n"
 
         i = 1
-        lst = sorted(self.leaderboards[mode].values(), reverse=True, key=operator.attrgetter(key))[:20]
+        lst = sorted(self.leaderboards[mode].values(), reverse=True, key=operator.attrgetter(key))
         for v in lst:
             if v.nb_matches > 20 and key == "wlr":
                 res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}\n'
@@ -114,7 +114,8 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             elif key != "wlr":
                 res += f'{i}) {v.name:<15}: {getattr(v, key)}\n'
                 i += 1
-
+            if i == 20:
+                break
 
         res += '```'
         return res
