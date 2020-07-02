@@ -52,7 +52,7 @@ class Queue():
         """Remove a player from the queue."""
         if player in self.players and not self.has_queue_been_full:
             self.players.remove(player)
-            return f'<@{player.id}> was removed from the queue\
+            return f'<@{player.id_user}> was removed from the queue\
                 **[{len(self.players)} / {int(self.max_queue)}]**'
         return f"<@{player.id}> can't be removed from the queue"
 
