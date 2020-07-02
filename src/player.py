@@ -41,8 +41,8 @@ class Player():
         elo_boost = 2 * elo_boost if self.double_xp and winner else elo_boost
         self.elo += (elo_boost * undo)
         self.wins += winner * undo
-        self.current_win_streak += winner * undo if winner else 0
-        self.current_lose_streak += (not winner) * undo if not winner else 0
+        self.current_win_streak = self.current_win_streak + 1 if winner else 0
+        self.current_lose_streak = self.current_lose_streak + 1 if not winner else 0
         self.losses += (not winner) * undo
         self.nb_matches += 1 * undo
         self.double_xp -= (1 * undo) * (self.double_xp > 0)

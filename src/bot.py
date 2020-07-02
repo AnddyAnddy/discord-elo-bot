@@ -31,6 +31,13 @@ def add_attribute(game, attr_name, value):
                 setattr(game.leaderboards[mode][player], attr_name, value)
 
 
+def reset_attribute(game, attr_name, value):
+    """Add an attribute to every player when I manually update."""
+    for mode in game.leaderboards:
+        for player in game.leaderboards[mode]:
+            setattr(game.leaderboards[mode][player], attr_name, value)
+
+
 def load_file_to_game(guild_id):
     """Load the file from ./data/guild_id to Game if exists, return True."""
     try:
@@ -49,6 +56,10 @@ async def on_ready():
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             add_attribute(GAMES[guild.id], "id_user", 0)
+            reset_attribute(GAMES[guild.id], "most_wins_in_a_row", 0)
+            reset_attribute(GAMES[guild.id], "most_losses_in_a_row", 0)
+            reset_attribute(GAMES[guild.id], "current_win_streak", 0)
+            reset_attribute(GAMES[guild.id], "current_lose_streak", 0)
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
