@@ -102,7 +102,8 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         res = '```\n'
         if key not in Player.STATS:
             res += "Argument not found so imma show you the elo lb !\n - "
-        res += '\n'.join([f'{i}) {v.name:<20}: {getattr(v, key)}'
+
+        res += '\n'.join([f'{i}) {v.name:<15}: {getattr(v, key):.2f}'
                              for i, v in enumerate(
                                  sorted(self.leaderboards[mode].values(),
                                         reverse=True,
