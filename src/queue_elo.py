@@ -54,7 +54,7 @@ class Queue():
             self.players.remove(player)
             return f'<@{player.id_user}> was removed from the queue\
                 **[{len(self.players)} / {int(self.max_queue)}]**'
-        return f"<@{player.id}> can't be removed from the queue"
+        return f"<@{player.id_user}> can't be removed from the queue"
 
     def on_queue_full(self, game):
         """Set a game."""
