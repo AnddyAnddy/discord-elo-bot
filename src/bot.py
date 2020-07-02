@@ -738,9 +738,9 @@ async def fav_positions(ctx, mode, *args):
     if len(args) > len(game.available_positions) or\
         any(elem for elem in args if elem not in game.available_positions):
 
-        await ctx.send(await ctx.send(embed=Embed(color=0x000000,
+        await ctx.send(embed=Embed(color=0x000000,
             description=f"Your positions couldn't be saved, \
-all of your args must be in {game.available_positions}")))
+all of your args must be in {game.available_positions}"))
         return
 
     setattr(game.leaderboards[mode][ctx.author.id], "fav_pos", list(args))
