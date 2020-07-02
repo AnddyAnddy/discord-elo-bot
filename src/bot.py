@@ -480,10 +480,14 @@ async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
-    name, is_index = (int(name), True) if name.isdigit() else (int(name[3: -1]), False)
-    if not is_index and not name.isdigit():
-        await ctx.send("You better ping the player or use the index!")
-        return
+    name, is_index = (int(name), True) if name.isdigit() else (name[3: -1], False)
+
+    if not is_index:
+        if not name.isdigit():
+            await ctx.send("You better ping the player or use the index!")
+            return
+        else:
+            name = int(name)
     if queue.mode < 2:
         await ctx.send(embed=Embed(color=0x000000,
             description="The mode is not a captaining mode."))
