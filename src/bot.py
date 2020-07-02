@@ -56,6 +56,7 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            add_attribute(GAMES[guild.id], "fav_pos", [])
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -705,6 +706,50 @@ async def setpickmode(ctx, mode, new_mode):
     game.queues[mode].mode = new_mode
     game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
     await ctx.send(f"Pickmode changed to {modes[new_mode]}!")
+
+
+@BOT.command()
+@check_channel('init')
+@is_arg_in_modes(GAMES)
+async def setfavpos(ctx, mode, *args):
+    """The arguments will now be in the list that players can pick as position.
+
+    example:
+    !setfavpos gk dm am st
+    will allow the players to use
+    !pos st gk am dm
+    """
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    setattr(game, "available_positions", list(args))
+    await ctx.send(f"The available_positions are now {game.available_positions}")
+
+@BOT.command(aliases=['pos'])
+@check_channel('register')
+@is_arg_in_modes(GAMES)
+async def fav_positions(ctx, mode, *args):
+    """Put the order of your positions from your prefered to the least prefered.
+
+    Example:
+    !pos 4 dm st gk am
+    Will tell the bot that my prefered position is dm, then st, then gk...
+    And it will be shown on the queue.
+    """
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    if len(args) > len(game.available_positions) or\
+        any(elem for elem in args not in elem in game.available_positions):
+
+        await ctx.send(await ctx.send(embed=Embed(color=0x000000,
+            description=f"Your positions couldn't be saved, \
+all of your args must be in {game.available_positions}")))
+        return
+
+    setattr(game.leaderboards[mode][ctx.author.id], "fav_pos", list(args))
+    await ctx.send(await ctx.send(embed=Embed(color=0x00FF00,
+        description="Your positions have been saved!"))
+
+
 
 @BOT.event
 async def on_command_error(ctx, error):

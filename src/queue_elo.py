@@ -132,7 +132,7 @@ class Queue():
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
     return f'\n{team_name}\n - ' +\
-        '\n - '.join([f"{i}) <@{p.id_user}> ({p.name}): {p.elo:>5}"
+        '\n - '.join([f"{i}) <@{p.id_user}> ({p.name}): {p.fav_pos}, {p.elo:>5}"
             for i, p in enumerate(team, 1)]) +\
         f'\n**[{len(team)}/{int(max_queue)}]**'
 

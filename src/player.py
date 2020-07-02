@@ -7,7 +7,8 @@ class Player():
 
     STATS = ["name", "elo", "wins", "losses", "nb_matches", "wlr",
              "most_wins_in_a_row", "most_losses_in_a_row",
-             "current_win_streak", "current_lose_streak", "double_xp"]
+             "current_win_streak", "current_lose_streak", "double_xp",
+             "fav_pos"]
     newid = itertools.count()
 
     def __init__(self, name, id_user):
@@ -26,6 +27,7 @@ class Player():
         self.current_lose_streak = 0
         self.double_xp = 0
         self.time_ban = 0
+        self.fav_pos = []
 
     def set_elo(self, new_value):
         """Set the new value to the elo attribute."""
