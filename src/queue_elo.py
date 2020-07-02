@@ -41,7 +41,7 @@ class Queue():
         self.players.append(player)
         # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
         # self.timeout[player].start()
-        res = f'{player.name} has been added to the queue.  \
+        res = f'<@{player.id}> has been added to the queue.  \
 **[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_queue_full():
             res += "\nQueue is full, let's start the next session.\n"
@@ -52,8 +52,9 @@ class Queue():
         """Remove a player from the queue."""
         if player in self.players and not self.has_queue_been_full:
             self.players.remove(player)
-            return f'{player.name} was removed from the queue'
-        return f"{player.name} can't be removed from the queue"
+            return f'<@{player.id}> was removed from the queue\
+                **[{len(self.players)} / {int(self.max_queue)}]**'
+        return f"<@{player.id}> can't be removed from the queue"
 
     def on_queue_full(self, game):
         """Set a game."""
@@ -131,7 +132,8 @@ class Queue():
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
     return f'\n{team_name}\n - ' +\
-        '\n - '.join([f"<@{p.id_user}>: {p.elo:>5}" for p in team]) +\
+        '\n - '.join([f"{i}) <@{p.id_user}> ({p.name}): {p.elo:>5}"
+            for i, p in enumerate(team, 1)]) +\
         f'\n**[{len(team)}/{int(max_queue)}]**'
 
 
@@ -149,7 +151,7 @@ def message_on_queue_full(players, red_team, blue_team, max_queue):
 
 
 def team_to_player_name(team):
-    return "[" + ' '.join([p.name for p in team]) + "]"
+    return "[" + ' '.join([f'<@{p.id}>' for p in team]) + "]"
 
 HISTORIQUE = []
 if __name__ == '__main__':
