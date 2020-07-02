@@ -56,6 +56,7 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            add_attribute(game, "fav_pos", [])
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
