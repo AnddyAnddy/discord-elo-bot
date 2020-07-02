@@ -102,13 +102,19 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         res = '```\n'
         if key not in Player.STATS:
             res += "Argument not found so imma show you the elo lb !\n - "
+        if key == "wlr":
+            res += "Only showing > 20 games played for wlr leaderboard"
 
-        res += '\n'.join([f'{i}) {v.name:<15}: {getattr(v, key):.2f}'
-                             for i, v in enumerate(
-                                 sorted(self.leaderboards[mode].values(),
-                                        reverse=True,
-                                        key=operator.attrgetter(key))[:20], 1)
-                                if (v.nb_matches > 20 and key == "wlr") or key != "wlr"])
+        i = 1
+        for v in sorted(self.leaderboards[mode].values(), reverse=True, key=operator.attrgetter(key))[:20]:
+            if v.nb_matches > 20 and key == "wlr":
+                res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}'
+                i += 1
+            else:
+                res += f'{i}) {v.name:<15}: {getattr(v, key)}'
+                i += 1
+
+
         res += '```'
         return res
 
