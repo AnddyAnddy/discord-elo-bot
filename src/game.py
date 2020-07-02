@@ -108,10 +108,10 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         i = 1
         for v in sorted(self.leaderboards[mode].values(), reverse=True, key=operator.attrgetter(key))[:20]:
             if v.nb_matches > 20 and key == "wlr":
-                res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}'
+                res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}\n'
                 i += 1
             else:
-                res += f'{i}) {v.name:<15}: {getattr(v, key)}'
+                res += f'{i}) {v.name:<15}: {getattr(v, key)}\n'
                 i += 1
 
 
