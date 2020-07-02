@@ -709,8 +709,7 @@ async def setpickmode(ctx, mode, new_mode):
 
 @BOT.command()
 @check_channel('init')
-@is_arg_in_modes(GAMES)
-async def setfavpos(ctx, mode, *args):
+async def setfavpos(ctx, *args):
     """The arguments will now be in the list that players can pick as position.
 
     example:
@@ -719,7 +718,6 @@ async def setfavpos(ctx, mode, *args):
     !pos st gk am dm
     """
     game = GAMES[ctx.guild.id]
-    mode = int(mode)
     setattr(game, "available_positions", list(args))
     await ctx.send(f"The available_positions are now {game.available_positions}")
 
