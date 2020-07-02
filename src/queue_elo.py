@@ -151,7 +151,7 @@ def message_on_queue_full(players, red_team, blue_team, max_queue):
 
 
 def team_to_player_name(team):
-    return "[" + ' '.join([f'<@{p.id}>' for p in team]) + "]"
+    return "[" + ' '.join([f'<@{p.id_user}>' for p in team]) + "]"
 
 HISTORIQUE = []
 if __name__ == '__main__':
