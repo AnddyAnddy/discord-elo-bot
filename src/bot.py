@@ -556,7 +556,8 @@ async def pick(ctx, name):
             description=str(queue)))
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
-                description=game.add_game_to_be_played(game.queues[mode])))
+                description=str(queue)))
+        game.add_game_to_be_played(game.queues[mode])
 
 
 @BOT.command(aliases=['u'])
