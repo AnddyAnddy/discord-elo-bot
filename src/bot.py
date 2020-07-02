@@ -477,6 +477,18 @@ async def cancel(ctx, mode, id_game):
 @BOT.command(aliases=['p'])
 @check_category('Modes')
 async def pick(ctx, name):
+    """Pick a player in the remaining player using it's @name or the index.
+
+    Let's say Anddy is the red captain, and it's his turn to pick.
+    Remaining players:
+    1) @orp
+    2) @grünersamt
+    To pick orp, Anddy can either do:
+    !p @orp
+    or
+    !p 1
+    You can only pick players one by one, the index may change after a pick.
+    """
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
