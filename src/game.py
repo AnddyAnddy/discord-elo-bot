@@ -66,11 +66,13 @@ class Game():
 
     def undecided(self, mode):
         """Return string of undecided game ids."""
+
         return "\n - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
-                for id, queue in list(self.undecided_games[mode].items())[20:]]) + \
+                for id, queue in sorted(self.undecided_games[mode].items(),
+                    reverse=True, key=lambda x: x[0])[:20]]) + \
             "\n"
 
     def archived(self, mode):
