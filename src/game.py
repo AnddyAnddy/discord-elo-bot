@@ -102,6 +102,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         res = '```\n'
         if key not in Player.STATS:
             res += "Argument not found so imma show you the elo lb !\n - "
+            key="elo"
         if key == "wlr":
             res += "Only showing > 20 games played for wlr leaderboard\n"
 
@@ -114,7 +115,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             elif key != "wlr":
                 res += f'{i}) {v.name:<15}: {getattr(v, key)}\n'
                 i += 1
-            if i == 20:
+            if i == 21:
                 break
 
         res += '```'
