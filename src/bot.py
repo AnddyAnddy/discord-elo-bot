@@ -480,7 +480,7 @@ async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
-    name, is_index = int(name), True if name.isdigit() else int(name[3: -1]), False
+    name, is_index = (int(name), True) if name.isdigit() else (int(name[3: -1]), False)
     if not name.isdigit():
         await ctx.send("You better ping the player or use the index!")
         return
