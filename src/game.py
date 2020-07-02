@@ -72,7 +72,7 @@ class Game():
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
                 for id, queue in sorted(self.undecided_games[mode].items(),
-                    reverse=True, key=lambda x: x[0])[:20]]) + \
+                    reverse=True, key=lambda x: x[0])[:10]]) + \
             "\n"
 
     def archived(self, mode):
