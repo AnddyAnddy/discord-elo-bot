@@ -747,7 +747,7 @@ all of your args must be in {game.available_positions}")))
 
     setattr(game.leaderboards[mode][ctx.author.id], "fav_pos", list(args))
     await ctx.send(await ctx.send(embed=Embed(color=0x00FF00,
-        description="Your positions have been saved!"))
+        description="Your positions have been saved!")))
 
 
 
