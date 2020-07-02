@@ -735,7 +735,7 @@ async def fav_positions(ctx, mode, *args):
     game = GAMES[ctx.guild.id]
     mode = int(mode)
     if len(args) > len(game.available_positions) or\
-        any(elem for elem in args not in elem in game.available_positions):
+        any(elem for elem in args if elem not in game.available_positions):
 
         await ctx.send(await ctx.send(embed=Embed(color=0x000000,
             description=f"Your positions couldn't be saved, \
