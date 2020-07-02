@@ -480,11 +480,10 @@ async def pick(ctx, name):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     queue = game.queues[mode]
-    name = ctx.author.id if not name else name[3: -1]
+    name, is_index = int(name), True if name.isdigit() else int(name[3: -1]), False
     if not name.isdigit():
-        await ctx.send("You better ping the player !")
+        await ctx.send("You better ping the player or use the index!")
         return
-    name = int(name)
     if queue.mode < 2:
         await ctx.send(embed=Embed(color=0x000000,
             description="The mode is not a captaining mode."))
@@ -502,13 +501,25 @@ async def pick(ctx, name):
         await ctx.send(embed=Embed(color=0x000000,
             description="Not your turn to pick."))
         return
-    player = discord.utils.get(queue.players, id_user=name)
+    if not is_index:
+        player = discord.utils.get(queue.players, id_user=name)
 
-    if player is None:
-        await ctx.send(embed=Embed(color=0x000000,
-            description=f"Couldn't find the player <@{name}>."))
-        return
-    queue.set_player_team(team, player)
+        if player is None:
+            await ctx.send(embed=Embed(color=0x000000,
+                description=f"Couldn't find the player <@{name}>."))
+            return
+        queue.set_player_team(team, player)
+    else:
+        team = queue.red_team if team == 1 else queue.blue_team
+        name -= 1
+        if name < 0 or name >= len(team):
+            await ctx.send(embed=Embed(color=0x000000,
+                description="Couldn't find the player with this index."))
+            return
+        player = queue.players.pop(name)
+        team.append(player)
+
+
     await ctx.send(embed=Embed(color=0x00FF00,
         description=f"Good pick!"))
     await ctx.send(embed=Embed(color=0x00FF00,
