@@ -31,6 +31,7 @@ def add_attribute(game, attr_name, value):
                 setattr(game.leaderboards[mode][player], attr_name, value)
 
 
+
 def reset_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
     for mode in game.leaderboards:
@@ -55,6 +56,12 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            for member in guild.members:
+                for mode in GAMES[guild.id].leaderboards:
+
+                    if member.id in GAMES[guild.id].leaderboards[mode]:
+                        GAMES[guild.id].leaderboards[mode][member.id].id_user = member.id
+
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
