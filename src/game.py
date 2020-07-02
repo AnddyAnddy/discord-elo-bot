@@ -111,7 +111,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             if v.nb_matches > 20 and key == "wlr":
                 res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}\n'
                 i += 1
-            else:
+            elif key != "wlr":
                 res += f'{i}) {v.name:<15}: {getattr(v, key)}\n'
                 i += 1
 
