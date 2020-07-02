@@ -108,7 +108,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
                                  sorted(self.leaderboards[mode].values(),
                                         reverse=True,
                                         key=operator.attrgetter(key))[:20], 1)
-                                if (v.nb_games > 20 and key == "wlr") or key != "wlr"])
+                                if (v.nb_matches > 20 and key == "wlr") or key != "wlr"])
         res += '```'
         return res
 
