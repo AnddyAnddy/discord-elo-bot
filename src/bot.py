@@ -512,7 +512,7 @@ async def pick(ctx, name):
     else:
         team = queue.red_team if team == 1 else queue.blue_team
         name -= 1
-        if name < 0 or name >= len(team):
+        if name < 0 or name > len(team):
             await ctx.send(embed=Embed(color=0x000000,
                 description="Couldn't find the player with this index."))
             return
