@@ -16,6 +16,7 @@ class Game():
         """Initialize a game for a guild."""
         self.guild_id = guild_id
         self.available_modes = set()
+        self.available_positions = []
         self.archive = {}
         self.leaderboards = {}
         self.undecided_games = {}
@@ -91,7 +92,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             "\n```"
 
 
-    def leaderboard(self, mode, key="elo"):
+    def leaderboard(self, mode, key="elo", startpage=1):
         """Return the string showing the leaderboard of the chosen mode."""
         if mode not in self.available_modes:
             return "Empty leaderboard."
@@ -104,16 +105,20 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             res += "Only showing > 20 games played for wlr leaderboard\n"
 
         i = 1
-        lst = sorted(self.leaderboards[mode].values(), reverse=True, key=operator.attrgetter(key))
-        for v in lst:
+        lst = sorted(self.leaderboards[mode].values(),
+            reverse=True,
+            key=operator.attrgetter(key))
+
+        i = 20 * (startpage - 1)
+        end = 20 * startpage
+        while i < end and i < len(lst):
+            v = lst[i]
             if v.nb_matches > 20 and key == "wlr":
-                res += f'{i}) {v.name:<15}: {getattr(v, key):.2f}\n'
+                res += f'{i + 1}) {v.name:<15}: {getattr(v, key):.2f}\n'
                 i += 1
             elif key != "wlr":
-                res += f'{i}) {v.name:<15}: {getattr(v, key)}\n'
+                res += f'{i + 1}) {v.name:<15}: {getattr(v, key)}\n'
                 i += 1
-            if i == 21:
-                break
 
         res += '```'
         return res

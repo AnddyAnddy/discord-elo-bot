@@ -23,13 +23,13 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 BOT = commands.Bot(command_prefix='!')
 GAMES = {}
 
+
 def add_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
     for mode in game.leaderboards:
         for player in game.leaderboards[mode]:
             if not hasattr(game.leaderboards[mode][player], attr_name):
                 setattr(game.leaderboards[mode][player], attr_name, value)
-
 
 
 def reset_attribute(game, attr_name, value):
@@ -49,38 +49,67 @@ def load_file_to_game(guild_id):
 
 
 @BOT.event
+async def on_reaction_add(reaction, user):
+    if user.id == BOT.user.id:
+        return
+    game = GAMES[user.guild.id]
+    message = reaction.message
+    if not message.embeds:
+        return
+    mb = message.embeds[0]
+    title = mb.title.split()
+    footer = mb.footer.text.split()
+    if title[-2] != "leaderboard":
+        return
+    start = int(footer[1])
+    end = int(footer[3])
+    mode = int(title[0])
+    stat_key = title[2]
+    allowed_emojis = {"⏮️": 1, "⬅️": start - 1, "➡️": start + 1, "⏭️": end}
+    if user.id == BOT.user.id or reaction.emoji not in allowed_emojis.keys():
+        return
+    startpage = allowed_emojis[reaction.emoji]
+    await message.edit(embed=Embed(color=0x00AAFF,
+        title=f"{mode} - {stat_key} - **Elo by Anddy {mode}vs{mode} leaderboard **",
+        description=game.leaderboard(int(mode), stat_key, startpage=startpage))
+            .set_footer(text=f"[ {startpage} / {1 + len(game.leaderboards[int(mode)]) // 20} ]"))
+
+    await message.remove_reaction(reaction.emoji, user)
+
+
+@BOT.event
 async def on_ready():
     """On ready event."""
     print(f'{BOT.user} has connected\n')
     for guild in BOT.guilds:
         print(guild.name)
-        GAMES[guild.id] = load_file_to_game(guild.id)
+        GAMES[guild.id]=load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
-            GAMES[guild.id] = Game(guild.id)
+            GAMES[guild.id]=Game(guild.id)
 
 
 def check_if_premium(before, after):
     if len(before.roles) < len(after.roles):
-        new_role = next(
+        new_role=next(
             role for role in after.roles if role not in before.roles)
-        role_name = new_role.name.lower().split()
-        nb_games = 0
+        role_name=new_role.name.lower().split()
+        nb_games=0
         if "double" in role_name:
-            nb_games = int(role_name[2])
-        game = GAMES[after.guild.id]
+            nb_games=int(role_name[2])
+        game=GAMES[after.guild.id]
 
         for mode in game.available_modes:
             if after.name in game.leaderboards[mode]:
-                player = game.leaderboards[mode][after.name]
-                player.double_xp = nb_games
+                player=game.leaderboards[mode][after.name]
+                player.double_xp=nb_games
 
         return True
     return False
 
 
-@BOT.event
+@ BOT.event
 async def on_member_update(before, after):
     pass
     # if check_if_premium(before, after):
@@ -99,7 +128,7 @@ async def on_member_update(before, after):
     #             game.leaderboards[new].name = new
 
 
-@BOT.event
+@ BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
     if not ctx.invoked_with in ("j", "join", "ban"):
@@ -108,7 +137,7 @@ async def on_command_completion(ctx):
     # print(f"The data has been saved after the command: {ctx.message.content}")
 
 
-@BOT.event
+@ BOT.event
 async def on_guild_channel_create(channel):
     """Save the data when a channel is created."""
 
@@ -117,8 +146,8 @@ async def on_guild_channel_create(channel):
         print("Data has been saved since a new mode was added.")
 
 
-@BOT.command(hidden=True)
-@has_permissions(manage_roles=True)
+@ BOT.command(hidden = True)
+@ has_permissions(manage_roles = True)
 async def init_elo_by_anddy(ctx):
     """Can't be used by humans.
 
@@ -127,14 +156,14 @@ async def init_elo_by_anddy(ctx):
     This also build two categories Elo by Anddy and Modes
     Can be used anywhere. No alias, Need to have manage_roles
     """
-    guild = ctx.guild
-    if not discord.utils.get(guild.roles, name="Elo Admin"):
-        await guild.create_role(name="Elo Admin",
-                                permissions=discord.Permissions.all_channel())
+    guild=ctx.guild
+    if not discord.utils.get(guild.roles, name = "Elo Admin"):
+        await guild.create_role(name = "Elo Admin",
+                                permissions = discord.Permissions.all_channel())
         print("Elo admin created")
 
-    if not discord.utils.get(guild.categories, name='Elo by Anddy'):
-        perms_secret_chan = {
+    if not discord.utils.get(guild.categories, name = 'Elo by Anddy'):
+        perms_secret_chan={
             guild.default_role:
                 discord.PermissionOverwrite(read_messages=False),
             guild.me:
@@ -333,9 +362,15 @@ async def leaderboard(ctx, mode, stat_key="elo"):
     By default, if the stats key is missing, the bot will show the elo lb.
     """
     game = GAMES[ctx.guild.id]
-    await ctx.send(embed=Embed(color=0x00AAFF,
-        title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
-        description=game.leaderboard(int(mode), stat_key)))
+    msg = await ctx.send(embed=Embed(color=0x00AAFF,
+        title=f"{mode} - {stat_key} - **Elo by Anddy {mode}vs{mode} leaderboard **",
+        description=game.leaderboard(int(mode), stat_key))
+            .set_footer(text=f"[ 1 / {1 + len(game.leaderboards[int(mode)]) // 20} ]"))
+    await msg.add_reaction("⏮️")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+    await msg.add_reaction("⏭️")
+
 
 
 @BOT.command(aliases=['q'])
