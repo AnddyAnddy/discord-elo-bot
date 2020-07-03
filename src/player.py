@@ -5,7 +5,7 @@ import itertools
 class Player():
     """Docstring for Player."""
 
-    STATS = ["name", "elo", "wins", "losses", "nb_matches", "wlr",
+    STATS = ["name", "elo", "wins", "losses", "nb_matches",
              "most_wins_in_a_row", "most_losses_in_a_row",
              "current_win_streak", "current_lose_streak", "double_xp",
              "fav_pos"]
