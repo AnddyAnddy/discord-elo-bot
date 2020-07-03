@@ -57,9 +57,9 @@ async def on_reaction_add(reaction, user):
     if not message.embeds:
         return
     mb = message.embeds[0]
-    title = mb.title.split()
+    title = mb.title.split() if title else []
     footer = mb.footer.text.split()
-    if title[-2] != "leaderboard":
+    if "leaderboard" not in title:
         return
     start = int(footer[1])
     end = int(footer[3])
@@ -773,6 +773,10 @@ async def fav_positions(ctx, mode, *args):
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
+    if ctx.author.id not in game.leaderboards[mode]:
+        await ctx.send(embed=Embed(color=0x000000,
+            description=f"You must register first lol"))
+        return
     if len(args) > len(game.available_positions) or\
         any(elem for elem in args if elem not in game.available_positions):
 
