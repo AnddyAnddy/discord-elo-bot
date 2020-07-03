@@ -72,7 +72,7 @@ class Game():
             for id in self.undecided_games[mode]]) + "```"
 
     def archived(self, mode):
-        return "```\n - " + \
+        return "\n``` - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
@@ -115,10 +115,10 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         while i < end and i < len(lst) and index < len(lst):
             v = lst[i]
             if v.nb_matches > 20 and key == "wlr":
-                res += f'{i + 1}) {v.name:<20}: {getattr(v, key):.2f}\n'
+                res += f'{i + 1}) {v.name:<20} {getattr(v, key):.2f}\n'
                 i += 1
             elif key != "wlr":
-                res += f'{i + 1}) {v.name:<20}: {getattr(v, key)}\n'
+                res += f'{i + 1}) {v.name:<20} {getattr(v, key):>10}\n'
                 i += 1
             index += 1
 
