@@ -57,7 +57,7 @@ async def on_reaction_add(reaction, user):
     if not message.embeds:
         return
     mb = message.embeds[0]
-    title = mb.title.split() if title else []
+    title = mb.title.split() if mb.title else []
     footer = mb.footer.text.split()
     if "leaderboard" not in title:
         return
