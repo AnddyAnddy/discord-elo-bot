@@ -115,10 +115,10 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         while i < end and i < len(lst) and index < len(lst):
             v = lst[i]
             if v.nb_matches > 20 and key == "wlr":
-                res += f'{i + 1}) {v.name:<15}: {getattr(v, key):.2f}\n'
+                res += f'{i + 1}) {v.name:<20}: {getattr(v, key):.2f}\n'
                 i += 1
             elif key != "wlr":
-                res += f'{i + 1}) {v.name:<15}: {getattr(v, key)}\n'
+                res += f'{i + 1}) {v.name:<20}: {getattr(v, key)}\n'
                 i += 1
             index += 1
 
