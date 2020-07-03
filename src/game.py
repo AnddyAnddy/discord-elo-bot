@@ -148,6 +148,8 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         """Save the whole class in it's data/guild_id file."""
         with open(f'./data/{self.guild_id}.data', "wb") as outfile:
             pickle.dump(self, outfile, -1)
+        with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
+            pickle.dump(self, outfile, -1)
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
