@@ -85,8 +85,6 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id]=load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            reset_attribute(GAMES[guild.id], "most_wins_in_a_row", 0)
-            reset_attribute(GAMES[guild.id], "most_losses_in_a_row", 0)
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id]=Game(guild.id)
