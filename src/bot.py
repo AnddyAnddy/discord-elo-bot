@@ -779,6 +779,23 @@ async def setpickmode(ctx, mode, new_mode):
 
 @BOT.command()
 @check_channel('init')
+@is_arg_in_modes(GAMES)
+async def setelo(ctx, mode, name, elo):
+    """Set the elo to the player in the specific mode."""
+    GAMES[ctx.guild.id].set_elo(int(mode), int(name[3: -1]), int(elo))
+    await ctx.send("Worked!")
+
+
+@BOT.command()
+@is_arg_in_modes(GAMES)
+@check_channel('init')
+async def redoall(ctx):
+    """Set the elo to the player in the specific mode."""
+    GAMES[ctx.guild.id].redo_all_games()
+    await ctx.send("Worked!")
+
+@BOT.command()
+@check_channel('init')
 async def setfavpos(ctx, *args):
     """The arguments will now be in the list that players can pick as position.
 

@@ -38,7 +38,8 @@ class Game():
         self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
         self.undecided_games[mode].pop(queue.game_id, None)
         return f"The game has been submitted, thanks !\n\
-{'Red' if winner == 1 else 'Blue'} won the game with +{abs(self.elo.red_rating)}."
+{'Red' if winner == 1 else 'Blue'} won the game.\n\
+Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
 
     def undo(self, mode, id):
         """Undo a game."""
@@ -104,8 +105,9 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
-Blue team: {team_to_player_name(queue.blue_team)}"
-            for id, (queue, winner) in self.archive[mode].items() \
+Blue team: {team_to_player_name(queue.blue_team)} \
+Elo: {elo}"
+            for id, (queue, winner, elo) in self.archive[mode].items() \
                 if player in queue.red_team or player in queue.blue_team]) + \
             "\n```"
 
@@ -178,8 +180,8 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         """Save the whole class in it's data/guild_id file."""
         with open(f'./data/{self.guild_id}.data', "wb") as outfile:
             pickle.dump(self, outfile, -1)
-        with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
-            pickle.dump(self, outfile, -1)
+        # with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
+        #     pickle.dump(self, outfile, -1)
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
@@ -220,3 +222,15 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             id: player for id, player in self.bans.items()
                 if t < player.time_end
         }
+
+    def set_elo(self, mode, name, elo):
+        if name in self.leaderboards[mode]:
+            self.leaderboards[mode][name].elo = elo
+
+
+    def redo_all_games(self):
+        """Undo every games that ever happened and redo them."""
+        for mode in self.leaderboards:
+            for id, (queue, winner, elo) in self.archived[mode].items():
+                self.undo(mode, id)
+                self.add_archive(mode, id, winner)

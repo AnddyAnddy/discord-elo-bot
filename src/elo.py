@@ -27,8 +27,8 @@ class Elo():
 
     def update_rating(self, rwin, bwin):
         """Internet formula calculating the ratings."""
-        self.blue_rating = int(32 * (rwin - self.red_chance_to_win))
-        self.red_rating = int(32 * (bwin - self.blue_chance_to_win))
+        self.red_rating = int(32 * (rwin - self.red_chance_to_win))
+        self.blue_rating = int(32 * (bwin - self.blue_chance_to_win))
 
     def handle_elo_calc(self, game_stats):
         """Update the data."""
@@ -42,10 +42,10 @@ class Elo():
         :param: winners must be the id of the winning team [1, 2]
         """
         winners -= 1
-        self.update_rating(winners, not winners)
+        self.update_rating(not winners, winners)
         for i in range(len(queue.red_team)):
-            queue.red_team[i].update(self.red_rating, not winners)
-            queue.blue_team[i].update(self.blue_rating, winners)
+            queue.red_team[i].update(self.red_rating, winners)
+            queue.blue_team[i].update(self.blue_rating, not winners)
 
     def undo_elo(self, queue, winners, rating):
         """Reversed operation of update_elo."""
