@@ -663,7 +663,6 @@ async def archived(ctx, mode):
 
 @BOT.command()
 @has_permissions(manage_roles=True)
-@check_category('Elo by Anddy')
 @check_channel('init')
 async def add_mode(ctx, mode):
     """Add a mode to the game modes.
@@ -689,7 +688,6 @@ async def add_mode(ctx, mode):
 
 @BOT.command()
 @has_permissions(manage_roles=True)
-@check_category('Elo by Anddy')
 @check_channel('init')
 @is_arg_in_modes(GAMES)
 async def delete_mode(ctx, mode):
@@ -708,9 +706,9 @@ async def modes(ctx):
 
 
 @BOT.command()
+@has_permissions(manage_roles=True)
 @check_category('Elo by Anddy')
 @check_channel('bans')
-@has_permissions(manage_roles=True)
 async def ban(ctx, name, time, unity, reason=""):
     """Bans the player for a certain time in a certain unity.
 
