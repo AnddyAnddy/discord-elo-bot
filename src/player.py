@@ -9,7 +9,7 @@ class Player():
     STATS = ["name", "elo", "wins", "losses", "nb_matches", "wlr",
              "most_wins_in_a_row", "most_losses_in_a_row",
              "current_win_streak", "current_lose_streak", "double_xp",
-             "fav_pos", "last_join"]
+             "fav_pos"]
     newid = itertools.count()
 
     def __init__(self, name, id_user):
