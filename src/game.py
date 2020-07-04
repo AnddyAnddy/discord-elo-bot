@@ -133,11 +133,17 @@ Blue team: {team_to_player_name(queue.blue_team)}"
         while i < end and i < len(lst) and index < len(lst):
             v = lst[index]
             if v.nb_matches > 20 and key == "wlr":
-                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):.2f}\n'
+                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):.2f} '
                 i += 1
+            elif key == "last_join":
+                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key).strftime("%d/%m/%Y")} '
+                i += 1
+
             elif key != "wlr":
-                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):>10}\n'
+                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):>10} '
                 i += 1
+            res += '\n'
+
             index += 1
 
         res += '```'

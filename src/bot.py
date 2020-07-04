@@ -4,6 +4,7 @@
 import os
 import _pickle as pickle
 import discord
+from datetime import datetime
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
@@ -110,6 +111,7 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id]=load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            reset_attribute(GAMES[guild.id], "last_join", datetime.now())
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id]=Game(guild.id)
@@ -253,6 +255,7 @@ async def join(ctx):
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
         player.id_user = ctx.author.id
+        setattr(player, "last_join", datetime.now())
         res = queue.add_player(player, game)
         await ctx.send(embed=Embed(color=0x00FF00, description=res))
         if queue.is_finished():
