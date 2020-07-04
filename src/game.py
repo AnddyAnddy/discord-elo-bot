@@ -140,7 +140,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
                 i += 1
 
             elif key != "wlr":
-                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):>10} '
+                res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {str(getattr(v, key)):>10} '
                 i += 1
             res += '\n'
 
