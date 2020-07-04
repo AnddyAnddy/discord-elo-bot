@@ -787,7 +787,6 @@ async def setelo(ctx, mode, name, elo):
 
 
 @BOT.command()
-@is_arg_in_modes(GAMES)
 @check_channel('init')
 async def redoall(ctx):
     """Set the elo to the player in the specific mode."""
