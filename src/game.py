@@ -128,7 +128,7 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             key=operator.attrgetter(key))
 
         i = 20 * (startpage - 1)
-        index = 0
+        index = i
         end = 20 * startpage
         while i < end and i < len(lst) and index < len(lst):
             v = lst[index]

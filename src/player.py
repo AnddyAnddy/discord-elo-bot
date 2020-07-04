@@ -37,6 +37,9 @@ class Player():
         self.elo = new_value
         return old
 
+    def fav_pos_str(self):
+        return ' '.join([elem for elem in fav_pos])
+
     def update(self, elo_boost, winner, undo=1):
         """Update the player's stats after a game.
 
