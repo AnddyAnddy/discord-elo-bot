@@ -126,7 +126,7 @@ class Queue():
         """ToString."""
         res = f"Game n°{self.game_id}\n"
         if not self.has_queue_been_full:
-            return res + display_team(self.players, "Queue", self.max_queue)
+            return res + display_team(self.players, "Players", self.max_queue)
         return res + message_on_queue_full(self.players,
                                      self.red_team,
                                      self.blue_team,
@@ -135,7 +135,7 @@ class Queue():
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
-    return f'```\n{team_name}\n' +\
+    return f'```\n{team_name:20} {"Positions":20} {"Elo":>5}\n' +\
         '\n'.join([f"{i}) {p.name:20} {str(p.fav_pos_str()):20} {p.elo:>5}"
             for i, p in enumerate(team, 1)]) +\
         f'```\n**[{len(team)}/{int(max_queue)}]**'
