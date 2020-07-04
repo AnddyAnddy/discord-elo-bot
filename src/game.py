@@ -2,6 +2,7 @@
 import operator
 import _pickle as pickle
 import time
+from discord import Embed
 from threading import Timer
 from player import Player
 from queue_elo import Queue
@@ -65,20 +66,37 @@ class Game():
             return True
         return self.undecided_games[mode].pop(id, None) is not None
 
-    def undecided(self, mode):
+    def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
+        nb_pages = 1 + len(self.archive[mode]) // 20
 
-        return "```\n - " +  '\n - '.join([f"Id: {str(id)}"
-            for id in self.undecided_games[mode]]) + "```"
+        return Embed(color=0x00FF00,
+            description=\
+        "```\n - " +  '\n - '.join([f"Id: {str(id)}"
+            for id in sorted(self.undecided_games[mode])\
+                [20 * (startpage - 1): 20 * startpage]]) + "```")\
+                .add_field(name="name", value="undecided")\
+                .add_field(name="-",  value="-")\
+                .add_field(name="mode", value=mode)\
+                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
-    def archived(self, mode):
-        return "\n``` - " + \
+    def archived(self, mode, startpage=1):
+        nb_pages = 1 + len(self.archive[mode]) // 10
+
+        return Embed(color=0x00FF00,
+            description=\
+            "\n``` - " + \
             '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
-            for id, (queue, winner, elo_boost) in self.archive[mode].items()]) + \
-            "\n```"
+            for id, (queue, winner, elo_boost) in
+                sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
+            "\n```").add_field(name="name", value="archived")\
+                .add_field(name="-",  value="-")\
+                .add_field(name="mode", value=mode)\
+                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
 
     def get_history(self, mode, player):
         """Return the string showing the history of the chosen mode."""
@@ -123,7 +141,13 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             index += 1
 
         res += '```'
-        return res
+        nb_pages = 1 + len(self.leaderboards[int(mode)]) // 20
+        return Embed(color=0x00AAFF,
+            title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
+            description=res).add_field(name="name", value="leaderboard")\
+                .add_field(name="key",  value=key)\
+                .add_field(name="mode", value=mode)\
+                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
 
     def add_mode(self, mode):

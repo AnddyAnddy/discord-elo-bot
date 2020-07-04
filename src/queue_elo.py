@@ -118,6 +118,10 @@ class Queue():
         team = self.red_team if team_id == 1 else self.blue_team
         team.append(self.players.pop(self.players.index(player)))
 
+    def ping_everyone(self):
+        """Ping everyone present in the queue."""
+        return ' '.join([f"<@{p.id_user}>" for p in self.red_team + self.blue_team])
+
     def __str__(self):
         """ToString."""
         res = f"Game n°{self.game_id}\n"
@@ -152,6 +156,9 @@ def message_on_queue_full(players, red_team, blue_team, max_queue):
 
 def team_to_player_name(team):
     return "[" + ', '.join([f'{p.name}' for p in team]) + "]"
+
+def team_to_player_id(team):
+    return "[" + ', '.join([f'{p.id_user}' for p in team]) + "]"
 
 HISTORIQUE = []
 if __name__ == '__main__':

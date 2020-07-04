@@ -18,8 +18,6 @@ from decorators import check_channel
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-
-
 BOT = commands.Bot(command_prefix='!')
 GAMES = {}
 
@@ -48,34 +46,61 @@ def load_file_to_game(guild_id):
         print("The file couldn't be loaded")
 
 
-@BOT.event
-async def on_reaction_add(reaction, user):
-    if user.id == BOT.user.id:
-        return
-    game = GAMES[user.guild.id]
-    message = reaction.message
-    if not message.embeds:
-        return
-    mb = message.embeds[0]
+def get_elem_from_embed(reaction):
+    mb = reaction.message.embeds[0]
     title = mb.title.split() if mb.title else []
     footer = mb.footer.text.split()
-    if "leaderboard" not in title:
-        return
-    start = int(footer[1])
-    end = int(footer[3])
-    mode = int(title[0])
-    stat_key = title[2]
-    allowed_emojis = {"⏮️": 1, "⬅️": start - 1, "➡️": start + 1, "⏭️": end}
-    if user.id == BOT.user.id or reaction.emoji not in allowed_emojis.keys():
-        return
-    startpage = allowed_emojis[reaction.emoji]
-    await message.edit(embed=Embed(color=0x00AAFF,
-        title=f"{mode} - {stat_key} - **Elo by Anddy {mode}vs{mode} leaderboard **",
-        description=game.leaderboard(int(mode), stat_key, startpage=startpage))
-            .set_footer(text=f"[ {startpage} / {1 + len(game.leaderboards[int(mode)]) // 20} ]"))
 
-    await message.remove_reaction(reaction.emoji, user)
+    return {
+        "current_page": int(footer[1]),
+        "last_page": int(footer[3]),
+        "function": mb.fields[0].value,
+        "key": mb.fields[1].value,
+        "mode": int(mb.fields[2].value)
+    }
 
+
+
+def get_startpage(reaction, embed):
+    allowed_emojis = {"⏮️": 1, "⬅️": embed["current_page"] - 1,
+        "➡️": embed["current_page"] + 1, "⏭️": embed["last_page"]}
+    return allowed_emojis[reaction.emoji]
+
+
+@BOT.event
+async def on_reaction_add(reaction, user):
+    if user.id == BOT.user.id or not reaction.message.embeds\
+        or reaction.emoji not in "⏮️⬅️➡️⏭️":
+        return
+    game = GAMES[user.guild.id]
+    embed = get_elem_from_embed(reaction)
+
+    if embed["function"] not in ["leaderboard", "archived", "undecided"]:
+        return
+
+    res = ""
+    if embed["function"] == "leaderboard":
+        res = game.leaderboard(embed["mode"], embed["key"],
+                                            get_startpage(reaction, embed))
+    elif embed["function"] in ["archived", "undecided"]:
+        res = getattr(game, embed["function"])(embed["mode"],
+            get_startpage(reaction, embed))
+    else:
+        return
+
+
+    await reaction.message.edit(embed=res)
+
+    await reaction.message.remove_reaction(reaction.emoji, user)
+
+
+def print_all_members(game):
+    res = []
+    for p, v in sorted(game.leaderboards[4].items()):
+        print(p, v.id_user, v.name)
+        if v.id_user != p:
+            res.append((p, v.id_user, v.name))
+    print(res)
 
 @BOT.event
 async def on_ready():
@@ -221,22 +246,22 @@ async def join(ctx):
     game = GAMES[ctx.guild.id]
     mode = int(ctx.channel.name[0])
     name = ctx.author.id
+    queue = game.queues[mode]
     if name in game.bans:
         await ctx.send(embed=Embed(color=0x000000, description=game.bans[name]))
         return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
         player.id_user = ctx.author.id
-        res = game.queues[mode].add_player(player, game)
-        await ctx.send(embed=Embed(color=0x00FF00,
-            description=res))
-        if game.queues[mode].is_finished():
+        res = queue.add_player(player, game)
+        await ctx.send(embed=Embed(color=0x00FF00, description=res))
+        if queue.is_finished():
             await ctx.send(embed=Embed(color=0x00FF00,
-                description=game.add_game_to_be_played(game.queues[mode])))
+                description=game.add_game_to_be_played(queue)))
             if res != "Queue is full...":
                 await discord.utils.get(ctx.guild.channels,
                     name="game_announcement").send(embed=Embed(color=0x00FF00,
-                        description=res))
+                        description=res), content=queue.ping_everyone())
 
     else:
         await ctx.send(embed=Embed(color=0x000000,
@@ -362,10 +387,7 @@ async def leaderboard(ctx, mode, stat_key="elo"):
     By default, if the stats key is missing, the bot will show the elo lb.
     """
     game = GAMES[ctx.guild.id]
-    msg = await ctx.send(embed=Embed(color=0x00AAFF,
-        title=f"{mode} - {stat_key} - **Elo by Anddy {mode}vs{mode} leaderboard **",
-        description=game.leaderboard(int(mode), stat_key))
-            .set_footer(text=f"[ 1 / {1 + len(game.leaderboards[int(mode)]) // 20} ]"))
+    msg = await ctx.send(embed=game.leaderboard(int(mode), stat_key, 1))
     await msg.add_reaction("⏮️")
     await msg.add_reaction("⬅️")
     await msg.add_reaction("➡️")
@@ -566,6 +588,7 @@ async def pick(ctx, name):
         player = discord.utils.get(queue.players, id_user=name)
 
         if player is None:
+            print(ctx.message.text, team_to_player_id(queue.players))
             await ctx.send(embed=Embed(color=0x000000,
                 description=f"Couldn't find the player <@{name}>."))
             return
@@ -573,7 +596,7 @@ async def pick(ctx, name):
     else:
         team = queue.red_team if team == 1 else queue.blue_team
         name -= 1
-        if name < 0 or name > len(team):
+        if name < 0 or name > len(queue.players):
             await ctx.send(embed=Embed(color=0x000000,
                 description="Couldn't find the player with this index."))
             return
@@ -592,7 +615,7 @@ async def pick(ctx, name):
             description=str(queue)))
         await discord.utils.get(ctx.guild.channels,
             name="game_announcement").send(embed=Embed(color=0x00FF00,
-                description=str(queue)))
+                description=str(queue)), content=queue.ping_everyone())
         game.add_game_to_be_played(game.queues[mode])
 
 
@@ -607,8 +630,11 @@ async def undecided(ctx, mode):
     Will show every undecided games in 2vs2, with the format below.
     id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    await ctx.send(embed=Embed(color=0x00FF00,
-        description="Undecided games: \n" + game.undecided(int(mode))))
+    msg = await ctx.send(embed=game.undecided(int(mode)))
+    await msg.add_reaction("⏮️")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+    await msg.add_reaction("⏭️")
 
 
 @BOT.command(aliases=['a'])
@@ -623,8 +649,11 @@ async def archived(ctx, mode):
     id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
     Blue team: [player3, player4]."""
     game = GAMES[ctx.guild.id]
-    await ctx.send(embed=Embed(color=0x00FF00,
-        description="Archived games: \n" + game.archived(int(mode))))
+    msg = await ctx.send(embed=game.archived(int(mode)))
+    await msg.add_reaction("⏮️")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+    await msg.add_reaction("⏭️")
 
 
 @BOT.command()
