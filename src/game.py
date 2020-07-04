@@ -230,10 +230,7 @@ Elo: {elo}"
 
     def redo_all_games(self):
         """Undo every games that ever happened and redo them."""
-        print(self.archive)
         for mode in self.archive:
-            print(mode)
-
             for id in list(self.archive[mode])[::-1]:
                 queue, winner, elo = self.archive[mode][id]
                 self.undo(mode, id)
