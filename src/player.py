@@ -35,7 +35,7 @@ class Player():
         self.elo = new_value
         return old
 
-    def update(self, elo_boost, winner, undo = 1):
+    def update(self, elo_boost, winner, undo=1):
         """Update the player's stats after a game.
 
         undo: if set to -1, the stats earning are reversed, useful to
@@ -54,9 +54,13 @@ class Player():
         elif not winner and self.current_lose_streak > self.most_losses_in_a_row:
             self.most_losses_in_a_row += 1 * undo
 
-
     def __str__(self):
         """Print all attributes of the player."""
-        return '```\n' + \
-            '\n - '.join([f'{stat}: {getattr(self, stat)}'
-                for stat in Player.STATS]) + '```'
+        res = '```\n'
+        for stat in Player.STATS:
+            if stat == "wlr":
+                res += f' - {stat:<25} {getattr(self, stat):>14.3f}\n'
+            else:
+                res += f' - {stat:<25} {str(getattr(self, stat)):>14}\n'
+        res += '```'
+        return res
