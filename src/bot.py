@@ -249,8 +249,11 @@ async def join(ctx):
     name = ctx.author.id
     queue = game.queues[mode]
     if name in game.bans:
-        await ctx.send(embed=Embed(color=0x000000, description=game.bans[name]))
-        return
+        game.remove_negative_bans()
+        # the ban might have been removed in the function above
+        if name in game.bans:
+            await ctx.send(embed=Embed(color=0x000000, description=str(game.bans[name])))
+            return
     if name in game.leaderboards[mode]:
         player = game.leaderboards[mode][name]
         player.id_user = ctx.author.id
@@ -751,6 +754,7 @@ async def unban(ctx, name):
 @check_category('Elo by Anddy')
 @check_channel('bans')
 async def all_bans(ctx):
+    GAMES[ctx.guild.id].remove_negative_bans()
     await ctx.send(embed=Embed(color=0x00FF00,
         description=GAMES[ctx.guild.id].all_bans()))
 

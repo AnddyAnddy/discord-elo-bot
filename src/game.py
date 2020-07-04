@@ -210,4 +210,13 @@ Blue team: {team_to_player_name(queue.blue_team)}"
             self.leaderboards[mode].pop(name, None)
 
     def all_bans(self):
-        return "```\n - " + '\n - '.join([str(p) for p in self.bans.values()]) + "```"
+        """Show the list of every banned person."""
+        return "\n - " + '\n - '.join([str(p) for p in self.bans.values()])
+
+    def remove_negative_bans(self):
+        """Remove every bans where the time has been reached without thread."""
+        t = time.time()
+        self.bans = {
+            id: player for id, player in self.bans.items()
+                if t < player.time_end
+        }

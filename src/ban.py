@@ -4,14 +4,15 @@ from player import Player
 
 class Ban():
 
-    def __init__(self, name: str, time_left: int, reason: str):
-        self.name = name
+    def __init__(self, user_id: int, time_left: int, reason: str):
+        self.user_id = user_id
         self.date_now = time.time()
         self.time_end = time_left + self.date_now
         self.reason = reason
 
     def __str__(self):
-        return f"{self.name} is still banned for \
+
+        return f"<@{self.user_id}> is still banned for \
 {time_left(self.time_end)} for the reason: {self.reason}"
 
 
