@@ -100,20 +100,23 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
 
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
-        nb_pages = 1 + len(self.archive[mode]) // 20
+        nb_pages = 1 + len(self.archive[mode]) // 25
 
         return Embed(color=0x00FF00,
                      description= \
-                         "```\n - " + '\n - '.join([f"Id: {str(id)}"
-                                                    for id in sorted(self.undecided_games[mode]) \
-                                                        [20 * (startpage - 1): 20 * startpage]]) + "```") \
+                         f"\n```{'Id':5} {'Red captain':20} {'Blue captain':20}\n" + \
+                         '\n'.join([f"{str(id):5} "
+                          f"{queue.red_team[0].name:20} " \
+                          f"{queue.blue_team[0].name:20}"
+                        for id, queue in sorted(self.undecided_games[mode].items()) \
+                            [25 * (startpage - 1): 25 * startpage]]) + "```") \
             .add_field(name="name", value="undecided") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def archived(self, mode, startpage=1):
-        nb_pages = 1 + len(self.archive[mode]) // 30
+        nb_pages = 1 + len(self.archive[mode]) // 25
 
         return Embed(color=0x00FF00,
                      description= \
@@ -123,7 +126,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
                          f"{queue.red_team[0].name:20} " \
                          f"{queue.blue_team[0].name:20}"
                            for id, (queue, winner, elo_boost) in
-                           sorted(self.archive[mode].items())[30 * (startpage - 1): 30 * startpage]]) + \
+                           sorted(self.archive[mode].items())[25 * (startpage - 1): 25 * startpage]]) + \
                          "\n```")\
             .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
