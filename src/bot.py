@@ -79,15 +79,19 @@ async def on_reaction_add(reaction, user):
     game = GAMES[user.guild.id]
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["leaderboard", "archived", "undecided"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands"]:
         return
 
+    startpage = get_startpage(reaction, embed)
     if embed["function"] == "leaderboard":
         res = game.leaderboard(embed["mode"], embed["key"],
-                               get_startpage(reaction, embed))
+                               startpage)
     elif embed["function"] in ["archived", "undecided", "canceled"]:
         res = getattr(game, embed["function"])(embed["mode"],
-                                               get_startpage(reaction, embed))
+                                               startpage)
+
+    elif embed["function"] == "commands":
+        res = cmds_embed(startpage)
     else:
         return
 
@@ -217,14 +221,29 @@ async def init_elo_by_anddy(ctx):
         print("Elo by Anddy created, init done, use !help !")
 
 
-@BOT.command()
-async def cmds(ctx):
-    """Show every command."""
+def cmds_embed(startpage=1):
+    nb_pages = 1 + len(BOT.commands) // 15
     nl = '\n'
-    res = '\n - '.join([f'{command.name:<18}: {command.help.split(nl)[0]}'
-                        for command in sorted(BOT.commands, key=lambda c: c.name)
-                        if command.help is not None and not command.hidden])
-    await ctx.send(embed=Embed(color=0x00FF00, description=f"```\n - {res} ```"))
+    return Embed(color=0x00FF00, description=\
+          '```\n' +\
+         '\n'.join([f'{command.name:15}: {command.help.split(nl)[0]}'
+            for command in sorted(BOT.commands, key=lambda c: c.name)[15 * (startpage - 1): 15 * startpage]
+            if command.help is not None and not command.hidden]) + '```')\
+            .add_field(name="name", value="commands") \
+            .add_field(name="-", value="-") \
+            .add_field(name="-", value=0) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
+
+@BOT.command(aliases=['cmds'])
+async def all_commands(ctx):
+    """Show every command."""
+
+    msg = await ctx.send(embed=cmds_embed())
+    await msg.add_reaction("⏮️")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+    await msg.add_reaction("⏭️")
 
 
 @BOT.command(pass_context=True, aliases=['j'])
@@ -295,7 +314,7 @@ async def leave(ctx):
 @check_category('Elo by Anddy')
 @is_arg_in_modes(GAMES)
 async def register(ctx, mode):
-    """Register the player to the elo leaderboard from the mode in arg.
+    """Register the player to the elo leaderboard.
 
     Example: !r N or !r N all
     This command will register the user into the game mode set in argument.
@@ -377,7 +396,7 @@ async def force_quit(ctx, name):
 @check_category('Elo by Anddy')
 @check_channel('info_chat')
 async def leaderboard(ctx, mode, stat_key="elo"):
-    """Show current leaderboard: !lb [mode] [stat key].
+    """Show current leaderboard.
 
     Example: !lb 1 wins
     Will show the leaderboard of the mode 1vs1 based on the wins.
@@ -429,7 +448,7 @@ async def clear_queue(ctx):
 @check_channel('info_chat')
 @is_arg_in_modes(GAMES)
 async def info(ctx, mode, name=""):
-    """Show the info of a player. !info [mode], !info [mode] [player]
+    """Show the info of a player.
 
     Example: !info 1 @Anddy
     With no argument, the !info will show the user's stats.
@@ -457,7 +476,7 @@ async def info(ctx, mode, name=""):
 @check_channel('info_chat')
 @is_arg_in_modes(GAMES)
 async def info_match(ctx, mode, id_game):
-    """Display the infos of a specific matchs, winner and teams."""
+    """Display the infos of a specific match."""
     game = GAMES[ctx.guild.id]
     mode = int(mode)
     if not id_game.isdigit():
@@ -524,7 +543,7 @@ async def history(ctx, mode, name=""):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def submit(ctx, mode, id_game, winner):
-    """Expect a format !s [mode] [id_game] [winner].
+    """Submit the score of a game.
 
     Example: !s 1 7 1
     in the mode 1vs1, in the 7th game, the team 1 (red) won.
@@ -544,11 +563,12 @@ async def submit(ctx, mode, id_game, winner):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def undo(ctx, mode, id_game):
-    """Expect a format !undo [mode] [id_game].
+    """Undo a game.
 
     Example: !undo 1 7
     in the mode 1vs1, in the 7th game.
     This will reset the ranking updates of this match.
+    The game will be in undecided.
     """
     game = GAMES[ctx.guild.id]
     await ctx.send(embed=Embed(color=0x00FF00,
@@ -561,7 +581,7 @@ async def undo(ctx, mode, id_game):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def cancel(ctx, mode, id_game):
-    """Cancel the game given in arg. !c [mode] [game_id]
+    """Cancel the game given in arg.
 
     Example: !cancel 1 3
     will cancel the game with the id 3 in the mode 1vs1.
@@ -581,7 +601,7 @@ async def cancel(ctx, mode, id_game):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def uncancel(ctx, mode, id_game):
-    """Uncancel the game given in arg. !uc [mode] [game_id]
+    """Uncancel the game given in arg.
 
     Example: !uncancel 1 3
     will uncancel the game with the id 3 in the mode 1vs1.
@@ -594,7 +614,7 @@ async def uncancel(ctx, mode, id_game):
 @BOT.command(aliases=['p'])
 @check_category('Modes')
 async def pick(ctx, name):
-    """Pick a player in the remaining player using it's @name or the index.
+    """Pick a player in the remaining player.
 
     Let's say Anddy is the red captain, and it's his turn to pick.
     Remaining players:
@@ -678,7 +698,7 @@ async def pick(ctx, name):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def undecided(ctx, mode):
-    """Display every games of a specific mode, its score or undecided. !u [mode]
+    """Display every undecided games.
 
     Example: !undecided 2
     Will show every undecided games in 2vs2, with the format below.
@@ -714,7 +734,7 @@ async def canceled(ctx, mode):
 @check_channel('submit')
 @is_arg_in_modes(GAMES)
 async def archived(ctx, mode):
-    """Display every games of a specific mode, its score or undecided. !u [mode]
+    """Display every games of a specific mode.
 
     Example: !archived 2
     Will show every games in 2vs2, with the format below.
@@ -777,7 +797,7 @@ async def modes(ctx):
 @check_category('Elo by Anddy')
 @check_channel('bans')
 async def ban(ctx, name, time, unity, reason=""):
-    """Bans the player for a certain time in a certain unity.
+    """Bans the player for a certain time.
 
     unity must be in s, m, h, d (secs, mins, hours, days).
     reason must be into " "
@@ -799,11 +819,7 @@ async def ban(ctx, name, time, unity, reason=""):
 @check_channel('bans')
 @has_permissions(manage_roles=True)
 async def unban(ctx, name):
-    """Bans the player for a certain time in a certain unity.
-
-    unity must be in s, m, h, d (secs, mins, hours, days).
-    reason must be into " "
-    """
+    """Unban the player."""
     name = name[3: -1]
     if not name.isdigit():
         await ctx.send("You better ping the player !")
@@ -852,7 +868,7 @@ async def setelo(ctx, mode, name, elo):
     await ctx.send("Worked!")
 
 
-@BOT.command()
+@BOT.command(hidden=True)
 @check_channel('init')
 async def redoall(ctx):
     """Set the elo to the player in the specific mode."""
