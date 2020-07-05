@@ -73,6 +73,7 @@ async def on_reaction_add(reaction, user):
     @param user: discord.User
     @type reaction: discord.Reaction
     """
+    reaction.emoji = str(reaction)
     if user.id == BOT.user.id or not reaction.message.embeds \
             or reaction.emoji not in "⏮️⬅️➡️⏭️":
         return
