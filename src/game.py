@@ -269,8 +269,8 @@ Elo: {elo}"
         """Try to find the game in archived, undecided or canceled dict."""
         if id in self.archive[mode]:
             return self.archive[mode][id], 0
-        # if id in self.cancels[mode]:
-        #     return self.cancels[mode][id], 1
+        if id in self.cancels[mode]:
+            return self.cancels[mode][id], 1
         if id in self.undecided_games[mode]:
             return self.undecided_games[mode][id], 2
         return None, -1
