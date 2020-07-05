@@ -607,7 +607,6 @@ async def pick(ctx, name):
         player = discord.utils.get(g_queue.players, id_user=name)
 
         if player is None:
-            print(ctx.message.text, queue_elo.team_to_player_id(g_queue.players))
             await ctx.send(embed=Embed(color=0x000000,
                                        description=f"Couldn't find the player <@{name}>."))
             return
