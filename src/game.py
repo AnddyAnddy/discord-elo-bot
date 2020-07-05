@@ -118,7 +118,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
         return Embed(color=0x00FF00,
                      description= \
                          f"\n```{'Id':5} {'Winner':7} {'Red captain':20} {'Blue captain':20}\n" + \
-                         '\n - '.join([f"{str(id):5} " \
+                         '\n'.join([f"{str(id):5} " \
                          f"{'Red' if winner == 1 else 'Blue':7} " \
                          f"{queue.red_team[0].name:20} " \
                          f"{queue.blue_team[0].name:20}"
