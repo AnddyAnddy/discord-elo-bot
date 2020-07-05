@@ -614,6 +614,7 @@ async def pick(ctx, name):
         g_queue.set_player_team(team, player)
     else:
         team = g_queue.red_team if team == 1 else g_queue.blue_team
+        other_team = g_queue.red_team if team == 2 else g_queue.blue_team
         name -= 1
         if name < 0 or name > len(g_queue.players):
             await ctx.send(embed=Embed(color=0x000000,
@@ -624,7 +625,7 @@ async def pick(ctx, name):
 
     await ctx.send(embed=Embed(color=0x00FF00,
                                description=f"Good pick!"))
-    await ctx.send(embed=Embed(color=0x00FF00,
+    await ctx.send(f"<@{other_team[0].id}>", embed=Embed(color=0x00FF00,
                                description=str(g_queue)))
     if len(g_queue.players) == 1:
         g_queue.set_player_team(2, g_queue.players[0])
