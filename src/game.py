@@ -113,7 +113,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def archived(self, mode, startpage=1):
-        nb_pages = 1 + len(self.archive[mode]) // 10
+        nb_pages = 1 + len(self.archive[mode]) // 30
 
         return Embed(color=0x00FF00,
                      description= \
@@ -123,7 +123,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
                          f"{queue.red_team[0].name:20} " \
                          f"{queue.blue_team[0].name:20}"
                            for id, (queue, winner, elo_boost) in
-                           sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
+                           sorted(self.archive[mode].items())[30 * (startpage - 1): 30 * startpage]]) + \
                          "\n```")\
             .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
