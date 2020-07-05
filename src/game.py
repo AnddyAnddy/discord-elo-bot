@@ -110,7 +110,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
                           f"{queue.red_team[0].name:20} " \
                           f"{queue.blue_team[0].name:20}"
                         for id, queue in sorted(self.undecided_games[mode].items()) \
-                            [25 * (startpage - 1): 25 * startpage]]) + "```") \
+                            [25 * (startpage - 1): 25 * startpage] if queue.red_team]) + "```") \
             .add_field(name="name", value="undecided") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
