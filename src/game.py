@@ -117,14 +117,15 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
 
         return Embed(color=0x00FF00,
                      description= \
-                         "\n``` - " + \
-                         '\n - '.join([f"Id: {str(id)}, \
-Winner: Team {'Red' if winner == 1 else 'Blue'}, \
-Red team: {team_to_player_name(queue.red_team)}, \
-Blue team: {team_to_player_name(queue.blue_team)}"
-                                       for id, (queue, winner, elo_boost) in
-                                       sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
-                         "\n```").add_field(name="name", value="archived") \
+                         f"\n```{'Id':5} {'Winner':7} {'Red captain':20} {'Blue captain':20}\n" + \
+                         '\n - '.join([f"{str(id):5} " \
+                         f"{'Red' if winner == 1 else 'Blue':7} " \
+                         f"{queue.red_team[0].name:20} " \
+                         f"{queue.blue_team[0].name:20}"
+                           for id, (queue, winner, elo_boost) in
+                           sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
+                         "\n```")\
+            .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
