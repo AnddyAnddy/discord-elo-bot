@@ -101,6 +101,7 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
         nb_pages = 1 + len(self.undecided_games[mode]) // 25
+        print(self.undecided_games)
 
         return Embed(color=0x00FF00,
                      description= \
