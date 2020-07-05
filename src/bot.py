@@ -3,7 +3,7 @@
 import _pickle
 import os
 from datetime import datetime
-
+import random
 import discord
 from decorators import check_category
 from decorators import check_channel
@@ -118,7 +118,13 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            # add_attribute(GAMES[guild.id], "nick", "")
+            for i in range(1, 5):
+                await guild.create_role(name=f"{i}vs{i} Elo Player",
+                    colour=discord.Colour(random.randint(0, 0xFFFFFF)))
+                role = discord.utils.get(guild.roles, name=f"{i}vs{i} Elo Player")
+                for member in guild.members:
+                    if member.id in GAMES[guild.id].leaderboards[i]:
+                        await member.add_roles(role)
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -183,8 +189,9 @@ async def init_elo_by_anddy(ctx):
     guild = ctx.guild
     if not discord.utils.get(guild.roles, name="Elo Admin"):
         await guild.create_role(name="Elo Admin",
-                                permissions=discord.Permissions.all_channel())
-        print("Elo admin created")
+                                permissions=discord.Permissions.all_channel(),
+                                color=0xAA0000)
+        await ctx.send("Elo admin role created")
 
     if not discord.utils.get(guild.categories, name='Elo by Anddy'):
         perms_secret_chan = {
@@ -219,7 +226,7 @@ async def init_elo_by_anddy(ctx):
 
         await guild.create_category(name="Modes")
 
-        print("Elo by Anddy created, init done, use !help !")
+        await ctx.send("Elo by Anddy created, init done, use !help !")
 
 
 def cmds_embed(startpage=1):
@@ -309,6 +316,20 @@ async def leave(ctx):
         await ctx.send(embed=Embed(color=0x000000,
                                    description="You didn't even register lol."))
 
+@BOT.command(aliases=['fr'])
+@check_category('Modes')
+@has_permissions(manage_roles=True)
+async def force_remove(ctx, name):
+    """Remove the player from the current queue."""
+    if not name[3: -1].isdigit():
+        await ctx.send("You better ping the player")
+    name = int(name[3: -1])
+    mode = int(ctx.channel.name[0])
+    game = GAMES[ctx.guild.id]
+    queue = game.queues[mode]
+    await ctx.send(queue.remove_player(game.leaderboards[mode]
+                  [name]))
+
 
 @BOT.command(aliases=['r', 'reg'])
 @check_channel('register')
@@ -333,6 +354,8 @@ async def register(ctx, mode):
     game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
     await ctx.send(embed=Embed(color=0x00FF00,
                                description=f"<@{name}> has been registered."))
+    role = discord.utils.get(ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
+    await ctx.author.add_roles(role)
 
 
 @BOT.command(aliases=['r_all', 'reg_all'])
@@ -346,6 +369,7 @@ async def register_all(ctx):
         game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
     await ctx.send(embed=Embed(color=0x00FF00,
                                description=f"<@{name}> has been registered for every mode."))
+
 
 
 @BOT.command(aliases=['quit'])
@@ -768,6 +792,11 @@ async def add_mode(ctx, mode):
                                             category=category)
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description="The game mode has been added."))
+            if not discord.utils.get(guild.roles, name=f"{mode}vs{mode} Elo Player"):
+
+                await guild.create_role(name=f"{mode}vs{mode} Elo Player",
+                    colour=discord.Colour(random.randint(0, 0xFFFFFF)))
+                await ctx.send(f"{mode}vs{mode} Elo Player role created")
             return
 
     await ctx.send(embed=Embed(color=0x000000,
