@@ -45,7 +45,8 @@ class Player():
 
         undo: if set to -1, the stats earning are reversed, useful to
         undo a game without writing twice this function."""
-        elo_boost = 2 * elo_boost if self.double_xp and winner else elo_boost
+        elo_boost = 2 * elo_boost + 2 * \
+            self.current_win_streak if self.double_xp and winner else elo_boost
         self.elo += (elo_boost * undo)
         self.wins += winner * undo
         self.current_win_streak = self.current_win_streak + 1 if winner else 0
