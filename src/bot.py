@@ -904,6 +904,23 @@ all of your args must be in {game.available_positions}"))
                                description="Your positions have been saved!"))
 
 
+
+@BOT.command()
+@check_channel('register')
+async def rename(ctx, new_name=""):
+    """Will rename the user in every leaderboards.
+
+    With no argument, the user will have his name resetted.
+    Only usable in #register
+    """
+    game = GAMES[ctx.guild.id]
+    if not new_name:
+        new_name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
+    for mode in game.leaderboards:
+        if ctx.author.id in game.leaderboards[mode]:
+            game.leaderboards[mode][ctx.author.id].name = new_name
+    await ctx.send(f"You have been renamed to {new_name}")
+
 @BOT.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CommandNotFound):
