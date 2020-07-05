@@ -71,8 +71,17 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
         if res is None:
             return False
         self.cancels[mode][id] = res
-        print(self.cancels)
         return True
+
+    def uncancel(self, mode, id):
+        """Remove the game to cancel and put it in undecided.
+
+        Slightly similar to undo"""
+        game = self.cancels[mode].pop(id, None)
+        if game is None:
+            return "The game couldn't be found"
+        self.undecided_games[mode][id] = game
+        return "The game has been uncanceled"
 
     def canceled(self, mode, startpage=1):
         """Return an embed of all canceled games."""
@@ -199,8 +208,8 @@ Elo: {elo}"
         """Save the whole class in it's data/guild_id file."""
         with open(f'./data/{self.guild_id}.data', "wb") as outfile:
             pickle.dump(self, outfile, -1)
-        # with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
-        #     pickle.dump(self, outfile, -1)
+        with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
+            pickle.dump(self, outfile, -1)
 
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes

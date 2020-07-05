@@ -113,9 +113,9 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            # setattr(GAMES[guild.id], "cancels", {})
-            # for mode in GAMES[guild.id].leaderboards:
-            #     GAMES[guild.id].cancels[mode] = {}
+            setattr(GAMES[guild.id], "cancels", {})
+            for mode in GAMES[guild.id].leaderboards:
+                GAMES[guild.id].cancels[mode] = {}
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -511,7 +511,7 @@ async def submit(ctx, mode, id_game, winner):
 async def undo(ctx, mode, id_game):
     """Expect a format !undo [mode] [id_game].
 
-    Example: !s 1 7
+    Example: !undo 1 7
     in the mode 1vs1, in the 7th game.
     This will reset the ranking updates of this match.
     """
@@ -538,6 +538,22 @@ async def cancel(ctx, mode, id_game):
     else:
         await ctx.send(embed=Embed(color=0x000000,
                                    description=f"Couldn't find the game {id_game} in the current games."))
+
+
+@BOT.command(aliases=['uc', 'uclear'])
+@has_permissions(manage_roles=True)
+@check_category('Elo by Anddy')
+@check_channel('submit')
+@is_arg_in_modes(GAMES)
+async def uncancel(ctx, mode, id_game):
+    """Uncancel the game given in arg. !uc [mode] [game_id]
+
+    Example: !uncancel 1 3
+    will uncancel the game with the id 3 in the mode 1vs1.
+    """
+    game = GAMES[ctx.guild.id]
+    await ctx.send(embed=Embed(color=0x00FF00,
+                               description=game.uncancel(int(mode), int(id_game))))
 
 
 @BOT.command(aliases=['p'])
