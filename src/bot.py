@@ -938,6 +938,7 @@ a wrong argument. Or maybe you don't have the permission... check help!"))
         await ctx.send(embed=Embed(color=0x000000,
                                    description=str(error)))
     else:
+        print(ctx.invoked_with)
         raise error
 
 
