@@ -118,13 +118,6 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            for i in range(1, 5):
-                await guild.create_role(name=f"{i}vs{i} Elo Player",
-                    colour=discord.Colour(random.randint(0, 0xFFFFFF)))
-                role = discord.utils.get(guild.roles, name=f"{i}vs{i} Elo Player")
-                for member in guild.members:
-                    if member.id in GAMES[guild.id].leaderboards[i]:
-                        await member.add_roles(role)
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
