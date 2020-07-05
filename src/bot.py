@@ -622,7 +622,7 @@ async def pick(ctx, name):
 
     await ctx.send(embed=Embed(color=0x00FF00,
                                description=f"Good pick!"))
-    await ctx.send(f"<@{other_team[0].id}>", embed=Embed(color=0x00FF00,
+    await ctx.send(embed=Embed(color=0x00FF00,
                                description=str(g_queue)))
     if len(g_queue.players) == 1:
         g_queue.set_player_team(2, g_queue.players[0])
