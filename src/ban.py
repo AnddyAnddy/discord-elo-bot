@@ -1,5 +1,4 @@
 import time
-from player import Player
 
 
 class Ban():
@@ -11,7 +10,6 @@ class Ban():
         self.reason = reason
 
     def __str__(self):
-
         return f"<@{self.user_id}> is still banned for \
 {time_left(self.time_end)} for the reason: {self.reason}"
 

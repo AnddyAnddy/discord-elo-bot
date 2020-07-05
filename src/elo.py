@@ -21,9 +21,9 @@ class Elo():
     def update_chances_to_win(self):
         """Follow internet formula to calculate chances of winning of teams."""
         self.red_chance_to_win = 1 / \
-            (1 + 10 ** ((self.blue_average - self.red_average) / 400))
+                                 (1 + 10 ** ((self.blue_average - self.red_average) / 400))
         self.blue_chance_to_win = 1 / \
-            (1 + 10 ** ((self.red_average - self.blue_average) / 400))
+                                  (1 + 10 ** ((self.red_average - self.blue_average) / 400))
 
     def update_rating(self, rwin, bwin):
         """Internet formula calculating the ratings."""

@@ -1,14 +1,15 @@
 """A class for a guild."""
-import operator
 import _pickle as pickle
+import operator
 import time
+
+from ban import Ban
 from discord import Embed
-from threading import Timer
+from elo import Elo
 from player import Player
 from queue_elo import Queue
 from queue_elo import team_to_player_name
-from elo import Elo
-from ban import Ban
+
 
 class Game():
     """Represent the game available."""
@@ -21,6 +22,7 @@ class Game():
         self.archive = {}
         self.leaderboards = {}
         self.undecided_games = {}
+        self.cancels = {}
         self.queues = {}
         self.bans = {}
         self.elo = Elo()
@@ -59,58 +61,76 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
         return "The teams have been made, a new queue is starting!"
 
     def cancel(self, mode, id):
-        """Cancel the game and return true if it was correctly cancelded."""
+        """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
             self.queues[mode] = Queue(
                 2 * mode, self.queues[mode].mode, last_id)
             return True
-        return self.undecided_games[mode].pop(id, None) is not None
+        res = self.undecided_games[mode].pop(id, None)
+        if res is None:
+            return False
+        self.cancels[mode][id] = res
+        print(self.cancels)
+        return True
+
+    def canceled(self, mode, startpage=1):
+        """Return an embed of all canceled games."""
+        nb_pages = 1 + len(self.archive[mode]) // 20
+
+        return Embed(color=0x00FF00,
+                     description= \
+                         "```\n - " + '\n - '.join([f"Id: {str(id)}"
+                                                    for id in sorted(self.cancels[mode]) \
+                                                        [20 * (startpage - 1): 20 * startpage]]) + "```") \
+            .add_field(name="name", value="canceled") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
 
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
         nb_pages = 1 + len(self.archive[mode]) // 20
 
         return Embed(color=0x00FF00,
-            description=\
-        "```\n - " +  '\n - '.join([f"Id: {str(id)}"
-            for id in sorted(self.undecided_games[mode])\
-                [20 * (startpage - 1): 20 * startpage]]) + "```")\
-                .add_field(name="name", value="undecided")\
-                .add_field(name="-",  value="-")\
-                .add_field(name="mode", value=mode)\
-                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+                     description= \
+                         "```\n - " + '\n - '.join([f"Id: {str(id)}"
+                                                    for id in sorted(self.undecided_games[mode]) \
+                                                        [20 * (startpage - 1): 20 * startpage]]) + "```") \
+            .add_field(name="name", value="undecided") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def archived(self, mode, startpage=1):
         nb_pages = 1 + len(self.archive[mode]) // 10
 
         return Embed(color=0x00FF00,
-            description=\
-            "\n``` - " + \
-            '\n - '.join([f"Id: {str(id)}, \
+                     description= \
+                         "\n``` - " + \
+                         '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)}"
-            for id, (queue, winner, elo_boost) in
-                sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
-            "\n```").add_field(name="name", value="archived")\
-                .add_field(name="-",  value="-")\
-                .add_field(name="mode", value=mode)\
-                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
-
+                                       for id, (queue, winner, elo_boost) in
+                                       sorted(self.archive[mode].items())[10 * (startpage - 1): 10 * startpage]]) + \
+                         "\n```").add_field(name="name", value="archived") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def get_history(self, mode, player):
         """Return the string showing the history of the chosen mode."""
         return "```\n - " + \
-            '\n - '.join([f"Id: {str(id)}, \
+               '\n - '.join([f"Id: {str(id)}, \
 Winner: Team {'Red' if winner == 1 else 'Blue'}, \
 Red team: {team_to_player_name(queue.red_team)}, \
 Blue team: {team_to_player_name(queue.blue_team)} \
 Elo: {elo}"
-            for id, (queue, winner, elo) in self.archive[mode].items() \
-                if player in queue.red_team or player in queue.blue_team]) + \
-            "\n```"
-
+                             for id, (queue, winner, elo) in self.archive[mode].items() \
+                             if player in queue.red_team or player in queue.blue_team]) + \
+               "\n```"
 
     def leaderboard(self, mode, key="elo", startpage=1):
         """Return the string showing the leaderboard of the chosen mode."""
@@ -120,14 +140,14 @@ Elo: {elo}"
         res = '```\n'
         if key not in Player.STATS:
             res += "Argument not found so imma show you the elo lb !\n"
-            key="elo"
+            key = "elo"
         if key == "wlr":
             res += "Only showing > 20 games played for wlr leaderboard\n"
 
         i = 1
         lst = sorted(self.leaderboards[mode].values(),
-            reverse=True,
-            key=operator.attrgetter(key))
+                     reverse=True,
+                     key=operator.attrgetter(key))
 
         i = 20 * (startpage - 1)
         index = i
@@ -151,12 +171,11 @@ Elo: {elo}"
         res += '```'
         nb_pages = 1 + len(self.leaderboards[int(mode)]) // 20
         return Embed(color=0x00AAFF,
-            title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
-            description=res).add_field(name="name", value="leaderboard")\
-                .add_field(name="key",  value=key)\
-                .add_field(name="mode", value=mode)\
-                .set_footer(text=f"[ {startpage} / {nb_pages} ]")
-
+                     title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
+                     description=res).add_field(name="name", value="leaderboard") \
+            .add_field(name="key", value=key) \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def add_mode(self, mode):
         """Add the mode in the set."""
@@ -186,7 +205,6 @@ Elo: {elo}"
     def in_modes(self, mode):
         return mode.isdigit() and int(mode) in self.available_modes
 
-
     def unban_player(self, name):
         """Unban a player."""
         self.bans.pop(name, None)
@@ -205,7 +223,6 @@ Elo: {elo}"
             if name in self.leaderboards[mode]:
                 self.queues[mode].remove_player(self.leaderboards[mode][name])
 
-
     def erase_player_from_leaderboards(self, name):
         """Remove the player from every leaderboards."""
         for mode in self.leaderboards:
@@ -220,13 +237,12 @@ Elo: {elo}"
         t = time.time()
         self.bans = {
             id: player for id, player in self.bans.items()
-                if t < player.time_end
+            if t < player.time_end
         }
 
     def set_elo(self, mode, name, elo):
         if name in self.leaderboards[mode]:
             self.leaderboards[mode][name].elo = elo
-
 
     def redo_all_games(self):
         """Undo every games that ever happened and redo them."""

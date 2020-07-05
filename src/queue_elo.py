@@ -1,5 +1,4 @@
 """Simulation of queue."""
-from threading import Timer
 from random import shuffle
 
 
@@ -10,7 +9,7 @@ class Queue():
     TOP_CAP = 2
     RANDOM_CAP = 3
 
-    def __init__(self, max_queue, mode, last_id = 0):
+    def __init__(self, max_queue, mode, last_id=0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number > 2")
@@ -64,9 +63,9 @@ class Queue():
         self.timeout = {}
         self.pick_fonction()
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
-                                                    self.red_team,
-                                                    self.blue_team,
-                                                    self.max_queue)
+                                                                   self.red_team,
+                                                                   self.blue_team,
+                                                                   self.max_queue)
 
     def is_finished(self):
         """Return true if the teams are full based on the max_queue."""
@@ -104,7 +103,6 @@ class Queue():
         self.red_team.append(self.players.pop())
         self.blue_team.append(self.players.pop())
 
-
     def get_captain_team(self, id):
         """Return 1 if red, 2 if blue, 0 if none."""
         red_cap, blue_cap = self.red_team[0], self.blue_team[0]
@@ -128,17 +126,17 @@ class Queue():
         if not self.has_queue_been_full:
             return res + display_team(self.players, "Players", self.max_queue)
         return res + message_on_queue_full(self.players,
-                                     self.red_team,
-                                     self.blue_team,
-                                     self.max_queue)
+                                           self.red_team,
+                                           self.blue_team,
+                                           self.max_queue)
 
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
-    return f'```\n{team_name:20} {"Positions":20} {"Elo":>5}\n' +\
-        '\n'.join([f"{i}) {p.name:20} {str(p.fav_pos_str()):20} {p.elo:>5}"
-            for i, p in enumerate(team, 1)]) +\
-        f'```\n**[{len(team)}/{int(max_queue)}]**'
+    return f'```\n{team_name:20} {"Positions":20} {"Elo":>5}\n' + \
+           '\n'.join([f"{i}) {p.name:20} {str(p.fav_pos_str()):20} {p.elo:>5}"
+                      for i, p in enumerate(team, 1)]) + \
+           f'```\n**[{len(team)}/{int(max_queue)}]**'
 
 
 def message_on_queue_full(players, red_team, blue_team, max_queue):
@@ -153,14 +151,16 @@ def message_on_queue_full(players, red_team, blue_team, max_queue):
     return string
 
 
-
 def team_to_player_name(team):
     return "[" + ', '.join([f'{p.name}' for p in team]) + "]"
+
 
 def team_to_player_id(team):
     return "[" + ', '.join([f'{p.id_user}' for p in team]) + "]"
 
+
 HISTORIQUE = []
 if __name__ == '__main__':
     import doctest
+
     doctest.testfile("../test/queue.txt")
