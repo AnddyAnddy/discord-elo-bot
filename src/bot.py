@@ -452,6 +452,43 @@ async def info(ctx, mode, name=""):
                                    description=f"No player called <@{name}>"))
 
 
+@BOT.command(aliases=['match'])
+@check_category('Elo by Anddy')
+@check_channel('info_chat')
+@is_arg_in_modes(GAMES)
+async def info_match(ctx, mode, id_game):
+    """Display the infos of a specific matchs, winner and teams."""
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    if not id_game.isdigit():
+        raise commands.errors.MissingRequiredArgument
+    id_game = int(id_game)
+    req_game, game_not_from_archive = game.get_game(mode, id_game)
+    if req_game is None:
+        await ctx.send("I couldn't find the game... Maybe it doesn't exist.")
+        return
+    if not game_not_from_archive:
+        queue, winner, elo = req_game
+        color = 0xFF0000 if winner == 1 else 0x0000FF
+        winner_str = "Red team" if winner == 1 else "Blue team"
+        await ctx.send(embed=Embed(color=color,
+                                   description=f"```"
+            f"{'Id':12}: {id_game}\n"
+            f"{'Winner':12}: {winner_str}\n"
+            f"{'Red team':12}: {queue_elo.team_to_player_name(queue.red_team)}\n"
+            f"{'Blue team':12}: {queue_elo.team_to_player_name(queue.blue_team)}\n"
+            f"```"
+        ))
+    else:
+        queue = req_game
+        await ctx.send(embed=Embed(color=0x00FF00,
+                                   description=f"```"
+            f"{'Id':12}: {id_game}\n"
+            f"{'Red team':12}: {queue_elo.team_to_player_name(queue.red_team)}\n"
+            f"{'Blue team':12}: {queue_elo.team_to_player_name(queue.blue_team)}\n"
+            f"```"
+        ))
+
 @BOT.command(aliases=['h'])
 @check_category('Elo by Anddy')
 @check_channel('info_chat')

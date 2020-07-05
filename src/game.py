@@ -264,3 +264,13 @@ Elo: {elo}"
                 queue, winner, elo = self.archive[mode][id]
                 self.undo(mode, id)
                 self.add_archive(mode, id, winner)
+
+    def get_game(self, mode, id):
+        """Try to find the game in archived, undecided or canceled dict."""
+        if id in self.archive[mode]:
+            return self.archive[mode][id], 0
+        # if id in self.cancels[mode]:
+        #     return self.cancels[mode][id], 1
+        if id in self.undecided_games[mode]:
+            return self.undecided_games[mode][id], 2
+        return None, -1
