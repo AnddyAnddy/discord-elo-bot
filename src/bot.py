@@ -13,7 +13,9 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from dotenv import load_dotenv
 from game import Game
+from rank import Rank
 from player import Player
+from utils import is_url_image
 import queue_elo
 
 load_dotenv()
@@ -21,6 +23,22 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT = commands.Bot(command_prefix='!')
 GAMES = {}
+
+
+@BOT.event
+async def on_ready():
+    """On ready event."""
+    print(f'{BOT.user} has connected\n')
+    for guild in BOT.guilds:
+        print(guild.name)
+        GAMES[guild.id] = load_file_to_game(guild.id)
+        if GAMES[guild.id] is not None:
+            setattr(GAMES[guild.id], "ranks", {})
+            for mode in GAMES[guild.id].available_modes:
+                GAMES[guild.id].ranks[mode] = {}
+            print(f"The file from data/{guild.id}.data was correctly loaded.")
+        else:
+            GAMES[guild.id] = Game(guild.id)
 
 
 def add_attribute(game, attr_name, value):
@@ -80,7 +98,7 @@ async def on_reaction_add(reaction, user):
     game = GAMES[user.guild.id]
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks"]:
         return
 
     startpage = get_startpage(reaction, embed)
@@ -93,6 +111,8 @@ async def on_reaction_add(reaction, user):
 
     elif embed["function"] == "commands":
         res = cmds_embed(startpage)
+    elif embed["function"] == "ranks":
+        res = game.display_ranks(embed["mode"], startpage)
     else:
         return
 
@@ -109,25 +129,6 @@ def print_all_members(game):
             res.append((p, v.id_user, v.name))
     print(res)
 
-
-@BOT.event
-async def on_ready():
-    """On ready event."""
-    print(f'{BOT.user} has connected\n')
-    for guild in BOT.guilds:
-        print(guild.name)
-        GAMES[guild.id] = load_file_to_game(guild.id)
-        if GAMES[guild.id] is not None:
-            for i in range(2, 5):
-                await guild.create_role(name=f"{i}vs{i} Elo Player",
-                    colour=discord.Colour(random.randint(0, 0xFFFFFF)))
-                role = discord.utils.get(guild.roles, name=f"{i}vs{i} Elo Player")
-                for member in guild.members:
-                    if member.id in GAMES[guild.id].leaderboards[i]:
-                        await member.add_roles(role)
-            print(f"The file from data/{guild.id}.data was correctly loaded.")
-        else:
-            GAMES[guild.id] = Game(guild.id)
 
 
 def check_if_premium(before, after):
@@ -226,6 +227,8 @@ async def init_elo_by_anddy(ctx):
 
         await guild.create_category(name="Modes")
 
+        await guild.create_category(name="Teams")
+
         await ctx.send("Elo by Anddy created, init done, use !help !")
 
 
@@ -255,7 +258,7 @@ async def all_commands(ctx):
 
 
 @BOT.command(pass_context=True, aliases=['j'])
-@check_category('Modes')
+@check_category('Solo elo')
 async def join(ctx):
     """Let the player join a queue.
 
@@ -295,7 +298,7 @@ async def join(ctx):
 
 
 @BOT.command(pass_context=True, aliases=['l'])
-@check_category('Modes')
+@check_category('Solo elo')
 async def leave(ctx):
     """Remove the player from the queue.
 
@@ -317,7 +320,7 @@ async def leave(ctx):
                                    description="You didn't even register lol."))
 
 @BOT.command(aliases=['fr'])
-@check_category('Modes')
+@check_category('Solo elo')
 @has_permissions(manage_roles=True)
 async def force_remove(ctx, name):
     """Remove the player from the current queue."""
@@ -440,7 +443,7 @@ async def leaderboard(ctx, mode, stat_key="elo"):
 
 
 @BOT.command(aliases=['q'])
-@check_category('Modes')
+@check_category('Solo elo')
 async def queue(ctx):
     """Show the current queue.
 
@@ -455,7 +458,7 @@ async def queue(ctx):
 
 @BOT.command(aliases=['cq', 'c_queue'])
 @has_permissions(manage_roles=True)
-@check_category('Modes')
+@check_category('Solo elo')
 async def clear_queue(ctx):
     """Clear the current queue."""
     game = GAMES[ctx.guild.id]
@@ -489,8 +492,10 @@ async def info(ctx, mode, name=""):
         return
     name = int(name)
     if name in game.leaderboards[mode]:
+        player = game.leaderboards[mode][name]
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=str(game.leaderboards[mode][name])))
+                                   description=str(player))\
+                                   .set_thumbnail(url=game.get_rank_url(mode, player.elo)))
     else:
         await ctx.send(embed=Embed(color=0x000000,
                                    description=f"No player called <@{name}>"))
@@ -637,7 +642,7 @@ async def uncancel(ctx, mode, id_game):
 
 
 @BOT.command(aliases=['p'])
-@check_category('Modes')
+@check_category('Solo elo')
 async def pick(ctx, name):
     """Pick a player in the remaining player.
 
@@ -787,9 +792,12 @@ async def add_mode(ctx, mode):
         nb_p = int(mode)
         if GAMES[ctx.guild.id].add_mode(nb_p):
             guild = ctx.message.guild
-            category = discord.utils.get(guild.categories, name="Modes")
+            solo_cat = discord.utils.get(guild.categories, name="Solo elo")
+            teams_cat = discord.utils.get(guild.categories, name="Teams elo")
             await guild.create_text_channel(f'{nb_p}vs{nb_p}',
-                                            category=category)
+                                            category=solo_cat)
+            await guild.create_text_channel(f'{nb_p}vs{nb_p}',
+                                            category=teams_cat)
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description="The game mode has been added."))
             if not discord.utils.get(guild.roles, name=f"{mode}vs{mode} Elo Player"):
@@ -836,6 +844,8 @@ async def ban(ctx, name, time, unity, reason=""):
     if not name.isdigit():
         await ctx.send("You better ping the player !")
         return
+    if not time.isdigit():
+        raise MissingRequiredArgument
     name = int(name)
     formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
     total_sec = int(time) * formats[unity]
@@ -966,6 +976,86 @@ async def rename(ctx, new_name=""):
         if ctx.author.id in game.leaderboards[mode]:
             game.leaderboards[mode][ctx.author.id].name = new_name
     await ctx.send(f"You have been renamed to {new_name}")
+
+@BOT.command()
+@has_permissions(manage_roles=True)
+@check_channel('init')
+@is_arg_in_modes(GAMES)
+async def add_rank(ctx, mode, name, image_url, from_points, to_points):
+    """Add a rank and set this rank to everyone having required points.
+
+    mode is the N in NvsN.
+    name is the name of the rank. Must be in " "
+    from_points is the points required to have this rank.
+    to_points is the max points of this rank.
+    """
+    game = GAMES[ctx.guild.id]
+    mode = int(mode)
+    if not from_points.isdigit() or not to_points.isdigit():
+        raise commands.errors.MissingRequiredArgument
+    from_points = int(from_points)
+    to_points = int(to_points)
+    if to_points < from_points:
+        await ctx.send("To points must be greater than from points")
+        return
+    if not is_url_image(image_url):
+        await ctx.send("The url doesn't lead to an image. (png jpg jpeg)")
+        return
+    if name in game.ranks[mode]:
+        await ctx.send("The rank couldn't be added, maybe it already exists.")
+        return
+
+    game.ranks[mode][name] = Rank(mode, name, image_url, from_points, to_points)
+    await ctx.send("The rank was added and the players got updated.")
+
+@BOT.command()
+@check_category('Elo by Anddy')
+@check_channel('info_chat')
+@is_arg_in_modes(GAMES)
+async def ranks(ctx, mode):
+    """Show the available ranks."""
+    msg = await ctx.send(embed=GAMES[ctx.guild.id].display_ranks(int(mode)))
+    await msg.add_reaction("⏮️")
+    await msg.add_reaction("⬅️")
+    await msg.add_reaction("➡️")
+    await msg.add_reaction("⏭️")
+
+
+@BOT.command()
+@check_category('Elo by Anddy')
+@check_channel('info_chat')
+@is_arg_in_modes(GAMES)
+async def rank(ctx, mode, name):
+    """Show the rank of the name."""
+    ranks = GAMES[ctx.guild.id].ranks[int(mode)]
+    if name not in ranks:
+        await ctx.send(embed=Embed(color=0x000000),
+            description="Couldn't find the rank with that name.")
+        return
+
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description=str(ranks[name])).set_thumbnail(url=ranks[name].url))
+
+@BOT.command(aliases=['team', 'with'])
+@check_category('Teams elo')
+@is_arg_in_modes(GAMES)
+async def join_with(ctx, *names):
+    """Join the queue with your team.
+
+    Example: !team @Anddy @grunersamt @orp @sohigh
+    Will make the 4 players join the queue together."""
+    game = GAMES[ctx.guild.id]
+    # mode = int(ctx.channel.name[0])
+    # for name in names:
+    #     name = name[3: -1]
+    #     if not name.isdigit() or int(name) not in game.leader
+    #     await ctx.send(embed=Embed(color=0x000000,
+    #         description="Couldn't find every player on the list, ping them or make sure they all registered."))
+    #
+    # for name in names:
+
+
+
 
 @BOT.event
 async def on_command_error(ctx, error):
