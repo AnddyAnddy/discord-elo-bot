@@ -9,6 +9,7 @@ from elo import Elo
 from player import Player
 from queue_elo import Queue
 from queue_elo import team_to_player_name
+from utils import team_name
 
 
 class Game():
@@ -25,6 +26,7 @@ class Game():
         self.cancels = {}
         self.queues = {}
         self.bans = {}
+        self.ranks = {}
         self.elo = Elo()
 
     def add_archive(self, mode, id, winner):
@@ -33,15 +35,16 @@ class Game():
             return "Mode isn't in available modes, check !modes"
         if id not in self.undecided_games[mode]:
             return "Id of the game isn't in undecided games, check !u [mode]"
-        if winner not in (1, 2):
-            return "The winner must be 1 (red) or 2 (blue)"
+        if winner not in range(3):
+            return "The winner must be 0(draw), 1 (red) or 2 (blue)"
         queue = self.undecided_games[mode][id]
         self.elo.update(queue, winner)
         self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
         self.undecided_games[mode].pop(queue.game_id, None)
-        return f"The game has been submitted, thanks !\n\
-{'Red' if winner == 1 else 'Blue'} won the game.\n\
-Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
+        return f"The game has been submitted, thanks !\n"\
+                f"{team_name(winner)} won the game.\n"\
+                f"Red bonus: {self.elo.red_rating if winner else 0}, \n"\
+                f"Blue bonus: {self.elo.blue_rating if winner else 0}."
 
     def undo(self, mode, id):
         """Undo a game."""
@@ -101,7 +104,6 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
         nb_pages = 1 + len(self.undecided_games[mode]) // 25
-        print(self.undecided_games)
 
         return Embed(color=0x00FF00,
                      description= \
@@ -117,17 +119,19 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def archived(self, mode, startpage=1):
-        nb_pages = 1 + len(self.archive[mode]) // 25
-
+        len_page = 25
+        nb_pages = 1 + len(self.archive[mode]) // len_page
+        cpage = len_page * (startpage - 1)
+        npage = len_page * startpage
         return Embed(color=0x00FF00,
                      description= \
-                         f"\n```{'Id':5} {'Winner':7} {'Red captain':20} {'Blue captain':20}\n" + \
+                         f"\n```{'Id':5} {'Winner':8} {'Red captain':20} {'Blue captain':20}\n" + \
                          '\n'.join([f"{str(id):5} " \
-                         f"{'Red' if winner == 1 else 'Blue':7} " \
+                         f"{team_name(winner):8} " \
                          f"{queue.red_team[0].name:20} " \
                          f"{queue.blue_team[0].name:20}"
                            for id, (queue, winner, elo_boost) in
-                           sorted(self.archive[mode].items())[25 * (startpage - 1): 25 * startpage]]) + \
+                           sorted(self.archive[mode].items())[cpage:npage]]) + \
                          "\n```")\
             .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
@@ -137,13 +141,13 @@ Red bonus: {self.elo.red_rating}, Blue bonus: {self.elo.blue_rating}."
     def get_history(self, mode, player):
         """Return the string showing the history of the chosen mode."""
         return "```\n - " + \
-               '\n - '.join([f"Id: {str(id)}, \
-Winner: Team {'Red' if winner == 1 else 'Blue'}, \
-Red team: {team_to_player_name(queue.red_team)}, \
-Blue team: {team_to_player_name(queue.blue_team)} \
-Elo: {elo}"
-                             for id, (queue, winner, elo) in self.archive[mode].items() \
-                             if player in queue.red_team or player in queue.blue_team]) + \
+               '\n - '.join([f"Id: {str(id)}, "\
+                f"inner: Team {team_name(winner)}, "\
+                f"Red team: {team_to_player_name(queue.red_team)}, "\
+                f"Blue team: {team_to_player_name(queue.blue_team)} "\
+                f"Elo: {elo}"
+                 for id, (queue, winner, elo) in self.archive[mode].items() \
+                 if player in queue.red_team or player in queue.blue_team]) + \
                "\n```"
 
     def leaderboard(self, mode, key="elo", startpage=1):
@@ -199,6 +203,9 @@ Elo: {elo}"
         self.leaderboards[mode] = {}
         self.undecided_games[mode] = {}
         self.archive[mode] = {}
+        self.ranks[mode] = {}
+        self.cancels[mode] = {}
+        self.bans[mode] = {}
         self.queues[mode] = Queue(2 * mode, 0)
         return True
 
@@ -275,3 +282,29 @@ Elo: {elo}"
         if id in self.undecided_games[mode]:
             return self.undecided_games[mode][id], 2
         return None, -1
+
+    def get_rank_url(self, mode, elo_points):
+        """Return the url corresponding to the elo rank."""
+        for name, rank in self.ranks[mode].items():
+            if elo_points in rank.range:
+                return rank.url
+        return ""
+
+    def display_ranks(self, mode, startpage=1):
+        """Return a string showing every ranks of a specific mode."""
+        nb_pages = 1 + len(self.ranks[mode]) // 20
+        return Embed(color=0x00FF00,
+                     description= \
+                         f'```{"Name":15} {"Start":5} {"Stop":5}\n' +\
+                         '\n'.join([
+                         f"{rank.name:15} "\
+                         f"{rank.start():5} "\
+                         f"{rank.stop():5}"
+                            for name, rank in sorted(self.ranks[mode].items(),
+                             key=lambda r: r[1].start()) \
+                            [20 * (startpage - 1): 20 * startpage]])\
+                             + "```") \
+            .add_field(name="name", value="ranks") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
