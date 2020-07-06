@@ -33,9 +33,6 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            setattr(GAMES[guild.id], "ranks", {})
-            for mode in GAMES[guild.id].available_modes:
-                GAMES[guild.id].ranks[mode] = {}
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -268,7 +265,7 @@ async def join(ctx):
     The user can leave afterward by using !l.
     The user needs to have previously registered in this mode."""
     game = GAMES[ctx.guild.id]
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     name = ctx.author.id
     g_queue = game.queues[mode]
     if name in game.bans:
@@ -308,7 +305,7 @@ async def leave(ctx):
     The user needs to be in the queue for using this command.
     The user can't leave a queue after it went full."""
     game = GAMES[ctx.guild.id]
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     name = ctx.author.id
 
     if name in game.leaderboards[mode]:
@@ -327,7 +324,7 @@ async def force_remove(ctx, name):
     if not name[3: -1].isdigit():
         await ctx.send("You better ping the player")
     name = int(name[3: -1])
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     game = GAMES[ctx.guild.id]
     queue = game.queues[mode]
     await ctx.send(queue.remove_player(game.leaderboards[mode]
@@ -452,7 +449,7 @@ async def queue(ctx):
     Can't be used outside Modes category.
     """
     game = GAMES[ctx.guild.id]
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     await ctx.send(embed=Embed(color=0x00FF00, description=str(game.queues[int(mode)])))
 
 
@@ -462,7 +459,7 @@ async def queue(ctx):
 async def clear_queue(ctx):
     """Clear the current queue."""
     game = GAMES[ctx.guild.id]
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     last_id = game.queues[mode].game_id
     if not game.queues[mode].has_queue_been_full:
         game.queues[mode] = queue_elo.Queue(
@@ -657,7 +654,7 @@ async def pick(ctx, name):
     You can only pick players one by one, the index may change after a pick.
     """
     game = GAMES[ctx.guild.id]
-    mode = int(ctx.channel.name[0])
+    mode = int(ctx.channel.name.split('vs')[0])
     g_queue = game.queues[mode]
     name, is_index = (int(name), True) if name.isdigit() else (
         name[3: -1], False)
@@ -1045,7 +1042,7 @@ async def join_with(ctx, *names):
     Example: !team @Anddy @grunersamt @orp @sohigh
     Will make the 4 players join the queue together."""
     game = GAMES[ctx.guild.id]
-    # mode = int(ctx.channel.name[0])
+    # mode = int(ctx.channel.name.split('vs')[0])
     # for name in names:
     #     name = name[3: -1]
     #     if not name.isdigit() or int(name) not in game.leader
