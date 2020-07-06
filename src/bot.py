@@ -33,6 +33,10 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            setattr(GAMES[guild.id], "ranks", {})
+            setattr(GAMES[guild.id], "cancels", {})
+            for mode in GAMES[guild.id].available_modes:
+                GAMES[guild.id].ranks[mode] = {}
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -697,7 +701,7 @@ async def pick(ctx, name):
         team = g_queue.red_team if team == 1 else g_queue.blue_team
         other_team = g_queue.red_team if team == 2 else g_queue.blue_team
         name -= 1
-        if name < 0 or name > len(g_queue.players):
+        if name < 0 or name >= len(g_queue.players):
             await ctx.send(embed=Embed(color=0x000000,
                                        description="Couldn't find the player with this index."))
             return
@@ -882,15 +886,15 @@ async def setpickmode(ctx, mode, new_mode):
     """Set the pickmode to the new_mode set
 
     :param: new_mode must be a number [0, 1, 2, 3]:
-        [random teams, balanced random, best cap, random cap]
+        [random teams, balanced random, random cap, best cap]
     """
     game = GAMES[ctx.guild.id]
     mode = int(mode)
     new_mode = int(new_mode)
-    if new_mode not in [0, 1, 2, 3]:
+    if new_mode not in range(3):
         await ctx.send("Wrong new_mode given, read help pickmode")
         return
-    pickmodes = ["random teams", "balanced random", "best cap", "random cap"]
+    pickmodes = ["random teams", "balanced random", "random cap", "best cap"]
     game.queues[mode].mode = new_mode
     game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
     await ctx.send(f"Pickmode changed to {pickmodes[new_mode]}!")
