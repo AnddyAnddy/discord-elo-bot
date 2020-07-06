@@ -40,7 +40,14 @@ class Player():
     def fav_pos_str(self):
         return ' '.join([elem for elem in self.fav_pos])
 
-    def update(self, elo_boost, winner, undo=1):
+    def draw_update(self, undo=1):
+        """Same than update but implementing a draw."""
+        self.current_win_streak = 0 if undo == 1 else self.current_win_streak
+        self.current_lose_streak = 0 if undo == 1 else self.current_lose_streak
+        self.nb_matches += 1 * undo
+        self.double_xp -= (1 * undo) * (self.double_xp > 0)
+
+    def win_lose_update(self, elo_boost, winner, undo=1):
         """Update the player's stats after a game.
 
         undo: if set to -1, the stats earning are reversed, useful to
@@ -49,9 +56,9 @@ class Player():
             self.current_win_streak if self.double_xp and winner else elo_boost
         self.elo += (elo_boost * undo)
         self.wins += winner * undo
+        self.losses += (not winner) * undo
         self.current_win_streak = self.current_win_streak + 1 if winner else 0
         self.current_lose_streak = self.current_lose_streak + 1 if not winner else 0
-        self.losses += (not winner) * undo
         self.nb_matches += 1 * undo
         self.double_xp -= (1 * undo) * (self.double_xp > 0)
         self.wlr = self.wins if self.losses == 0 else self.wins / self.losses
@@ -65,10 +72,10 @@ class Player():
         res = '```\n'
         for stat in Player.STATS:
             if stat == "wlr":
-                res += f' - {stat:<25} {getattr(self, stat):>14.3f}\n'
+                res += f'{stat:<25} {getattr(self, stat):>14.3f}\n'
             elif stat == "last_join":
-                res += f' - {stat:<25} {self.last_join.strftime("%d/%m/%Y"):>14}\n'
+                res += f'{stat:<25} {self.last_join.strftime("%d/%m/%Y"):>14}\n'
             else:
-                res += f' - {stat:<25} {str(getattr(self, stat)):>14}\n'
+                res += f'{stat:<25} {str(getattr(self, stat)):>14}\n'
         res += '```'
         return res
