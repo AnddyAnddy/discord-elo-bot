@@ -42,17 +42,28 @@ class Elo():
         :param: winners must be the id of the winning team [1, 2]
         """
         winners -= 1
-        self.update_rating(not winners, winners)
+        if winners != -1:
+            self.update_rating(not winners, winners)
         for i in range(len(queue.red_team)):
-            queue.red_team[i].update(self.red_rating, not winners)
-            queue.blue_team[i].update(self.blue_rating, winners)
+            if winners == -1:
+                queue.red_team[i].draw_update()
+                queue.blue_team[i].draw_update()
+
+            else:
+                queue.red_team[i].win_lose_update(self.red_rating, not winners)
+                queue.blue_team[i].win_lose_update(self.blue_rating, winners)
+
 
     def undo_elo(self, queue, winners, rating):
         """Reversed operation of update_elo."""
         winners -= 1
         for i in range(len(queue.red_team)):
-            queue.red_team[i].update(rating, not winners, -1)
-            queue.blue_team[i].update(-1 * rating, winners, -1)
+            if winners == -1:
+                queue.red_team[i].draw_update(-1)
+                queue.blue_team[i].draw_update(-1)
+            else:
+                queue.red_team[i].win_lose_update(rating, not winners, -1)
+                queue.blue_team[i].win_lose_update(-1 * rating, winners, -1)
 
     def update(self, queue, winners):
         """Update the stats after a game for every player."""
