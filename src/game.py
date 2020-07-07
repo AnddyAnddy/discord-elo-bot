@@ -88,7 +88,7 @@ class Game():
 
     def canceled(self, mode, startpage=1):
         """Return an embed of all canceled games."""
-        nb_pages = 1 + len(self.archive[mode]) // 20
+        nb_pages = 1 + len(self.cancels[mode]) // 20
 
         return Embed(color=0x00FF00,
                      description= \
