@@ -33,7 +33,9 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            setattr(GAMES[guild.id], "bans", {})
+            # setattr(GAMES[guild.id], "bans", {})
+            # setattr(GAMES[guild.id], "cancels", {1: {}, 2: {}, 3: {}, 15: {}})
+
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -160,8 +162,7 @@ async def on_member_update(before, after):
 @BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
-    if ctx.invoked_with not in ("j", "join", "ban"):
-        GAMES[ctx.guild.id].save_to_file()
+    GAMES[ctx.guild.id].save_to_file()
 
     # print(f"The data has been saved after the command: {ctx.message.content}")
 
