@@ -27,7 +27,6 @@ class Player():
         self.current_win_streak = 0
         self.current_lose_streak = 0
         self.double_xp = 0
-        self.time_ban = 0
         self.fav_pos = []
         self.last_join = datetime.now()
 

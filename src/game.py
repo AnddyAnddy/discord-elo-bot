@@ -73,10 +73,7 @@ class Game():
         res = self.undecided_games[mode].pop(id, None)
         if res is None:
             return False
-        for mode in self.available_modes:
-            if mode not in self.cancels:
-                self.cancels[mode] = {}
-        self.cancels[mode][id] = res
+        # self.cancels[mode][id] = res
         return True
 
     def uncancel(self, mode, id):
@@ -207,7 +204,7 @@ class Game():
         self.archive[mode] = {}
         self.ranks[mode] = {}
         self.cancels[mode] = {}
-        self.bans[mode] = {}
+        self.bans = {}
         self.queues[mode] = Queue(2 * mode, 0)
         return True
 
@@ -291,6 +288,11 @@ class Game():
             if elo_points in rank.range:
                 return rank.url
         return ""
+
+
+    def update_ranks(self, mode):
+        """Adapt the range of the ranks to keep a 1/10 spread."""
+        pass
 
     def display_ranks(self, mode, startpage=1):
         """Return a string showing every ranks of a specific mode."""

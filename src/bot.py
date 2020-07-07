@@ -33,10 +33,7 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            setattr(GAMES[guild.id], "ranks", {})
-            setattr(GAMES[guild.id], "cancels", {})
-            for mode in GAMES[guild.id].available_modes:
-                GAMES[guild.id].ranks[mode] = {}
+            setattr(GAMES[guild.id], "bans", {})
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
