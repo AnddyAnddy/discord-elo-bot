@@ -35,7 +35,7 @@ async def on_ready():
         if GAMES[guild.id] is not None:
             # setattr(GAMES[guild.id], "bans", {})
             # setattr(GAMES[guild.id], "cancels", {1: {}, 2: {}, 3: {}, 15: {}})
-
+            # in case it ain't loaded correctly
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
