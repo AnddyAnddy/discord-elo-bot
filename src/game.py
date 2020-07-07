@@ -76,7 +76,6 @@ class Game():
         for mode in self.available_modes:
             if mode not in self.cancels:
                 self.cancels[mode] = {}
-                #i'm dumb
         self.cancels[mode][id] = res
         return True
 
