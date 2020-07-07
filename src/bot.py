@@ -137,8 +137,10 @@ def check_if_premium(before, after):
             role for role in after.roles if role not in before.roles)
         role_name = new_role.name.lower().split()
         nb_games = 0
+        print(role_name)
         if "double" in role_name:
-            nb_games = int(role_name[2])
+            nb_games = int(role_name[0])
+            print(nb_games)
         game = GAMES[after.guild.id]
 
         for mode in game.available_modes:
@@ -146,17 +148,17 @@ def check_if_premium(before, after):
                 player = game.leaderboards[mode][after.name]
                 player.double_xp = nb_games
 
-        return True
+        return nb_games
     return False
 
 
 @BOT.event
 async def on_member_update(before, after):
-    pass
-    # if check_if_premium(before, after):
-    #     channel = discord.utils.get(after.guild.channels, name="premium")
-    #     await channel.send(f"You got your {nb_games} double xp ! \
-    #     PM Anddy#2086 if you have any issue, this is available for every mode.")
+    nb_games = check_if_premium(before, after)
+    if nb_games:
+        channel = discord.utils.get(after.guild.channels, name="premium")
+        await channel.send(f"Hi {before.name}, You got your {nb_games} double xp ! \
+        PM Anddy#2086 if you have any issue, this is available for every mode.")
 
 
 @BOT.event
@@ -847,7 +849,7 @@ async def ban(ctx, name, time, unity, reason=""):
         await ctx.send("You better ping the player !")
         return
     if not time.isdigit():
-        raise MissingRequiredArgument
+        raise commands.errors.MissingRequiredArgument
     name = int(name)
     formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
     total_sec = int(time) * formats[unity]
