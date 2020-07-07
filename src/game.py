@@ -73,6 +73,9 @@ class Game():
         res = self.undecided_games[mode].pop(id, None)
         if res is None:
             return False
+        for mode in self.available_modes:
+            if mode not in self.cancels:
+                self.cancels[mode] = {}
         self.cancels[mode][id] = res
         return True
 
