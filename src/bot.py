@@ -370,7 +370,8 @@ async def register_all(ctx):
     game = GAMES[ctx.guild.id]
     name = ctx.author.id
     for mode in game.leaderboards:
-        game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
+        if name not in game.leaderboards[mode]:
+            game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
         role = discord.utils.get(ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
         await ctx.author.add_roles(role)
     await ctx.send(embed=Embed(color=0x00FF00,
@@ -908,6 +909,31 @@ async def setpickmode(ctx, mode, new_mode):
 async def setelo(ctx, mode, name, elo):
     """Set the elo to the player in the specific mode."""
     GAMES[ctx.guild.id].set_elo(int(mode), int(name[3: -1]), int(elo))
+    await ctx.send("Worked!")
+
+@BOT.command()
+@check_channel('init')
+@is_arg_in_modes(GAMES)
+async def setallstats(ctx, mode, name, *stats):
+    """Set the stats to the player in the specific mode.
+    Let any stat to -1 to not let it change.
+    In order:
+        [elo, wins, losses, nb_matches, wlr, most_wins_in_a_row,
+        most_losses_in_a_row, current_win_streak,
+        current_lose_streak, double_xp]
+        The wlr will anyway be calculated at the end.
+    """
+    player = GAMES[ctx.guild.id].leaderboards[int(mode)][int(name[3: -1])]
+    stats_name = Player.STATS[1: -1]
+    for i, stat in enumerate(stats):
+        try:
+            stat = int(stat)
+            if stat >= 0:
+                setattr(player, stats_name[i], stat)
+        except ValueError:
+            await ctx.send(f"Wrong format for {stats_name[i]}.")
+
+    player.wlr = player.wins / player.losses if player.losses != 0 else 0
     await ctx.send("Worked!")
 
 
