@@ -371,6 +371,8 @@ async def register_all(ctx):
     name = ctx.author.id
     for mode in game.leaderboards:
         game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
+        role = discord.utils.get(ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
+        await ctx.author.add_roles(role)
     await ctx.send(embed=Embed(color=0x00FF00,
                                description=f"<@{name}> has been registered for every mode."))
 
