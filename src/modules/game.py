@@ -3,13 +3,13 @@ import _pickle as pickle
 import operator
 import time
 
-from ban import Ban
 from discord import Embed
-from elo import Elo
-from player import Player
-from queue_elo import Queue
-from queue_elo import team_to_player_name
-from utils import team_name
+from modules.ban import Ban
+from modules.elo import Elo
+from modules.player import Player
+from modules.queue_elo import Queue
+from modules.queue_elo import team_to_player_name
+from utils.utils import team_name
 
 
 class Game():
