@@ -78,3 +78,9 @@ class Player():
                 res += f'{stat:<25} {str(getattr(self, stat)):>14}\n'
         res += '```'
         return res
+
+
+if __name__ == '__main__':
+    p = Player("Anddy", 50)
+    print(p.__dict__)
+    print(p)

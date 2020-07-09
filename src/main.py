@@ -33,7 +33,7 @@ BOT.load_extension('commands.match_process')
 def load_file_to_game(guild_id):
     """Load the file from ./data/guild_id to Game if exists, return True."""
     try:
-        with open(f'./data/{guild_id}.data', "rb") as file:
+        with open(f"./data/{guild_id}.data", "rb") as file:
             return _pickle.load(file)
     except IOError:
         print("The file couldn't be loaded")
