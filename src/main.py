@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from discord import Embed
 from GAMES import GAMES
+from utils.utils import check_if_premium, build_other_page
 
 from modules import game, player, queue_elo, rank, elo, ban
 
@@ -44,15 +45,39 @@ async def on_ready():
     print(f'{BOT.user} has connected\n')
     for guild in BOT.guilds:
         print(guild.name)
-        print(GAMES)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
-            pass
-            # GAMES[guild.id] = Game(guild.id)
+            GAMES[guild.id] = Game(guild.id)
+
+@BOT.event
+async def on_reaction_add(reaction, user):
+    """
+
+    @param user: discord.User
+    @type reaction: discord.Reaction
+    """
+    res = build_other_page(BOT, GAMES[user.guild.id], reaction, user)
+    if res is None:
+        return
+    await reaction.message.edit(embed=res)
+
+    await reaction.message.remove_reaction(reaction.emoji, user)
 
 
+@BOT.event
+async def on_member_update(before, after):
+    nb_games = check_if_premium(GAMES[after.guild.id], before, after)
+    if nb_games:
+        channel = discord.utils.get(after.guild.channels, name="premium")
+        await channel.send(f"Hi {before.name}, You got your {nb_games} double xp ! \
+        PM Anddy#2086 if you have any issue, this is available for every mode.")
+
+@BOT.event
+async def on_command_completion(ctx):
+    """Save the data after every command."""
+    GAMES[ctx.guild.id].save_to_file()
 
 @BOT.event
 async def on_command_error(ctx, error):

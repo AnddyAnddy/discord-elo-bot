@@ -1,1 +1,1 @@
-GAMES = {"hello": 1}
+GAMES = {}
