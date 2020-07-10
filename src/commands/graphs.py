@@ -4,17 +4,33 @@ import os
 import numpy as np
 from discord.ext import commands
 from GAMES import GAMES
+from utils.decorators import is_arg_in_modes, check_channel
 
 
 class Graph(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def graph(self, ctx, mode):
+    @is_arg_in_modes(GAMES)
+    @commands.command(aliases=['g'])
+    @check_channel('info_chat')
+    async def graph(self, ctx, mode, name=""):
+        """Show the graph of previous elo points.
+
+        This doesn't count the boosts due to double xp or win streaks.
+        """
         game = GAMES[ctx.guild.id]
         mode = int(mode)
-        player = game.leaderboards[mode][ctx.author.id]
+        name = str(ctx.author.id) if not name else name[3: -1]
+
+        if not name.isdigit():
+            await ctx.send("You better ping the player !")
+            return
+        name = int(name)
+        if name not in game.leaderboards[mode]:
+            await ctx.send("Couldn't find this player in the leaderboard !")
+            return
+        player = game.leaderboards[mode][name]
         yList = []
         elo_running = player.elo
         for q, _, elo in game.archive[mode].values():
@@ -33,6 +49,8 @@ class Graph(commands.Cog):
         plt.clf()
         plt.plot(arr[0], arr[1])
         plt.title(f'{ctx.message.author}\'s Elo Graph')
+        plt.xlabel("Number of games")
+        plt.ylabel("Elo points")
         plt.savefig(fname='plot')
         await ctx.send(file=discord.File('plot.png'))
         os.remove('plot.png')
