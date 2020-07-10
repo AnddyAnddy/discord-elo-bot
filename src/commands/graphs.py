@@ -48,7 +48,7 @@ class Graph(commands.Cog):
         arr = np.vstack((x, y))
         plt.clf()
         plt.plot(arr[0], arr[1])
-        plt.title(f'{ctx.message.author}\'s Elo Graph')
+        plt.title(f'{player.name}\'s Elo Graph')
         plt.xlabel("Number of games")
         plt.ylabel("Elo points")
         plt.savefig(fname='plot')
