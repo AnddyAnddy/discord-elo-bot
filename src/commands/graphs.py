@@ -22,7 +22,6 @@ class Graph(commands.Cog):
             elif w == 2 and player in q.red_team or w == 1 and player in q.blue_team:
                 nb_losses += 1
                 yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
-            print(nb_wins, nb_losses)
         return yList
 
     def build_elo_graph(self, values, player):
