@@ -56,7 +56,7 @@ class Info_stats(commands.Cog):
             player = game.leaderboards[mode][name]
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=str(player))\
-                                       .set_thumbnail(url=game.get_rank_url(mode, player.elo)))
+                                       .set_thumbnail(url=game.get_rank_url(mode, player.elo, player)))
         else:
             await ctx.send(embed=Embed(color=0x000000,
                                        description=f"No player called <@{name}>"))
