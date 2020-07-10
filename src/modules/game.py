@@ -282,8 +282,10 @@ class Game():
             return self.undecided_games[mode][id], 2
         return None, -1
 
-    def get_rank_url(self, mode, elo_points):
+    def get_rank_url(self, mode, elo_points, player):
         """Return the url corresponding to the elo rank."""
+        if player.double_xp > 0:
+            return "https://i.imgur.com/IBWHO8G.png"
         for name, rank in self.ranks[mode].items():
             if elo_points in rank.range:
                 return rank.url
