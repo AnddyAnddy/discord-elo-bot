@@ -24,6 +24,7 @@ class Graph(commands.Cog):
             elif player in q.blue_team:
                 elo_running += elo
                 yList.append(elo_running)
+        yList.reverse()
         xList = [x for x in range(len(yList))]
         # xList.sort()
         x = np.array(xList)
