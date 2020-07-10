@@ -16,9 +16,12 @@ class Graph(commands.Cog):
         nb_wins, nb_losses = 0, 0
 
         for q, w, _ in values:
-            nb_wins += w == 1 and player in q.red_team or w == 2 and player in q.blue_team
-            nb_losses += w == 2 and player in q.red_team or w == 1 and player in q.blue_team
-            yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
+            if w == 1 and player in q.red_team or w == 2 and player in q.blue_team:
+                nb_wins += 1
+                yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
+            if w == 2 and player in q.red_team or w == 1 and player in q.blue_team:
+                nb_losses += 1
+                yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
         return yList
 
     def build_elo_graph(self, values, player):
