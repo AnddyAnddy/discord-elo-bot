@@ -27,6 +27,7 @@ BOT.load_extension('commands.helper')
 BOT.load_extension('commands.info_stats')
 BOT.load_extension('commands.init')
 BOT.load_extension('commands.match_process')
+BOT.load_extension('commands.graphs')
 
 
 
