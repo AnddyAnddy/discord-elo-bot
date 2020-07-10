@@ -19,9 +19,10 @@ class Graph(commands.Cog):
             if w == 1 and player in q.red_team or w == 2 and player in q.blue_team:
                 nb_wins += 1
                 yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
-            if w == 2 and player in q.red_team or w == 1 and player in q.blue_team:
+            elif w == 2 and player in q.red_team or w == 1 and player in q.blue_team:
                 nb_losses += 1
                 yList.append(nb_wins / nb_losses if nb_losses != 0 else 0)
+            print(nb_wins, nb_losses)
         return yList
 
     def build_elo_graph(self, values, player):
@@ -61,9 +62,9 @@ class Graph(commands.Cog):
             return
         player = game.leaderboards[mode][name]
         values = list(game.archive[mode].values())
-        values.reverse()
         yList = []
         if stat_key == "elo":
+            values.reverse()
             yList = self.build_elo_graph(values, player)
         elif stat_key == "wlr":
             yList = self.build_wlr_graph(values, player)
@@ -76,9 +77,9 @@ class Graph(commands.Cog):
         arr = np.vstack((x, y))
         plt.clf()
         plt.plot(arr[0], arr[1])
-        plt.title(f'{player.name}\'s Elo Graph')
+        plt.title(f'{player.name}\'s {stat_key} Graph')
         plt.xlabel("Number of games")
-        plt.ylabel("Elo points")
+        plt.ylabel(f"{stat_key} points")
         plt.savefig(fname='plot')
         await ctx.send(file=discord.File('plot.png'))
         os.remove('plot.png')
