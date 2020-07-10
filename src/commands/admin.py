@@ -6,6 +6,7 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from GAMES import GAMES
+from queue_elo import Queue
 
 
 class Admin(commands.Cog):
@@ -60,7 +61,7 @@ class Admin(commands.Cog):
         mode = int(ctx.channel.name.split('vs')[0])
         last_id = game.queues[mode].game_id
         if not game.queues[mode].has_queue_been_full:
-            game.queues[mode] = queue_elo.Queue(
+            game.queues[mode] = Queue(
                 2 * mode, game.queues[mode].mode, last_id)
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description="The queue is now empty"))
