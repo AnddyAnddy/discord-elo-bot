@@ -146,7 +146,12 @@ class Admin(commands.Cog):
         player.wlr = player.wins / player.losses if player.losses != 0 else 0
         await ctx.send("Worked!")
 
-
+    async def setdoublexp(self, ctx, player, value):
+        game = GAMES[ctx.guild.id]
+        player = int(player[3: -1])
+        for mode in game.available_modes:
+            if player in game.leaderboards[mode]:
+                game.leaderboards[mode][player].double_xp = value
 
 def setup(bot):
     bot.add_cog(Admin(bot))
