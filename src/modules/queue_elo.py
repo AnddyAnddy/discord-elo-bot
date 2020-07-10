@@ -118,7 +118,7 @@ class Queue():
 
     def ping_everyone(self):
         """Ping everyone present in the queue."""
-        return ' '.join([f"<@{p.id_user}>" for p in self.red_team + self.blue_team])
+        return ' '.join([f"<@{p.id_user}>" for p in self.red_team + self.blue_team + self.players])
 
     def __str__(self):
         """ToString."""
