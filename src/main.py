@@ -72,6 +72,10 @@ async def on_member_update(before, after):
     nb_games = check_if_premium(GAMES[after.guild.id], before, after)
     if nb_games:
         channel = discord.utils.get(after.guild.channels, name="premium")
+        game = GAMES[after.guild.id]
+        for mode in game.available_modes:
+            if after.id in game.leaderboards[mode]:
+                game.leaderboards[mode][after.id].double_xp = nb_games
         await channel.send(f"Hi {before.name}, You got your {nb_games} double xp ! \
         PM Anddy#2086 if you have any issue, this is available for every mode.")
 
