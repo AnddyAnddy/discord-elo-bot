@@ -146,6 +146,8 @@ class Admin(commands.Cog):
         player.wlr = player.wins / player.losses if player.losses != 0 else 0
         await ctx.send("Worked!")
 
+    @commands.command()
+    @check_channel('init')
     async def setdoublexp(self, ctx, player, value):
         game = GAMES[ctx.guild.id]
         player = int(player[3: -1])
