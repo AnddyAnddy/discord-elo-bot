@@ -153,7 +153,7 @@ class Admin(commands.Cog):
         player = int(player[3: -1])
         for mode in game.available_modes:
             if player in game.leaderboards[mode]:
-                game.leaderboards[mode][player].double_xp = value
+                game.leaderboards[mode][player].double_xp = int(value)
 
 def setup(bot):
     bot.add_cog(Admin(bot))
