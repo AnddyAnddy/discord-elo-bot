@@ -1,4 +1,5 @@
 import requests
+from discord import Embed
 
 
 def is_url_image(url):
@@ -72,7 +73,7 @@ def build_other_page(bot, game, reaction, user):
                                                startpage)
 
     elif embed["function"] == "commands":
-        return cmds_embed(startpage)
+        return cmds_embed(bot, startpage)
     elif embed["function"] == "ranks":
         return game.display_ranks(embed["mode"], startpage)
 
@@ -96,3 +97,17 @@ def check_if_premium(game, before, after):
 
         return nb_games
     return False
+
+
+def cmds_embed(bot, startpage=1):
+    nb_pages = 1 + len(bot.commands) // 15
+    nl = '\n'
+    return Embed(color=0x00FF00, description=\
+          '```\n' +\
+         '\n'.join([f'{command.name:15}: {command.help.split(nl)[0]}'
+            for command in sorted(bot.commands, key=lambda c: c.name)[15 * (startpage - 1): 15 * startpage]
+            if command.help is not None and not command.hidden]) + '```')\
+            .add_field(name="name", value="commands") \
+            .add_field(name="-", value="-") \
+            .add_field(name="-", value=0) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
