@@ -2,6 +2,7 @@ from utils.decorators import check_category, is_arg_in_modes, check_channel
 from discord import Embed
 from discord.ext import commands
 from main import GAMES
+from utils.utils import get_player_lb_pos
 
 
 class Info_stats(commands.Cog):
@@ -54,9 +55,11 @@ class Info_stats(commands.Cog):
         name = int(name)
         if name in game.leaderboards[mode]:
             player = game.leaderboards[mode][name]
+            pos = get_player_lb_pos(game.leaderboards[mode], player, "elo")
             await ctx.send(embed=Embed(color=0x00FF00,
-                                       description=str(player))\
-                                       .set_thumbnail(url=game.get_rank_url(mode, player.elo, player)))
+               description=str(player))\
+               .set_thumbnail(url=game.get_rank_url(mode, player.elo, player))\
+               .set_footer(text=f"Position on leaderboard: {pos}"))
         else:
             await ctx.send(embed=Embed(color=0x000000,
                                        description=f"No player called <@{name}>"))

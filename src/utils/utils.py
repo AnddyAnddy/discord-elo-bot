@@ -111,3 +111,11 @@ def cmds_embed(bot, startpage=1):
             .add_field(name="-", value="-") \
             .add_field(name="-", value=0) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
+
+def get_player_lb_pos(leaderboard, player, key):
+    """Return the player position in the leaderboard based on the key O(n)."""
+    res = 1
+    for _, p in leaderboard.items():
+        res += getattr(p, "elo") > getattr(player, "elo")
+    return res
