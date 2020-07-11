@@ -130,6 +130,8 @@ class Queue():
                                            self.blue_team,
                                            self.max_queue)
 
+    def __contains__(self, elem):
+        return elem in self.players or elem in self.red_team or elem in self.blue_team
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""

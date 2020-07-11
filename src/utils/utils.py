@@ -27,7 +27,8 @@ def get_elem_from_embed(reaction):
         "last_page": int(footer[3]),
         "function": mb.fields[0].value,
         "key": mb.fields[1].value,
-        "mode": int(mb.fields[2].value)
+        "mode": int(mb.fields[2].value),
+        "id": int(mb.fields[3].value) if len(mb.fields) == 4 else None
     }
 
 

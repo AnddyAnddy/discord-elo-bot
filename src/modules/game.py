@@ -32,11 +32,11 @@ class Game():
     def add_archive(self, mode, id, winner):
         """Archive a game."""
         if mode not in self.available_modes:
-            return "Mode isn't in available modes, check !modes"
+            return "Mode isn't in available modes, check !modes", False
         if id not in self.undecided_games[mode]:
-            return "Id of the game isn't in undecided games, check !u [mode]"
+            return "Id of the game isn't in undecided games, check !u [mode]", False
         if winner not in range(3):
-            return "The winner must be 0(draw), 1 (red) or 2 (blue)"
+            return "The winner must be 0(draw), 1 (red) or 2 (blue)", False
         queue = self.undecided_games[mode][id]
         self.elo.update(queue, winner)
         self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
@@ -44,7 +44,7 @@ class Game():
         return f"The game has been submitted, thanks !\n"\
                 f"{team_name(winner)} won the game.\n"\
                 f"Red bonus: {self.elo.red_rating if winner else 0}, \n"\
-                f"Blue bonus: {self.elo.blue_rating if winner else 0}."
+                f"Blue bonus: {self.elo.blue_rating if winner else 0}.", True
 
     def undo(self, mode, id):
         """Undo a game."""
