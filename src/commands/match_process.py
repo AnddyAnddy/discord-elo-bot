@@ -41,7 +41,6 @@ class Match_process(commands.Cog):
             self.correctly_submitted[mode] = set()
         if id in self.correctly_submitted[mode]:
             return
-        print(reaction.message.reactions)
         # The message got enough positive reaction (removing bot's one)
         if reaction.message.reactions[0].count - 1 >= queue.max_queue // 2 + 1:
             text, worked = game.add_archive(mode, id, winner)
