@@ -141,21 +141,22 @@ class Game():
     def history(self, mode, name, startpage=1):
         """Return the string showing the history of the chosen mode."""
         len_page = 10
-        cpage = len_page * (startpage - 1)
-        npage = len_page * startpage
+        cpage = len_page * (startpage - 1) # current page
+        npage = len_page * startpage # next page
         player = self.leaderboards[mode][name]
         history = [(id, (queue, winner, elo)) for (id, (queue, winner, elo))
-            in self.archive[mode].items() if player in queue][cpage:npage]
+            in self.archive[mode].items() if player in queue]
         nb_pages = 1 + len(history) // len_page
         return Embed(color=0x00FF00,
                      description= \
-                     f'```\n{"Id":4} {"Win":3} {"Red team":^44} {"Elo":3}\n{" ":8} {"Blue team":^44}\n{"_"*58}\n' + \
-                   f"{'_' * 58}\n".join([f"{str(id):4} "\
-                        f"{winner:3} "\
-                        f"{team_to_player_name(queue.red_team):^44} "\
-                        f"{abs(elo)}\n"\
-                        f"{' ':8} {team_to_player_name(queue.blue_team):^44} "
-                     for id, (queue, winner, elo) in history]) + \
+                     f'```\n{"Id":4} {"Win":3} {"Red team":^44} {"Elo":3}\n'\
+                     f'{" ":8} {"Blue team":^44}\n{"_"*58}\n' + \
+                     f"{'_' * 58}\n".join([f"{str(id):4} "\
+                     f"{winner:3} "\
+                     f"{team_to_player_name(queue.red_team):^44} "\
+                     f"{abs(elo)}\n"\
+                     f"{' ':8} {team_to_player_name(queue.blue_team):^44} "
+                     for id, (queue, winner, elo) in history[cpage:npage]]) + \
                    "\n```")\
             .add_field(name="name", value="history") \
             .add_field(name="-", value="-") \
