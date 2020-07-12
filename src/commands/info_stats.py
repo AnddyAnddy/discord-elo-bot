@@ -200,9 +200,9 @@ class Info_stats(commands.Cog):
         total = sum(wins)
         await ctx.send(embed=Embed(color=0x00FF00,
             description='```\n' +\
-                f"{'Number of games won by red:':30} {wins[1]} ({wins[1] / total * 100}%)\n"\
-                f"{'Number of games won by blue:':30} {wins[2]} ({wins[2] / total * 100}%)\n"\
-                f"{'Number of draws:':30} {wins[0]} ({wins[0] / total * 100}%)"\
+                f"{'Number of games won by red:':30} {wins[1]} ({wins[1] / total * 100:.2f}%)\n"\
+                f"{'Number of games won by blue:':30} {wins[2]} ({wins[2] / total * 100:.2f}%)\n"\
+                f"{'Number of draws:':30} {wins[0]} ({wins[0] / total * 100:.2f}%)"\
                 + '```'
             ))
 
