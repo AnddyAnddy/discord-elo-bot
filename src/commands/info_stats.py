@@ -212,7 +212,7 @@ class Info_stats(commands.Cog):
                     else:
                         most_played_with[p.name] = 1
 
-        print('\n - '.join([f"{name:20}: {nb:3}" for name, nb in sorted(most_played_with.items(), reverse=True)]))
+        print('\n - '.join([f"{name:20}: {nb:3}" for name, nb in sorted(most_played_with.items(), key=nb, reverse=True)]))
 
 
 
