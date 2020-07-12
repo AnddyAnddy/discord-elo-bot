@@ -149,12 +149,12 @@ class Game():
         nb_pages = 1 + len(history) // len_page
         return Embed(color=0x00FF00,
                      description= \
-                     f'```\n{"Id":4} {"Win":3} {"Red team":22} {"Blue team":22} {"Elo":3}\n' + \
-                   '\n\n'.join([f"{str(id):4} "\
+                     f'```\n{"Id":4} {"Win":3} {"Red team":^44} {"Elo":3}\n{" ":8} {"Blue team":^44}\n{"_"*58}\n' + \
+                   f"{'_' * 58}\n".join([f"{str(id):4} "\
                         f"{winner:3} "\
-                        f"{team_to_player_name(queue.red_team):22} "\
-                        f"{team_to_player_name(queue.blue_team):22} "\
-                        f"{elo if queue.player_in_winners(winner, player) else -elo}"
+                        f"{team_to_player_name(queue.red_team):^44} "\
+                        f"{abs(elo)}\n"\
+                        f"{' ':8} {team_to_player_name(queue.blue_team):^44} "
                      for id, (queue, winner, elo) in history]) + \
                    "\n```")\
             .add_field(name="name", value="history") \
