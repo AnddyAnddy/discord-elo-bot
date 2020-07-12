@@ -61,14 +61,14 @@ def build_other_page(bot, game, reaction, user):
         return
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks", "history"]:
         return None
 
     startpage = get_startpage(reaction, embed)
     if embed["function"] == "leaderboard":
         return game.leaderboard(embed["mode"], embed["key"],
                                startpage)
-    elif embed["function"] in ["archived", "undecided", "canceled"]:
+    elif embed["function"] in ["archived", "undecided", "canceled", "history"]:
         return getattr(game, embed["function"])(embed["mode"],
                                                startpage)
 

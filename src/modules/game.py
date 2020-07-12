@@ -138,17 +138,27 @@ class Game():
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
-    def get_history(self, mode, player):
+    def history(self, mode, player, startpage=1):
         """Return the string showing the history of the chosen mode."""
-        return "```\n - " + \
-               '\n - '.join([f"Id: {str(id)}, "\
-                f"inner: Team {team_name(winner)}, "\
-                f"Red team: {team_to_player_name(queue.red_team)}, "\
-                f"Blue team: {team_to_player_name(queue.blue_team)} "\
-                f"Elo: {elo}"
-                 for id, (queue, winner, elo) in self.archive[mode].items() \
-                 if player in queue.red_team or player in queue.blue_team]) + \
-               "\n```"
+        len_page = 15
+        nb_pages = 1 + len(self.archive[mode]) // len_page
+        cpage = len_page * (startpage - 1)
+        npage = len_page * startpage
+        return Embed(color=0x00FF00,
+                     description= \
+                     f'```\n{"Id":4} {"Win":3} {"Red team":22} {"Blue team":22} {"Elo":3}' + \
+                   '\n\n'.join([f"{str(id)} "\
+                        f"{team_name(winner)} "\
+                        f"{team_to_player_name(queue.red_team)} "\
+                        f"{team_to_player_name(queue.blue_team)} "\
+                        f"{elo if queue.player_in_winners(winner, player) else -elo}"
+                     for id, (queue, winner, elo) in sorted(self.archive[mode].items(), reverse=True)[cpage:npage] \
+                     if player in queue]) + \
+                   "\n```")\
+            .add_field(name="name", value="history") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def leaderboard(self, mode, key="elo", startpage=1):
         """Return the string showing the leaderboard of the chosen mode."""

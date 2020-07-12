@@ -130,6 +130,11 @@ class Queue():
                                            self.blue_team,
                                            self.max_queue)
 
+    def player_in_winners(self, winner, player):
+        """Return True if the player won that game."""
+        return winner == 1 and player in self.red_team or\
+            winner == 2 and player in self.blue_team
+
     def __contains__(self, elem):
         return elem in self.players or elem in self.red_team or elem in self.blue_team
 

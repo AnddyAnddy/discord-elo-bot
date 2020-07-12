@@ -125,11 +125,15 @@ class Info_stats(commands.Cog):
         name = int(name)
 
         if name in game.leaderboards[mode]:
-            await ctx.send(embed=Embed(color=0x00FF00,
-                                       description=game.get_history(mode, game.leaderboards[mode][name])))
+            msg = await ctx.send(embed=game.history(mode,
+                game.leaderboards[mode][name]))
+            await msg.add_reaction("⏮️")
+            await msg.add_reaction("⬅️")
+            await msg.add_reaction("➡️")
+            await msg.add_reaction("⏭️")
         else:
             await ctx.send(embed=Embed(color=0x000000,
-                                       description=f"No player called <@{name}>"))
+               description=f"No player called <@{name}>"))
 
 
 
