@@ -140,7 +140,7 @@ class Game():
 
     def history(self, mode, name, startpage=1):
         """Return the string showing the history of the chosen mode."""
-        len_page = 15
+        len_page = 10
         cpage = len_page * (startpage - 1)
         npage = len_page * startpage
         player = self.leaderboards[mode][name]
