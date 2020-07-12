@@ -83,6 +83,36 @@ class Graph(commands.Cog):
         await ctx.send(file=discord.File('plot.png'))
         os.remove('plot.png')
 
+    @commands.command(aliases=['oa'])
+    @check_channel('info_chat')
+    @is_arg_in_modes(GAMES)
+    async def overall_stats(self, ctx, mode):
+        """Show the number of wins of red/blue."""
+        archive = GAMES[ctx.guild.id].archive[int(mode)]
+        wins = [0, 0, 0]
+        yDlist, yRlist, yBlist = [], [], []
+        for _, winner, _ in archive.values():
+            wins[0] += winner == 0
+            wins[1] += winner == 1
+            wins[2] += winner == 2
+            yDlist.append(wins[0])
+            yRlist.append(wins[1])
+            yBlist.append(wins[2])
+
+        total = sum(wins)
+
+        x = np.arange(total)
+        plt.clf()
+        plt.plot(x, yDlist)
+        plt.plot(x, yRlist)
+        plt.plot(x, yBlist)
+        plt.title(f'Teams wins Graph')
+        plt.xlabel("Number of games")
+        plt.legend(['Draw', 'Red', 'Blue'], loc='upper left')
+        plt.savefig(fname='plot')
+        await ctx.send(file=discord.File('plot.png'))
+        os.remove('plot.png')
+
 
 def setup(bot):
     bot.add_cog(Graph(bot))

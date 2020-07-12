@@ -184,27 +184,6 @@ class Info_stats(commands.Cog):
             description=str(ranks[name])).set_thumbnail(url=ranks[name].url))
 
 
-    @commands.command(aliases=['oa'])
-    @check_category('Elo by Anddy')
-    @check_channel('info_chat')
-    @is_arg_in_modes(GAMES)
-    async def overall_stats(self, ctx, mode):
-        """Show the number of wins of red/blue."""
-        archive = GAMES[ctx.guild.id].archive[int(mode)]
-        wins = [0, 0, 0]
-        for _, winner, _ in archive.values():
-            wins[0] += winner == 0
-            wins[1] += winner == 1
-            wins[2] += winner == 2
-
-        total = sum(wins)
-        await ctx.send(embed=Embed(color=0x00FF00,
-            description='```\n' +\
-                f"{'Number of games won by red:':30} {wins[1]} ({wins[1] / total * 100:.2f}%)\n"\
-                f"{'Number of games won by blue:':30} {wins[2]} ({wins[2] / total * 100:.2f}%)\n"\
-                f"{'Number of draws:':30} {wins[0]} ({wins[0] / total * 100:.2f}%)"\
-                + '```'
-            ))
 
 def setup(bot):
     bot.add_cog(Info_stats(bot))
