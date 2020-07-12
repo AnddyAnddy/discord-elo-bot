@@ -185,5 +185,38 @@ class Info_stats(commands.Cog):
 
 
 
+    @commands.command()
+    @check_category('Elo by Anddy')
+    @check_channel('info_chat')
+    @is_arg_in_modes(GAMES)
+    async def most(self, ctx, mode, winLose, arg, name=""):
+        """Show who you played the most with.
+
+        Example: !most 4 win with
+        Will show the leaderboard of the people with who you won the most."""
+        game = GAMES[ctx.guild.id]
+        mode = int(mode)
+        archive = game.archive[mode]
+        most_played_with = {}
+        if ctx.author.id not in game.leaderboards[mode]:
+            await ctx.send(embed=Embed(color=0x000000,
+                description="You are not registered on the leaderboard."))
+            return
+        player = game.leaderboards[mode][ctx.author.id]
+        for (queue, _, _) in archive.values():
+            if player in queue:
+                team = queue.red_team if player in queue.red_team else queue.blue_team
+                for p in team:
+                    if p.name in most_played_with:
+                        most_played_with[p.name] += 1
+                    else:
+                        most_played_with[p.name] = 1
+
+        print('\n - '.join([f"{name:20}: {nb:3}" for name, nb in sorted(most_played_with.items(), reverse=True)]))
+
+
+
+
+
 def setup(bot):
     bot.add_cog(Info_stats(bot))
