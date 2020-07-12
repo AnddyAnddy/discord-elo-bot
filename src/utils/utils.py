@@ -68,9 +68,12 @@ def build_other_page(bot, game, reaction, user):
     if embed["function"] == "leaderboard":
         return game.leaderboard(embed["mode"], embed["key"],
                                startpage)
-    elif embed["function"] in ["archived", "undecided", "canceled", "history"]:
+    elif embed["function"] in ["archived", "undecided", "canceled"]:
         return getattr(game, embed["function"])(embed["mode"],
-                                               startpage)
+                                               startpage=startpage)
+    elif embed["function"] == "history":
+        return getattr(game, embed["function"])(embed["mode"],
+            embed["id"], startpage=startpage)
 
     elif embed["function"] == "commands":
         return cmds_embed(bot, startpage)

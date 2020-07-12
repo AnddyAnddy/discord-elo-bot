@@ -138,26 +138,29 @@ class Game():
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
-    def history(self, mode, player, startpage=1):
+    def history(self, mode, name, startpage=1):
         """Return the string showing the history of the chosen mode."""
         len_page = 15
-        nb_pages = 1 + len(self.archive[mode]) // len_page
         cpage = len_page * (startpage - 1)
         npage = len_page * startpage
+        player = self.leaderboards[mode][name]
+        history = [(id, (queue, winner, elo)) for (id, (queue, winner, elo))
+            in self.archive[mode].items() if player in queue][cpage:npage]
+        nb_pages = 1 + len(history) // len_page
         return Embed(color=0x00FF00,
                      description= \
-                     f'```\n{"Id":4} {"Win":3} {"Red team":22} {"Blue team":22} {"Elo":3}' + \
-                   '\n\n'.join([f"{str(id)} "\
-                        f"{team_name(winner)} "\
-                        f"{team_to_player_name(queue.red_team)} "\
-                        f"{team_to_player_name(queue.blue_team)} "\
+                     f'```\n{"Id":4} {"Win":3} {"Red team":22} {"Blue team":22} {"Elo":3}\n' + \
+                   '\n\n'.join([f"{str(id):4} "\
+                        f"{winner:3} "\
+                        f"{team_to_player_name(queue.red_team):22} "\
+                        f"{team_to_player_name(queue.blue_team):22} "\
                         f"{elo if queue.player_in_winners(winner, player) else -elo}"
-                     for id, (queue, winner, elo) in sorted(self.archive[mode].items(), reverse=True)[cpage:npage] \
-                     if player in queue]) + \
+                     for id, (queue, winner, elo) in history]) + \
                    "\n```")\
             .add_field(name="name", value="history") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
+            .add_field(name="id", value=name) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def leaderboard(self, mode, key="elo", startpage=1):

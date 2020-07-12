@@ -125,8 +125,7 @@ class Info_stats(commands.Cog):
         name = int(name)
 
         if name in game.leaderboards[mode]:
-            msg = await ctx.send(embed=game.history(mode,
-                game.leaderboards[mode][name]))
+            msg = await ctx.send(embed=game.history(mode, name))
             await msg.add_reaction("⏮️")
             await msg.add_reaction("⬅️")
             await msg.add_reaction("➡️")
