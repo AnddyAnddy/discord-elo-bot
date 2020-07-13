@@ -85,8 +85,8 @@ class Match_process(commands.Cog):
         nb_yes = int(queue.max_queue // 2 + 1)
         nb_no = int(queue.max_queue // 2)
         res = f"<@{ctx.author.id}> is saying that {team_name(winner)} won.\n"
-        res += f"Do you confirm ? {nb_yes} ✅ are needed to make it official.\n"
-        res += f'{nb_no} ❌ {"is" if nb_no == 1 else "are"} needed to cancel it.\n'
+        res += f"Do you confirm ? {nb_yes + 1} ✅ are needed to make it official.\n"
+        res += f'{nb_no + 1} ❌ {"is" if nb_no + 1 == 1 else "are"} needed to cancel it.\n'
         res += "Any attempt to mess up the result will lead to a ban."
 
         msg = await ctx.send(queue.ping_everyone(),
