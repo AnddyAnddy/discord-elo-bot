@@ -127,7 +127,7 @@ def most_stat_embed(game, mode, id, order_key="game", startpage=1, with_or_vs="w
     cpage = len_page * (startpage - 1)
     npage = len_page * startpage
     order = ["games", "draws", "wins", "losses"].index(order_key)
-    return Embed(title="Stat of most played with players leaderboard",
+    return Embed(title=f"Leaderboard of the most played games {with_or_vs} players",
         color=0x00FF00,
         description=\
         f'```\n{"name":20} {"game":7} {"draw":7} {"wins":7} {"losses":7}\n' +\
