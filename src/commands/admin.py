@@ -155,5 +155,22 @@ class Admin(commands.Cog):
             if player in game.leaderboards[mode]:
                 game.leaderboards[mode][player].double_xp = int(value)
 
+    @commands.command(aliases=['rmsp'])
+    @check_channel('init')
+    async def remove_non_server_players(self, ctx):
+        """Remove people that aren't in the server anymore."""
+        game = GAMES[ctx.guild.id]
+        guild = self.bot.get_guild(ctx.guild.id)
+        start = sum(len(v) for mode, v in game.leaderboards.items())
+        for mode in game.available_modes:
+            game.leaderboards[mode] = {
+                id: player for id, player in game.leaderboards[mode].items()
+                if guild.get_member(id) is not None
+            }
+        end = sum(len(v) for mode, v in game.leaderboards.items())
+
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=f"You kicked {start - end} members from the leaderboards"))
+
 def setup(bot):
     bot.add_cog(Admin(bot))
