@@ -189,12 +189,12 @@ class Info_stats(commands.Cog):
     @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
-    async def most(self, ctx, mode, name="", order_key=1):
+    async def most(self, ctx, mode, name="", order_key="games", with_or_vs="with"):
         """Show who you played the most with.
 
-        Example: !most 4 win
-        Will show the leaderboard of the people with who you won the most.
-        order_key must € [1, 2, 3, 4], respectively [with, draws, wins, losses]
+        Example: !most losses @Anddy with
+        Will show the leaderboard of the people with who you lost the most.
+        order_key must € [games, draws, wins, losses]
         is the key the table will be ordered by."""
         game = GAMES[ctx.guild.id]
         mode = int(mode)
@@ -211,11 +211,13 @@ class Info_stats(commands.Cog):
             await ctx.send(embed=Embed(color=0x000000,
                 description="You are not registered on the leaderboard."))
             return
-        if order_key not in range(1, 5):
+        if order_key not in ("games", "draws", "wins", "losses"):
             raise commands.errors.MissingRequiredArgument(order_key)
+        if with_or_vs not in ("with", "vs"):
+            raise commands.errors.MissingRequiredArgument(with_or_vs)
 
         # most_played_with = build_most_played_with(game, mode, name)
-        msg = await ctx.send(embed=most_stat_embed(game, mode, name, order_key))
+        msg = await ctx.send(embed=most_stat_embed(game, mode, name, order_key, with_or_vs=with_or_vs))
         await msg.add_reaction("⏮️")
         await msg.add_reaction("⬅️")
         await msg.add_reaction("➡️")
