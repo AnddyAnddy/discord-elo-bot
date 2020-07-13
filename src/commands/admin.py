@@ -79,13 +79,15 @@ class Admin(commands.Cog):
         reason must be into " "
         """
         name = name[3: -1]
+        if not time.isdigit():
+            raise commands.errors.MissingRequiredArgument(time)
         if not name.isdigit():
             await ctx.send("You better ping the player !")
             return
-        if not time.isdigit():
-            raise commands.errors.MissingRequiredArgument
         name = int(name)
         formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
+        if not unity in formats.keys():
+            raise commands.errors.MissingRequiredArgument(unity)
         total_sec = int(time) * formats[unity]
         GAMES[ctx.guild.id].ban_player(name, total_sec, reason)
         await ctx.send(embed=Embed(color=0x00FF00,

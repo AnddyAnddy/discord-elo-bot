@@ -74,7 +74,7 @@ class Info_stats(commands.Cog):
         game = GAMES[ctx.guild.id]
         mode = int(mode)
         if not id_game.isdigit():
-            raise commands.errors.MissingRequiredArgument
+            raise commands.errors.MissingRequiredArgument(id_game)
         id_game = int(id_game)
         req_game, game_not_from_archive = game.get_game(mode, id_game)
         if req_game is None:
@@ -192,7 +192,7 @@ class Info_stats(commands.Cog):
     async def most(self, ctx, mode, name="", order_key=1):
         """Show who you played the most with.
 
-        Example: !most 4 win with
+        Example: !most 4 win
         Will show the leaderboard of the people with who you won the most.
         order_key must € [1, 2, 3, 4], respectively [with, draws, wins, losses]
         is the key the table will be ordered by."""
@@ -211,6 +211,8 @@ class Info_stats(commands.Cog):
             await ctx.send(embed=Embed(color=0x000000,
                 description="You are not registered on the leaderboard."))
             return
+        if order_key not in range(1, 5):
+            raise commands.errors.MissingRequiredArgument(order_key)
 
         # most_played_with = build_most_played_with(game, mode, name)
         msg = await ctx.send(embed=most_stat_embed(game, mode, name, order_key))

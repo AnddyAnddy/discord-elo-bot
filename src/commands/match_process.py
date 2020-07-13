@@ -72,7 +72,7 @@ class Match_process(commands.Cog):
         """
         game = GAMES[ctx.guild.id]
         if not id_game.isdigit() or not winner.isdigit():
-            raise commands.errors.MissingRequiredArgument
+            raise commands.errors.MissingRequiredArgument(id_game)
         mode, id_game, winner = int(mode), int(id_game), int(winner)
         if not id_game in game.undecided_games[mode]:
             await ctx.send(embed=Embed(color=0x000000,
@@ -122,7 +122,7 @@ class Match_process(commands.Cog):
         """
         game = GAMES[ctx.guild.id]
         if not id_game.isdigit() or not winner.isdigit():
-            raise commands.errors.MissingRequiredArgument
+            raise commands.errors.MissingRequiredArgument(id_game)
         mode, id_game, winner = int(mode), int(id_game), int(winner)
         text, worked = game.add_archive(mode, id_game, winner)
         await ctx.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
