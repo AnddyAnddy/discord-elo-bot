@@ -132,7 +132,7 @@ def most_stat_embed(game, mode, id, order_key=1, startpage=1):
         '\n'.join([
             f"{name:20} {_with:<7} {d:<7} {w:<7} {l:<7}"
             for name, (_with, d, w, l) in sorted(most_played_with.items(),
-                key=lambda x: x[order_key], reverse=True)[cpage: npage]]) +
+                key=lambda x: x[1][order_key], reverse=True)[cpage: npage]]) +
             "```"
         ).add_field(name="name", value="most") \
         .add_field(name="key", value=order_key) \
