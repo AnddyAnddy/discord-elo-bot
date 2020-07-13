@@ -2,7 +2,7 @@ from utils.decorators import check_category, is_arg_in_modes, check_channel
 from discord import Embed
 from discord.ext import commands
 from main import GAMES
-from utils.utils import get_player_lb_pos
+from utils.utils import get_player_lb_pos, team_players_stats, most_stat_embed, build_most_played_with
 
 
 class Info_stats(commands.Cog):
@@ -189,30 +189,35 @@ class Info_stats(commands.Cog):
     @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
-    async def most(self, ctx, mode, winLose, arg, name=""):
+    async def most(self, ctx, mode, name="", order_key=1):
         """Show who you played the most with.
 
         Example: !most 4 win with
-        Will show the leaderboard of the people with who you won the most."""
+        Will show the leaderboard of the people with who you won the most.
+        order_key must € [1, 2, 3, 4], respectively [with, draws, wins, losses]
+        is the key the table will be ordered by."""
         game = GAMES[ctx.guild.id]
         mode = int(mode)
-        archive = game.archive[mode]
-        most_played_with = {}
         if ctx.author.id not in game.leaderboards[mode]:
             await ctx.send(embed=Embed(color=0x000000,
                 description="You are not registered on the leaderboard."))
             return
-        player = game.leaderboards[mode][ctx.author.id]
-        for (queue, _, _) in archive.values():
-            if player in queue:
-                team = queue.red_team if player in queue.red_team else queue.blue_team
-                for p in team:
-                    if p.name in most_played_with:
-                        most_played_with[p.name] += 1
-                    else:
-                        most_played_with[p.name] = 1
+        name = str(ctx.author.id) if not name else name[3: -1]
+        if not name.isdigit():
+            await ctx.send("You better ping the player !")
+            return
+        name = int(name)
+        if name not in game.leaderboards[mode]:
+            await ctx.send(embed=Embed(color=0x000000,
+                description="You are not registered on the leaderboard."))
+            return
 
-        print('\n - '.join([f"{name:20}: {nb:3}" for name, nb in sorted(most_played_with.items(), key=lambda x: x[1], reverse=True)]))
+        # most_played_with = build_most_played_with(game, mode, name)
+        msg = await ctx.send(embed=most_stat_embed(game, mode, name, order_key))
+        await msg.add_reaction("⏮️")
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
+        await msg.add_reaction("⏭️")
 
 
 

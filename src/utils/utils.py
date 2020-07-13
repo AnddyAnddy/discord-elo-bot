@@ -61,7 +61,7 @@ def build_other_page(bot, game, reaction, user):
         return
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks", "history"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks", "history", "most"]:
         return None
 
     startpage = get_startpage(reaction, embed)
@@ -77,6 +77,9 @@ def build_other_page(bot, game, reaction, user):
 
     elif embed["function"] == "commands":
         return cmds_embed(bot, startpage)
+
+    elif embed["function"] == "most":
+        return most_stat_embed(game, embed["mode"], embed["id"], int(embed["key"]), startpage)
     elif embed["function"] == "ranks":
         return game.display_ranks(embed["mode"], startpage)
 
@@ -116,9 +119,56 @@ def cmds_embed(bot, startpage=1):
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
 
+def most_stat_embed(game, mode, id, order_key=1, startpage=1):
+    most_played_with = build_most_played_with(game, mode, id)
+    len_page = 20
+    nb_pages = 1 + len(most_played_with) // len_page
+    cpage = len_page * (startpage - 1)
+    npage = len_page * startpage
+    return Embed(title="Stat of most played with players leaderboard",
+        color=0x00FF00,
+        description=\
+        f'```\n{"name":20} {"with":7} {"draw":7} {"wins":7} {"losses":7}\n' +\
+        '\n'.join([
+            f"{name:20} {_with:<7} {d:<7} {w:<7} {l:<7}"
+            for name, (_with, d, w, l) in sorted(most_played_with.items(),
+                key=lambda x: x[order_key], reverse=True)[cpage: npage]]) +
+            "```"
+        ).add_field(name="name", value="most") \
+        .add_field(name="key", value=order_key - 1) \
+        .add_field(name="mode", value=mode) \
+        .add_field(name="id", value=id) \
+        .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
+
 def get_player_lb_pos(leaderboard, player, key):
     """Return the player position in the leaderboard based on the key O(n)."""
     res = 1
     for _, p in leaderboard.items():
         res += getattr(p, "elo") > getattr(player, "elo")
     return res
+
+def build_most_played_with(game, mode, name):
+    most_played_with = {}
+    archive = game.archive[mode]
+    player = game.leaderboards[mode][name]
+    for (queue, win, _) in archive.values():
+        if player in queue:
+            team = queue.red_team if player in queue.red_team else queue.blue_team
+            for p in team:
+                team_players_stats(p, player, most_played_with, win, queue)
+    most_played_with.pop(player.name, None)
+    return most_played_with
+
+def team_players_stats(team_player, me, most_played_with, win, queue):
+    if team_player.name in most_played_with:
+        most_played_with[team_player.name][0] += 1
+    else:
+        # nb matches with, nb draws, nb wins, nb losses
+        most_played_with[team_player.name] = [1, 0, 0, 0]
+    if win == 0:
+        most_played_with[team_player.name][1] += 1
+    elif queue.player_in_winners(win, me):
+        most_played_with[team_player.name][2] += 1
+    else:
+        most_played_with[team_player.name][3] += 1
