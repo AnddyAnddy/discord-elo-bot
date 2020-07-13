@@ -78,6 +78,11 @@ class Match_process(commands.Cog):
             await ctx.send(embed=Embed(color=0x000000,
                 description="The game is not in undecided games!"))
             return
+        if winner not in range(3):
+            await ctx.send(embed=Embed(color=0x000000,
+                description="The winner must be in [0, 1, 2]!"))
+            return
+
         queue = game.undecided_games[mode][id_game]
         if not mode in self.waiting_for_approval:
             self.waiting_for_approval[mode] = {}
