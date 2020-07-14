@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord import Embed
 from GAMES import GAMES
 from utils.utils import check_if_premium, build_other_page
+from modules.queue_elo import Queue
 
 from modules import game, player, queue_elo, rank, elo, ban
 
@@ -48,6 +49,24 @@ async def on_ready():
         print(guild.name)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            if not hasattr(GAMES[guild.id], "available_maps"):
+                setattr(GAMES[guild.id], "available_maps", {})
+
+            if not hasattr(GAMES[guild.id], "maps_archive"):
+                setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
+
+            if not hasattr(GAMES[guild.id], "waiting_for_approval"):
+                setattr(GAMES[guild.id], "waiting_for_approval", {mode: {} for mode in GAMES[guild.id].available_modes})
+
+            if not hasattr(GAMES[guild.id], "correctly_submitted"):
+                setattr(GAMES[guild.id], "correctly_submitted", {mode: {} for mode in GAMES[guild.id].available_modes})
+
+            if not hasattr(GAMES[guild.id], "mappickmode"):
+                setattr(GAMES[guild.id], "mappickmode", 0)
+            for mode in GAMES[guild.id].available_modes:
+                q = GAMES[guild.id].queues[mode]
+                GAMES[guild.id].queues[mode] = Queue(q.max_queue, q.mode, 0, q.game_id)
+
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)

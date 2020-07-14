@@ -223,7 +223,14 @@ class Info_stats(commands.Cog):
         await msg.add_reaction("➡️")
         await msg.add_reaction("⏭️")
 
-
+    @commands.command()
+    async def maps(self, ctx):
+        """Show the available maps."""
+        msg = await ctx.send(embed=GAMES[ctx.guild.id].maps())
+        await msg.add_reaction("⏮️")
+        await msg.add_reaction("⬅️")
+        await msg.add_reaction("➡️")
+        await msg.add_reaction("⏭️")
 
 
 

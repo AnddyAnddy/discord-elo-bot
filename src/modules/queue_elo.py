@@ -1,5 +1,7 @@
 """Simulation of queue."""
 from random import shuffle
+from random import choice
+from random import sample
 
 
 class Queue():
@@ -9,7 +11,7 @@ class Queue():
     TOP_CAP = 2
     RANDOM_CAP = 3
 
-    def __init__(self, max_queue, mode, last_id=0):
+    def __init__(self, max_queue, mode, mapmode, last_id=0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number > 2")
@@ -25,6 +27,7 @@ class Queue():
         self.modes = [self.random_team, self.balanced_random, self.random_cap, self.best_cap]
         self.pick_fonction = self.modes[mode]
         self.mode = mode
+        self.mapmode = mapmode
         self.game_id = last_id + 1
 
     def is_queue_full(self):
@@ -62,6 +65,7 @@ class Queue():
         #     t.cancel()
         self.timeout = {}
         self.pick_fonction()
+        self.map_pick(game)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
                                                                    self.red_team,
                                                                    self.blue_team,
@@ -103,6 +107,19 @@ class Queue():
         self.red_team.append(self.players.pop())
         self.blue_team.append(self.players.pop())
 
+    def map_pick(self, game):
+        """Do the process of picking a map."""
+        if self.mapmode == 0:
+            return None
+        if self.mapmode == 1:
+            game.maps_archive[self.max_queue // 2][self.game_id] =\
+                [choice(list(game.available_maps))]
+        else:
+            game.maps_archive[self.max_queue // 2][self.game_id] =\
+                sample(list(game.available_maps),
+                    min(3, len(game.available_maps)))
+
+
     def get_captain_team(self, id):
         """Return 1 if red, 2 if blue, 0 if none."""
         red_cap, blue_cap = self.red_team[0], self.blue_team[0]
@@ -120,6 +137,11 @@ class Queue():
         """Ping everyone present in the queue."""
         return ' '.join([f"<@{p.id_user}>" for p in self.red_team + self.blue_team + self.players])
 
+    def player_in_winners(self, winner, player):
+        """Return True if the player won that game."""
+        return winner == 1 and player in self.red_team or\
+        winner == 2 and player in self.blue_team
+
     def __str__(self):
         """ToString."""
         res = f"Game n°{self.game_id}\n"
@@ -130,10 +152,6 @@ class Queue():
                                            self.blue_team,
                                            self.max_queue)
 
-    def player_in_winners(self, winner, player):
-        """Return True if the player won that game."""
-        return winner == 1 and player in self.red_team or\
-            winner == 2 and player in self.blue_team
 
     def __contains__(self, elem):
         return elem in self.players or elem in self.red_team or elem in self.blue_team

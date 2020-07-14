@@ -62,7 +62,8 @@ class Admin(commands.Cog):
         last_id = game.queues[mode].game_id
         if not game.queues[mode].has_queue_been_full:
             game.queues[mode] = Queue(
-                2 * mode, game.queues[mode].mode, last_id)
+                2 * mode, game.queues[mode].mode,
+                game.queues[mode].mapmode, last_id)
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description="The queue is now empty"))
 

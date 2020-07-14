@@ -178,18 +178,41 @@ class Init(commands.Cog):
 
 
 
-    # @commands.Cog.listener()
-    # async def on_command_error(self, ctx, error):
-    #     if isinstance(error, (MissingRequiredArgument, CheckFailure)):
-    #         await ctx.send(embed=Embed(color=0x000000,
-    #                                    description=f"{str(error)}\n"
-    #                                    f"Read !help {ctx.invoked_with}"))
-    #     else:
-    #         print(ctx.invoked_with)
-    #         raise error
+    @commands.command()
+    @check_channel('init')
+    async def add_map(self, ctx, emoji, name):
+        """Add the map in the available maps."""
+        await ctx.send(GAMES[ctx.guild.id].add_map(emoji, name))
 
 
+    @commands.command()
+    @check_channel('init')
+    async def delete_map(self, ctx, name):
+        """Add the map in the available maps."""
+        await ctx.send(GAMES[ctx.guild.id].delete_map(name))
 
+    @commands.command()
+    @check_channel('init')
+    @is_arg_in_modes(GAMES)
+    async def setmappick(self, ctx, mode, pickmode):
+        """Set the way to pick maps.
+
+        0: Maps aren't used
+        1: The map is randomly picked
+        2: The map is picked with emojis
+        """
+        if not pickmode.isdigit() or int(pickmode) not in range(3):
+            await ctx.send(embed=Embed(color=0x000000,
+                description="Incorrect pickmode, read !help pickmode."))
+            return
+        pickmode = int(pickmode)
+        mode = int(mode)
+        game = GAMES[ctx.guild.id]
+        game.queues[mode].mapmode = pickmode
+        pickmodes = ["Maps aren't used", "The map is randomly picked",
+            "The map is picked with emojis"]
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=f"The pick mode is set to: {pickmodes[pickmode]}."))
 
 def setup(bot):
     bot.add_cog(Init(bot))

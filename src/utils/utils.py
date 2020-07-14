@@ -61,7 +61,8 @@ def build_other_page(bot, game, reaction, user):
         return
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["leaderboard", "archived", "undecided", "canceled", "commands", "ranks", "history", "most"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided",
+        "canceled", "commands", "ranks", "history", "most", "maps"]:
         return None
 
     startpage = get_startpage(reaction, embed)
@@ -77,6 +78,9 @@ def build_other_page(bot, game, reaction, user):
 
     elif embed["function"] == "commands":
         return cmds_embed(bot, startpage)
+
+    elif embed["function"] == "maps":
+        return getattr(game, embed["function"])(startpage)
 
     elif embed["function"] == "most":
         order_key, with_or_vs = embed["key"].split()
@@ -178,3 +182,68 @@ def team_players_stats(team_player, me, most_played_with, win, queue):
         most_played_with[team_player.name][2] += 1
     else:
         most_played_with[team_player.name][3] += 1
+
+async def autosubmit_reactions(reaction, user, game):
+    embed = get_elem_from_embed(reaction)
+    if embed["function"] != "autosubmit":
+        return
+    mode, id, winner = embed["mode"], embed["id"], int(embed["key"])
+    if id not in game.waiting_for_approval[mode]:
+        return
+    queue = game.waiting_for_approval[mode][id]
+    if user.id not in game.leaderboards[mode] or\
+        game.leaderboards[mode][user.id] not in queue:
+        await reaction.message.remove_reaction(reaction.emoji, user)
+        return
+
+    if mode not in game.correctly_submitted:
+        game.correctly_submitted[mode] = set()
+    if id in game.correctly_submitted[mode]:
+        return
+    # The message got enough positive reaction (removing bot's one)
+    if reaction.message.reactions[0].count - 1 >= queue.max_queue // 2 + 1:
+        text, worked = game.add_archive(mode, id, winner)
+        if worked:
+            game.waiting_for_approval[mode].pop(id, None)
+            game.correctly_submitted[mode].add(id)
+        await reaction.message.channel.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
+            description=text))
+
+        return
+    if reaction.message.reactions[1].count - 1 >= queue.max_queue // 2:
+        game.waiting_for_approval[mode].pop(id, None)
+        await reaction.message.channel.send(embed=Embed(color=0x000000,
+            description=f"The game {id} in the mode {mode} wasn't accepted.\n\
+                        Please submit again"))
+
+async def map_pick_reactions(reaction, user, game):
+    embed = get_elem_from_embed(reaction)
+    if embed["function"] != "lobby_maps":
+        return
+    mode, id = embed["mode"], embed["id"]
+    queue = game.undecided_games[mode][id]
+    if user.id not in game.leaderboards[mode] or\
+        game.leaderboards[mode][user.id] not in queue:
+        await reaction.message.remove_reaction(reaction.emoji, user)
+        return
+    emoji, name = "", ""
+    for i, r in enumerate(reaction.message.reactions):
+        if r.count - 1 >= queue.max_queue // 2 + 1:
+            emoji, name = reaction.message.embeds[0].description.split('\n')[i + 1].split()
+
+            game.add_map_to_archive(mode, id, name, emoji)
+            await reaction.message.channel.send(embed=Embed(color=0x00FF00,
+                description="Okay ! We got enough votes, the map is...\n"\
+                    f"{emoji} {name}"
+                )
+            )
+            break
+
+
+
+
+
+async def add_emojis(msg, game, mode, id):
+    maps = game.available_maps
+    for map in game.maps_archive[mode][id]:
+        await msg.add_reaction(maps[map])

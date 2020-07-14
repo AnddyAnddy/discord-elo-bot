@@ -5,7 +5,7 @@ from discord.ext import commands
 from utils.decorators import check_category, check_channel, is_arg_in_modes
 from modules.player import Player
 from main import GAMES
-
+from utils.utils import add_emojis
 
 class Core(commands.Cog):
     def __init__(self, bot):
@@ -101,16 +101,22 @@ class Core(commands.Cog):
             await ctx.send(embed=Embed(color=0x00FF00, description=res))
             if g_queue.is_finished():
                 await ctx.send(embed=Embed(color=0x00FF00,
-                                           description=game.add_game_to_be_played(g_queue)))
+                    description=game.add_game_to_be_played(g_queue)))
+                if g_queue.mapmode != 0:
+                    msg = await ctx.send(g_queue.ping_everyone(),
+                        embed=game.lobby_maps(mode, g_queue.game_id))
+                    if g_queue.mapmode == 2:
+                        await add_emojis(msg, game, mode, g_queue.game_id)
                 if res != "Queue is full...":
                     await discord.utils.get(ctx.guild.channels,
-                                            name="game_announcement").send(embed=Embed(color=0x00FF00,
-                                                                                       description=res),
-                                                                           content=g_queue.ping_everyone())
+                        name="game_announcement").\
+                        send(embed=Embed(color=0x00FF00,
+                        description=res),
+                        content=g_queue.ping_everyone())
 
         else:
             await ctx.send(embed=Embed(color=0x000000,
-                                       description="Make sure you register before joining the queue."))
+                description="Make sure you register before joining the queue."))
 
     @commands.command(pass_context=True, aliases=['l'])
     @check_category('Solo elo')
@@ -227,6 +233,11 @@ class Core(commands.Cog):
                                                                                description=str(g_queue)),
                                                                    content=g_queue.ping_everyone())
             game.add_game_to_be_played(game.queues[mode])
+            if g_queue.mapmode != 0:
+                msg = await ctx.send(g_queue.ping_everyone(),
+                    embed=game.lobby_maps(mode, g_queue.game_id))
+                if g_queue.mapmode == 2:
+                    await add_emojis(msg, game, mode, g_queue.game_id)
 
     @commands.command(aliases=['pos'])
     @check_channel('register')

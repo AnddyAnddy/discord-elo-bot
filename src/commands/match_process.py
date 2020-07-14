@@ -4,13 +4,12 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from utils.decorators import check_category, check_channel, is_arg_in_modes
 from utils.utils import team_name, get_elem_from_embed
+from utils.utils import autosubmit_reactions, map_pick_reactions
 
 
 class Match_process(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.waiting_for_approval = {}
-        self.correctly_submitted = {}
 
 
     @commands.Cog.listener()
@@ -21,43 +20,17 @@ class Match_process(commands.Cog):
         @type reaction: discord.Reaction
         """
         reaction.emoji = str(reaction)
-        if user.id == self.bot.user.id or not reaction.message.embeds \
-                or reaction.emoji not in "✅❌":
+        if user.id == self.bot.user.id or not reaction.message.embeds:
             return
-        embed = get_elem_from_embed(reaction)
-        if embed["function"] != "autosubmit":
-            return
-        mode, id, winner = embed["mode"], embed["id"], int(embed["key"])
         game = GAMES[user.guild.id]
-        if id not in self.waiting_for_approval[mode]:
+        if reaction.emoji in "✅❌":
+            await autosubmit_reactions(reaction, user, game)
             return
-        queue = self.waiting_for_approval[mode][id]
-        if user.id not in game.leaderboards[mode] or\
-            game.leaderboards[mode][user.id] not in queue:
-            await reaction.message.remove_reaction(reaction.emoji, user)
+        if reaction.emoji in game.available_maps.values():
+            await map_pick_reactions(reaction, user, game)
             return
 
-        if mode not in self.correctly_submitted:
-            self.correctly_submitted[mode] = set()
-        if id in self.correctly_submitted[mode]:
-            return
-        # The message got enough positive reaction (removing bot's one)
-        if reaction.message.reactions[0].count - 1 >= queue.max_queue // 2 + 1:
-            text, worked = game.add_archive(mode, id, winner)
-            if worked:
-                self.waiting_for_approval[mode].pop(id, None)
-                self.correctly_submitted[mode].add(id)
-            await reaction.message.channel.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
-                description=text))
-
-            return
-        if reaction.message.reactions[1].count - 1 >= queue.max_queue // 2:
-            self.waiting_for_approval[mode].pop(id, None)
-            await reaction.message.channel.send(embed=Embed(color=0x000000,
-                description=f"The game {id} in the mode {mode} wasn't accepted.\n\
-                            Please submit again"))
-
-
+        await reaction.message.remove_reaction(reaction.emoji, user)
 
     @commands.command(aliases=['as'])
     @check_category('Elo by Anddy')
@@ -84,9 +57,9 @@ class Match_process(commands.Cog):
             return
 
         queue = game.undecided_games[mode][id_game]
-        if not mode in self.waiting_for_approval:
-            self.waiting_for_approval[mode] = {}
-        self.waiting_for_approval[mode][id_game] = queue
+        if not mode in game.waiting_for_approval:
+            game.waiting_for_approval[mode] = {}
+        game.waiting_for_approval[mode][id_game] = queue
         nb_yes = int(queue.max_queue // 2 + 1)
         nb_no = int(queue.max_queue // 2)
         res = f"<@{ctx.author.id}> is saying that {team_name(winner)} won.\n"
@@ -132,8 +105,8 @@ class Match_process(commands.Cog):
         text, worked = game.add_archive(mode, id_game, winner)
         await ctx.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
                                    description=text))
-        if worked and mode in self.waiting_for_approval:
-            self.waiting_for_approval[mode].pop(id_game, None)
+        if worked and mode in game.waiting_for_approval:
+            game.waiting_for_approval[mode].pop(id_game, None)
 
     @commands.command()
     @has_permissions(manage_roles=True)

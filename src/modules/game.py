@@ -10,7 +10,7 @@ from modules.player import Player
 from modules.queue_elo import Queue
 from modules.queue_elo import team_to_player_name
 from utils.utils import team_name
-
+from emoji import UNICODE_EMOJI
 
 class Game():
     """Represent the game available."""
@@ -26,7 +26,12 @@ class Game():
         self.cancels = {}
         self.queues = {}
         self.bans = {}
-        self.ranks = {}
+        self.waiting_for_approval = {}
+        self.correctly_submitted = {}
+        self.ranks = {}  # {modeK: {nameN: RankX, nameN+1: RankY}}
+        self.maps_archuve = {}  # {modeK: {idN: MapX, idN+1: MapY}}
+        self.available_maps = {}  # {nameN: emojiN, nameK: emojiK}
+        self.mappickmode = 0
         self.elo = Elo()
 
     def add_archive(self, mode, id, winner):
@@ -39,7 +44,8 @@ class Game():
             return "The winner must be 0(draw), 1 (red) or 2 (blue)", False
         queue = self.undecided_games[mode][id]
         self.elo.update(queue, winner)
-        self.archive[mode][queue.game_id] = (queue, winner, self.elo.red_rating)
+        self.archive[mode][queue.game_id] = (
+            queue, winner, self.elo.red_rating)
         self.undecided_games[mode].pop(queue.game_id, None)
         return f"The game has been submitted, thanks !\n"\
                 f"{team_name(winner)} won the game.\n"\
@@ -60,15 +66,17 @@ class Game():
         mode = queue.max_queue / 2
         last_id = self.queues[mode].game_id
         self.undecided_games[mode][last_id] = queue
-        self.queues[mode] = Queue(2 * mode, queue.mode, last_id)
+        self.queues[mode] = Queue(2 * mode, queue.mode, queue.mapmode, last_id)
         return "The teams have been made, a new queue is starting!"
 
     def cancel(self, mode, id):
         """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
+            print(self.queues[mode].__dict__.keys())
             self.queues[mode] = Queue(
-                2 * mode, self.queues[mode].mode, last_id)
+                2 * mode, self.queues[mode].mode,
+                self.queues[mode].mapmode, last_id)
             return True
         res = self.undecided_games[mode].pop(id, None)
         if res is None:
@@ -91,27 +99,24 @@ class Game():
         nb_pages = 1 + len(self.cancels[mode]) // 20
 
         return Embed(color=0x00FF00,
-                     description= \
-                         "```\n - " + '\n - '.join([f"Id: {str(id)}"
-                                                    for id in sorted(self.cancels[mode]) \
+                     description="```\n - " + '\n - '.join([f"Id: {str(id)}"
+                                                    for id in sorted(self.cancels[mode])
                                                         [20 * (startpage - 1): 20 * startpage]]) + "```") \
             .add_field(name="name", value="canceled") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
-
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
         nb_pages = 1 + len(self.undecided_games[mode]) // 25
 
         return Embed(color=0x00FF00,
-                     description= \
-                         f"\n```{'Id':5} {'Red captain':20} {'Blue captain':20}\n" + \
-                         '\n'.join([f"{str(id):5} "
-                          f"{queue.red_team[0].name:20} " \
+                     description=f"\n```{'Id':5} {'Red captain':20} {'Blue captain':20}\n"
+                         + '\n'.join([f"{str(id):5} "
+                          f"{queue.red_team[0].name:20} "
                           f"{queue.blue_team[0].name:20}"
-                        for id, queue in sorted(self.undecided_games[mode].items()) \
+                        for id, queue in sorted(self.undecided_games[mode].items())
                             [25 * (startpage - 1): 25 * startpage] if queue.red_team]) + "```") \
             .add_field(name="name", value="undecided") \
             .add_field(name="-", value="-") \
@@ -124,14 +129,13 @@ class Game():
         cpage = len_page * (startpage - 1)
         npage = len_page * startpage
         return Embed(color=0x00FF00,
-                     description= \
-                         f"\n```{'Id':5} {'Winner':8} {'Red captain':20} {'Blue captain':20}\n" + \
-                         '\n'.join([f"{str(id):5} " \
-                         f"{team_name(winner):8} " \
-                         f"{queue.red_team[0].name:20} " \
+                     description=f"\n```{'Id':5} {'Winner':8} {'Red captain':20} {'Blue captain':20}\n"
+                         + '\n'.join([f"{str(id):5} "
+                         f"{team_name(winner):8} "
+                         f"{queue.red_team[0].name:20} "
                          f"{queue.blue_team[0].name:20}"
                            for id, (queue, winner, elo_boost) in
-                           sorted(self.archive[mode].items())[cpage:npage]]) + \
+                           sorted(self.archive[mode].items())[cpage:npage]]) +
                          "\n```")\
             .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
@@ -141,22 +145,21 @@ class Game():
     def history(self, mode, name, startpage=1):
         """Return the string showing the history of the chosen mode."""
         len_page = 10
-        cpage = len_page * (startpage - 1) # current page
-        npage = len_page * startpage # next page
+        cpage = len_page * (startpage - 1)  # current page
+        npage = len_page * startpage  # next page
         player = self.leaderboards[mode][name]
         history = [(id, (queue, winner, elo)) for (id, (queue, winner, elo))
             in self.archive[mode].items() if player in queue]
         nb_pages = 1 + len(history) // len_page
         return Embed(color=0x00FF00,
-                     description= \
-                     f'```\n{"Id":4} {"Win":3} {"Red team":^44} {"Elo":3}\n'\
-                     f'{" ":8} {"Blue team":^44}\n{"_"*58}\n' + \
-                     f"{'_' * 58}\n".join([f"{str(id):4} "\
-                     f"{winner:3} "\
-                     f"{team_to_player_name(queue.red_team):^44} "\
-                     f"{abs(elo)}\n"\
+                     description=f'```\n{"Id":4} {"Win":3} {"Red team":^44} {"Elo":3}\n'
+                     f'{" ":8} {"Blue team":^44}\n{"_"*58}\n'
+                     + f"{'_' * 58}\n".join([f"{str(id):4} "
+                     f"{winner:3} "
+                     f"{team_to_player_name(queue.red_team):^44} "
+                     f"{abs(elo)}\n"
                      f"{' ':8} {team_to_player_name(queue.blue_team):^44} "
-                     for id, (queue, winner, elo) in history[cpage:npage]]) + \
+                     for id, (queue, winner, elo) in history[cpage:npage]]) +
                    "\n```")\
             .add_field(name="name", value="history") \
             .add_field(name="-", value="-") \
@@ -219,7 +222,7 @@ class Game():
         self.ranks[mode] = {}
         self.cancels[mode] = {}
         self.bans = {}
-        self.queues[mode] = Queue(2 * mode, 0)
+        self.queues[mode] = Queue(2 * mode, 0, 0)
         return True
 
     def remove_mode(self, mode):
@@ -305,7 +308,6 @@ class Game():
                 return rank.url
         return ""
 
-
     def update_ranks(self, mode):
         """Adapt the range of the ranks to keep a 1/10 spread."""
         pass
@@ -314,17 +316,86 @@ class Game():
         """Return a string showing every ranks of a specific mode."""
         nb_pages = 1 + len(self.ranks[mode]) // 20
         return Embed(color=0x00FF00,
-                     description= \
-                         f'```{"Name":15} {"Start":5} {"Stop":5}\n' +\
-                         '\n'.join([
-                         f"{rank.name:15} "\
-                         f"{rank.start():5} "\
+                     description=f'```{"Name":15} {"Start":5} {"Stop":5}\n'
+                         + '\n'.join([
+                         f"{rank.name:15} "
+                         f"{rank.start():5} "
                          f"{rank.stop():5}"
                             for name, rank in sorted(self.ranks[mode].items(),
-                             key=lambda r: r[1].start()) \
-                            [20 * (startpage - 1): 20 * startpage]])\
+                             key=lambda r: r[1].start())
+                            [20 * (startpage - 1): 20 * startpage]])
                              + "```") \
             .add_field(name="name", value="ranks") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
+    def add_map(self, emoji, name):
+        """Add the map in the available maps."""
+        if not emoji in UNICODE_EMOJI:
+            return "The emoji couldn't be found."
+        if name in self.available_maps or emoji in self.available_maps.values():
+            return "The map couldn't been added because the name or the emoji already exists."
+
+        self.available_maps[name] = emoji
+        return f"{emoji} {name} was correctly added !"
+
+    def delete_map(self, name):
+        """Delete the map from the available maps."""
+        if name not in self.available_maps:
+            return f"The map doesn't exist with that name {name}, check !maps"
+        emoji = self.available_maps.pop(name, None)
+        return f"{emoji} {name} was correctly removed from the maps."
+
+    def maps(self, startpage=1):
+        """Return the available_maps."""
+        len_page = 25
+        nb_pages = 1 + len(self.available_maps) // len_page
+        cpage = len_page * (startpage - 1)
+        npage = len_page * startpage
+        return Embed(title="Maps",
+            color=0x00FF00,
+            description="```\n" +
+                '\n'.join([f"{emoji} {name:50} " for name, emoji in
+                    sorted(self.available_maps.items())[cpage:npage]])
+                + "```"
+            )\
+            .add_field(name="name", value="maps") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=0) \
+            .set_footer(text=f"[ {startpage} / {nb_pages} ]")
+
+    def add_map_to_archive(self, mode, id, name, emoji):
+        """Add the map to the map to the played maps.
+
+        Called on game announce."""
+        self.maps_archive[mode][id] = (name, emoji)
+
+    def delete_map_from_archive(self, mode, id, name):
+        """Delete the map from the played maps.
+
+        Called on game cancel."""
+        self.maps_archive[mode].pop(id, None)
+
+    def lobby_maps(self, mode, id):
+        if len(self.maps_archive[mode][id]) == 1:
+            map = self.maps_archive[mode][id][0]
+            emoji = self.available_maps[map]
+            return Embed(color=0x00FF00,
+                description=f"The bot randomly picked the map ** {emoji} {map}**")
+
+        return Embed(title="Lobby maps",
+            color=0x00FF00,
+            description=\
+                "```\n" +
+                '\n'.join([f"{self.available_maps[name]} {name:40} "
+                for name in self.maps_archive[mode][id]]) +\
+                "\n```" + \
+                f"We need **{2 * mode + 1}** total votes or a map getting "\
+                f"**{mode + 2}** votes to keep going!"
+            )\
+            .add_field(name="name", value="lobby_maps") \
+            .add_field(name="-", value="-") \
+            .add_field(name="mode", value=mode) \
+            .add_field(name="id", value=id) \
+            .set_footer(text=f"[ 1 / 1 ]")
