@@ -188,7 +188,7 @@ class Init(commands.Cog):
     @commands.command()
     @check_channel('init')
     async def delete_map(self, ctx, name):
-        """Add the map in the available maps."""
+        """Delete the map from the available maps."""
         await ctx.send(GAMES[ctx.guild.id].delete_map(name))
 
     @commands.command()
