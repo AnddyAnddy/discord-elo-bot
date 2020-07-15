@@ -8,6 +8,7 @@ from discord import Embed
 from GAMES import GAMES
 from utils.utils import check_if_premium, build_other_page
 from modules.queue_elo import Queue
+from modules.game import Game
 
 from modules import game, player, queue_elo, rank, elo, ban
 
@@ -21,7 +22,7 @@ sys.modules['ban'] = ban
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-BOT = commands.Bot(command_prefix='!')
+BOT = commands.Bot(command_prefix='!', case_insensitive=True)
 BOT.load_extension('commands.admin')
 BOT.load_extension('commands.core')
 BOT.load_extension('commands.helper')
@@ -70,6 +71,15 @@ async def on_ready():
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
+            channel = next(channel for channel in guild.channels
+                if channel.type == discord.ChannelType.text)
+            await channel.send(embed=Embed(color=0x00A000,
+                title="Hey, let's play together !",
+                description="Oh hey i'm new around here !\n"\
+                    "To set me up, someone with manage_roles permission will have to "\
+                    "write `!init_elo_by_anddy` somewhere and the black magic "\
+                    "will handle the rest.\n"\
+                    "Any issue ? https://discord.gg/E2ZBNSx"))
 
 @BOT.event
 async def on_reaction_add(reaction, user):
@@ -126,8 +136,11 @@ async def on_command_error(ctx, error):
            description=f"{str(error)}\nCheck !help {inv}"))
     else:
         print(ctx.invoked_with)
-        await discord.utils.get(ctx.guild.channels, name="bugs")\
-            .send(f"{ctx.invoked_with}: \n{error}")
+        try:
+            await discord.utils.get(ctx.guild.channels, name="bugs")\
+                .send(f"{ctx.invoked_with}: \n{error}")
+        except AttributeError:
+            await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
         raise error
 
 BOT.run(TOKEN)

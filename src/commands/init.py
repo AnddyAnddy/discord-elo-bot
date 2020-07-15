@@ -8,11 +8,28 @@ import utils.decorators as decorators
 from utils.decorators import check_category, is_arg_in_modes, check_channel
 from utils.utils import is_url_image
 from modules.rank import Rank
+from modules.game import Game
 
 
 class Init(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+
+    @commands.command()
+    async def test(self, ctx):
+        guild = ctx.guild
+        perms_secret_chan = {
+            guild.default_role:
+                discord.PermissionOverwrite(read_messages=False),
+            guild.me:
+                discord.PermissionOverwrite(read_messages=True),
+            discord.utils.get(guild.roles, name="Elo Admin"):
+                discord.PermissionOverwrite(read_messages=True)
+        }
+        await guild.create_text_channel(name="test",
+                                        # category=base_cat,
+                                        overwrites=perms_secret_chan)
 
     @commands.command()
     @has_permissions(manage_roles=True)
@@ -27,8 +44,8 @@ class Init(commands.Cog):
         guild = ctx.guild
         if not discord.utils.get(guild.roles, name="Elo Admin"):
             await guild.create_role(name="Elo Admin",
-                                    permissions=discord.Permissions.all_channel(),
-                                    color=0xAA0000)
+                                    # permissions=discord.Permissions.all_channel(),
+                                    colour=discord.Colour(0xAA0000))
             await ctx.send("Elo admin role created")
 
         if not discord.utils.get(guild.categories, name='Elo by Anddy'):
@@ -37,6 +54,8 @@ class Init(commands.Cog):
                     discord.PermissionOverwrite(read_messages=False),
                 guild.me:
                     discord.PermissionOverwrite(read_messages=True),
+                discord.utils.get(guild.roles, name="Elo Admin"):
+                    discord.PermissionOverwrite(read_messages=True)
             }
 
             base_cat = await guild.create_category(name="Elo by Anddy")
@@ -52,22 +71,19 @@ class Init(commands.Cog):
             await guild.create_text_channel(name="Autosubmit", category=base_cat)
             await guild.create_text_channel(name="Game_announcement",
                                             category=base_cat)
-            await guild.create_text_channel(name="Staff_application",
-                                            category=base_cat)
-            await guild.create_text_channel(name="Suggestions",
-                                            category=base_cat)
             await guild.create_text_channel(name="Bans",
-                                            category=base_cat)
-            await guild.create_text_channel(name="bye",
                                             category=base_cat)
             await guild.create_text_channel(name="premium",
                                             category=base_cat)
 
-            await guild.create_category(name="Modes")
+            await guild.create_category(name="Solo elo")
 
-            await guild.create_category(name="Teams")
+            await guild.create_category(name="Teams elo")
 
             await ctx.send("Elo by Anddy created, init done, use !help !")
+
+        if ctx.guild.id not in GAMES:
+            GAMES[guild.id] = Game(guild.id)
 
     @commands.command()
     @has_permissions(manage_roles=True)
