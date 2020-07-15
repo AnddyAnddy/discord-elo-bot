@@ -57,7 +57,7 @@ class Core(commands.Cog):
 
     @commands.command(aliases=['quit'])
     @check_category('Elo by Anddy')
-    @check_channel('bye')
+    @check_channel('register')
     async def quit_elo(self, ctx):
         """Delete the user from the registered players.
 

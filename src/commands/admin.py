@@ -30,7 +30,7 @@ class Admin(commands.Cog):
     @commands.command()
     @has_permissions(kick_members=True)
     @check_category('Elo by Anddy')
-    @check_channel('bye')
+    @check_channel('register')
     async def force_quit(self, ctx, name):
         """Delete the seized user from the registered players.
 
