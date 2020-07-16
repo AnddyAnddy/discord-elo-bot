@@ -3,9 +3,9 @@ import discord
 from discord import Embed
 from main import GAMES
 from discord.ext import commands
-from discord.ext.commands import has_permissions, MissingPermissions, CheckFailure, MissingRequiredArgument
+from discord.ext.commands import MissingPermissions, CheckFailure, MissingRequiredArgument
 import utils.decorators as decorators
-from utils.decorators import check_category, is_arg_in_modes, check_channel
+from utils.decorators import check_category, is_arg_in_modes, check_channel, has_role_or_above
 from utils.utils import is_url_image
 from modules.rank import Rank
 from modules.game import Game
@@ -32,21 +32,30 @@ class Init(commands.Cog):
                                         overwrites=perms_secret_chan)
 
     @commands.command()
-    @has_permissions(manage_roles=True)
     async def init_elo_by_anddy(self, ctx):
         """Init the bot in the server.
 
         Initialize the bot to be ready on a guild.
         This command creates every channel needed for the Bot to work.
-        This also build two categories Elo by Anddy and Modes
         Can be used anywhere. Need to have manage_roles
+        Read https://github.com/AnddyAnddy/discord-elo-bot/wiki/How-to-set-up
         """
         guild = ctx.guild
         if not discord.utils.get(guild.roles, name="Elo Admin"):
             await guild.create_role(name="Elo Admin",
                                     # permissions=discord.Permissions.all_channel(),
                                     colour=discord.Colour(0xAA0000))
-            await ctx.send("Elo admin role created")
+            await ctx.send("Elo admin role created. Since I don't know the " \
+                "layout of your roles, I let you put this new role above "\
+                "normal users.")
+
+        if not discord.utils.get(guild.roles, name="20 games double xp"):
+            for elem in (100, 50, 20):
+                await guild.create_role(name=f"{elem} games double xp",
+                    colour=discord.Colour(0x5AE78E))
+            await ctx.send("Premium roles created. Since I don't know the " \
+                "layout of your roles, I let you put this new role above "\
+                "normal users.")
 
         if not discord.utils.get(guild.categories, name='Elo by Anddy'):
             perms_secret_chan = {
@@ -86,7 +95,7 @@ class Init(commands.Cog):
             GAMES[guild.id] = Game(guild.id)
 
     @commands.command()
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('init')
     async def add_mode(self, ctx, mode):
         """Add a mode to the game modes.
@@ -118,7 +127,7 @@ class Init(commands.Cog):
                                    description="Couldn't add the game mode."))
 
     @commands.command()
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('init')
     @is_arg_in_modes(GAMES)
     async def delete_mode(self, ctx, mode):
@@ -128,7 +137,7 @@ class Init(commands.Cog):
 
 
     @commands.command()
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('init')
     @is_arg_in_modes(GAMES)
     # @args_at_pos_digits((0, 3, 4))

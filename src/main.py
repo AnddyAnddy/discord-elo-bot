@@ -54,15 +54,22 @@ async def on_ready():
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
-            channel = next(channel for channel in guild.channels
-                if channel.type == discord.ChannelType.text)
-            await channel.send(embed=Embed(color=0x00A000,
-                title="Hey, let's play together !",
-                description="Oh hey i'm new around here !\n"\
-                    "To set me up, someone with manage_roles permission will have to "\
-                    "write `!init_elo_by_anddy` somewhere and the black magic "\
-                    "will handle the rest.\n"\
-                    "Any issue ? https://discord.gg/E2ZBNSx"))
+
+
+@BOT.event
+async def on_guild_join(guild):
+    """Send instruction message on join."""
+    print(f"I just joined the guild {guild} {guild.id}")
+    channel = next(channel for channel in guild.channels
+        if channel.type == discord.ChannelType.text)
+    await channel.send(embed=Embed(color=0x00A000,
+        title="Hey, let's play together !",
+        description="Oh hey i'm new around here !\n"\
+            "To set me up, someone will have to "\
+            "write `!init_elo_by_anddy` somewhere and the black magic "\
+            "will handle the rest.\n"\
+            "Any issue ? https://discord.gg/E2ZBNSx"))
+
 
 @BOT.event
 async def on_reaction_add(reaction, user):
@@ -81,7 +88,9 @@ async def on_reaction_add(reaction, user):
 
 @BOT.event
 async def on_member_update(before, after):
-    nb_games = check_if_premium(GAMES[after.guild.id], before, after)
+    if before.bot:
+        return
+    nb_games = check_if_premium(GAMES[before.guild.id], before, after)
     if nb_games:
         channel = discord.utils.get(after.guild.channels, name="premium")
         game = GAMES[after.guild.id]

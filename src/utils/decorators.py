@@ -65,3 +65,10 @@ def rank_update(GAMES, lst_pos_args):
         return args_at_pos_digits(args) and max_greater_min(args)\
             and url_image(args) and name_in_rank(ctx, args)
     return commands.check(predicate)
+
+
+def has_role_or_above(roleName):
+    def predicate(ctx):
+        role = discord.utils.get(ctx.guild.roles, name=roleName)
+        return ctx.author.top_role >= role
+    return commands.check(predicate)

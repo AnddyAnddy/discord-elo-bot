@@ -137,8 +137,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command()
-    @check_category('Elo by Anddy')
-    @check_channel('info_chat')
     async def modes(self, ctx):
         """Print available modes."""
         await ctx.send(embed=Embed(color=0x00FF00,

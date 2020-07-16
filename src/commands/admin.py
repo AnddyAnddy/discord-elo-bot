@@ -1,10 +1,10 @@
 """Module used to represent every commands an admin is able to do."""
 
 import discord
-from utils.decorators import check_category, check_channel, is_arg_in_modes
+from utils.decorators import check_category, check_channel, is_arg_in_modes, has_role_or_above
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import has_permissions, MissingPermissions
+from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
 from queue_elo import Queue
 
@@ -15,7 +15,7 @@ class Admin(commands.Cog):
 
     @commands.command(aliases=['fr'])
     @check_category('Solo elo')
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     async def force_remove(self, ctx, name):
         """Remove the player from the current queue."""
         if not name[3: -1].isdigit():
@@ -28,7 +28,7 @@ class Admin(commands.Cog):
                       [name]))
 
     @commands.command()
-    @has_permissions(kick_members=True)
+    @has_role_or_above('Elo Admin')
     @check_category('Elo by Anddy')
     @check_channel('register')
     async def force_quit(self, ctx, name):
@@ -53,7 +53,7 @@ class Admin(commands.Cog):
 
 
     @commands.command(aliases=['cq', 'c_queue'])
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_category('Solo elo')
     async def clear_queue(self, ctx):
         """Clear the current queue."""
@@ -70,7 +70,7 @@ class Admin(commands.Cog):
 
 
     @commands.command()
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_category('Elo by Anddy')
     @check_channel('bans')
     async def ban(self, ctx, name, time, unity, reason=""):
@@ -98,7 +98,7 @@ class Admin(commands.Cog):
     @commands.command()
     @check_category('Elo by Anddy')
     @check_channel('bans')
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     async def unban(self, ctx, name):
         """Unban the player."""
         name = name[3: -1]
