@@ -25,7 +25,7 @@ class Premium_class(commands.Cog):
 
         return 0
 
-    async def set_premium(self, id):
+    async def set_premium(self, ctx, id):
         game = GAMES[ctx.guild.id]
         nb_games = get_premium_nb_games(id)
         for mode in game.available_modes:
@@ -62,7 +62,7 @@ class Premium_class(commands.Cog):
             await ctx.send("You are not waiting for premium in the main server !"\
                 "Be sure that you linked your discord with patreon.")
             return
-        await self.set_premium(id)
+        await self.set_premium(ctx, id)
         await self.remove_role(id)
 
 def setup(bot):
