@@ -22,6 +22,7 @@ sys.modules['ban'] = ban
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_MAIN_GUILD_ID = 732326859039178882
 BOT = commands.Bot(command_prefix='!', case_insensitive=True)
 BOT.load_extension('commands.admin')
 BOT.load_extension('commands.core')
@@ -30,6 +31,7 @@ BOT.load_extension('commands.info_stats')
 BOT.load_extension('commands.init')
 BOT.load_extension('commands.match_process')
 BOT.load_extension('commands.graphs')
+BOT.load_extension('commands.premium')
 
 
 
@@ -89,15 +91,13 @@ async def on_reaction_add(reaction, user):
 async def on_member_update(before, after):
     if before.bot:
         return
-    nb_games = check_if_premium(GAMES[before.guild.id], before, after)
-    if nb_games:
+    discord_id = DISCORD_MAIN_GUILD_ID
+    if check_if_premium(GAMES[discord_id], before, after):
         channel = discord.utils.get(after.guild.channels, name="premium")
-        game = GAMES[after.guild.id]
-        for mode in game.available_modes:
-            if after.id in game.leaderboards[mode]:
-                game.leaderboards[mode][after.id].double_xp = nb_games
-        await channel.send(f"Hi {before.name}, You got your {nb_games} double xp ! \
-        PM Anddy#2086 if you have any issue, this is available for every mode.")
+        await channel.send(f"Hi <@{before.id}>, You got your {nb_games} double xp ! " \
+            "this is available for every mode you're registered."\
+            "You simply have to use !premium in your server."\
+            "Any issue ? PM Anddy#2086.")
 
 @BOT.event
 async def on_command_completion(ctx):
