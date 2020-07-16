@@ -88,8 +88,8 @@ class Info_stats(commands.Cog):
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
                 f"{'Winner':12}: {winner_str}\n"
-                f"{'Red team':12}: {queue_elo.team_to_player_name(queue.red_team)}\n"
-                f"{'Blue team':12}: {queue_elo.team_to_player_name(queue.blue_team)}\n"
+                f"{'Red team':12}: {queue.team_to_player_name(queue.red_team)}\n"
+                f"{'Blue team':12}: {queue.team_to_player_name(queue.blue_team)}\n"
                 f"```"
             ))
         else:
@@ -97,8 +97,8 @@ class Info_stats(commands.Cog):
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
-                f"{'Red team':12}: {queue_elo.team_to_player_name(queue.red_team)}\n"
-                f"{'Blue team':12}: {queue_elo.team_to_player_name(queue.blue_team)}\n"
+                f"{'Red team':12}: {queue.team_to_player_name(queue.red_team)}\n"
+                f"{'Blue team':12}: {queue.team_to_player_name(queue.blue_team)}\n"
                 f"```"
             ))
 
