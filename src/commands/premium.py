@@ -21,7 +21,7 @@ class Premium_class(commands.Cog):
         player = guild.get_member(id_author)
         for role in player.roles:
             if "double" in role.name:
-                return int(role.split()[0])
+                return int(role.name.split()[0])
 
         return 0
 
