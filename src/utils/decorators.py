@@ -70,5 +70,5 @@ def rank_update(GAMES, lst_pos_args):
 def has_role_or_above(roleName):
     def predicate(ctx):
         role = discord.utils.get(ctx.guild.roles, name=roleName)
-        return ctx.author.top_role >= role
+        return role is None or ctx.author.top_role >= role
     return commands.check(predicate)
