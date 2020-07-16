@@ -16,7 +16,7 @@ class Premium_class(commands.Cog):
         return player is not None and role in player.roles
 
 
-    def get_premium_nb_games(self, id):
+    def get_premium_nb_games(self, id_author):
         guild = discord.utils.get(self.bot.guilds, id=DISCORD_MAIN_GUILD_ID)
         player = guild.get_member(id_author)
         for role in player.roles:
@@ -41,7 +41,7 @@ class Premium_class(commands.Cog):
         )
 
 
-    async def remove_role(self, id):
+    async def remove_role(self, id_author):
         guild = discord.utils.get(self.bot.guilds, id=DISCORD_MAIN_GUILD_ID)
         player = guild.get_member(id_author)
         role = discord.utils.get(guild.roles, name="waiting for premium")
