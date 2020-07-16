@@ -82,9 +82,6 @@ class Init(commands.Cog):
                                             category=base_cat)
             await guild.create_text_channel(name="Bans",
                                             category=base_cat)
-            await guild.create_text_channel(name="premium",
-                                            category=base_cat)
-
             await guild.create_category(name="Solo elo")
 
             await guild.create_category(name="Teams elo")
