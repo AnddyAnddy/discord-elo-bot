@@ -27,7 +27,7 @@ class Premium_class(commands.Cog):
 
     async def set_premium(self, ctx, id):
         game = GAMES[ctx.guild.id]
-        nb_games = get_premium_nb_games(id)
+        nb_games = self.get_premium_nb_games(id)
         for mode in game.available_modes:
             if id in game.leaderboards[mode]:
                 game.leaderboards[mode][id].double_xp += nb_games
