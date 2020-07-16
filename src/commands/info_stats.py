@@ -174,8 +174,8 @@ class Info_stats(commands.Cog):
         """Show the rank of the name."""
         ranks = GAMES[ctx.guild.id].ranks[int(mode)]
         if name not in ranks:
-            await ctx.send(embed=Embed(color=0x000000),
-                description="Couldn't find the rank with that name.")
+            await ctx.send(embed=Embed(color=0x000000,
+                description="Couldn't find the rank with that name."))
             return
 
         await ctx.send(embed=Embed(color=0x00FF00,
