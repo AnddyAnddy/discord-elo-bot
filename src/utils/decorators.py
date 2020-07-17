@@ -33,7 +33,10 @@ def check_channel(name):
         to_be_channel = discord.utils.get(guild.channels, name=name)
         if to_be_channel is None:
             raise ValueError(f"Parameter {name} isn't a real channel")
-        return ctx_channel == to_be_channel
+        if ctx_channel != to_be_channel:
+            print("là")
+            raise commands.errors.BadArgument(f"You should write this command in #{name}.")
+        return True
 
     return commands.check(predicate)
 

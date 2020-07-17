@@ -9,6 +9,7 @@ from GAMES import GAMES
 from utils.utils import check_if_premium, build_other_page
 from modules.queue_elo import Queue
 from modules.game import Game
+from utils.exceptions import PassException, send_error
 
 from modules import game, player, queue_elo, rank, elo, ban
 
@@ -111,12 +112,15 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=Embed(color=0x000000,
            description="The command doesn't exist, check !cmds !"))
 
+
+    elif isinstance(error, commands.errors.BadArgument):
+        await send_error(ctx, error)
+
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send(embed=Embed(color=0x000000,
-           description="You used this command with either a wrong channel or \
-           a wrong argument.\
-           Or maybe you don't have the permission...\n"\
-           f"Check !help {inv}"))
+           description="You used this command with either a wrong channel" +\
+           "or a wrong argument. Or you don't have the permission...\n"))
+        await ctx.send_help(inv)
 
     elif isinstance(error, commands.errors.MissingPermissions):
         await ctx.send(embed=Embed(color=0x000000,
@@ -125,13 +129,16 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send(embed=Embed(color=0x000000,
            description=f"{str(error)}\nCheck !help {inv}"))
+    elif isinstance(error.original, PassException):
+        pass
     else:
-        print(ctx.invoked_with)
-        try:
-            await discord.utils.get(ctx.guild.channels, name="bugs")\
-                .send(f"{ctx.invoked_with}: \n{error}")
-        except AttributeError:
-            await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
-        raise error
+        pass
+        # print(ctx.invoked_with)
+        # try:
+        #     await discord.utils.get(ctx.guild.channels, name="bugs")\
+        #         .send(f"{ctx.invoked_with}: \n{error}")
+        # except AttributeError:
+        #     await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
+        # raise error
 
 BOT.run(TOKEN)

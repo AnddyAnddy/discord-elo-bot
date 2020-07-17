@@ -33,7 +33,6 @@ class Match_process(commands.Cog):
         await reaction.message.remove_reaction(reaction.emoji, user)
 
     @commands.command(aliases=['as'])
-    @check_category('Elo by Anddy')
     @check_channel('autosubmit')
     @is_arg_in_modes(GAMES)
     async def autosubmit(self, ctx, mode, id_game, winner):
@@ -88,7 +87,6 @@ class Match_process(commands.Cog):
 
     @commands.command(aliases=['s', 'game'])
     @has_permissions(manage_roles=True)
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def submit(self, ctx, mode, id_game, winner):
@@ -110,7 +108,6 @@ class Match_process(commands.Cog):
 
     @commands.command()
     @has_permissions(manage_roles=True)
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def undo(self, ctx, mode, id_game):
@@ -127,7 +124,6 @@ class Match_process(commands.Cog):
 
     @commands.command(aliases=['c', 'clear'])
     @has_permissions(manage_roles=True)
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def cancel(self, ctx, mode, id_game):
@@ -146,7 +142,6 @@ class Match_process(commands.Cog):
 
     @commands.command(aliases=['uc', 'uclear'])
     @has_permissions(manage_roles=True)
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def uncancel(self, ctx, mode, id_game):
@@ -160,7 +155,6 @@ class Match_process(commands.Cog):
                                    description=game.uncancel(int(mode), int(id_game))))
 
     @commands.command(aliases=['u'])
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def undecided(self, ctx, mode):
@@ -177,7 +171,6 @@ class Match_process(commands.Cog):
         await msg.add_reaction("⏭️")
 
     @commands.command(aliases=['cl'])
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def canceled(self, ctx, mode):
@@ -194,7 +187,6 @@ class Match_process(commands.Cog):
         await msg.add_reaction("⏭️")
 
     @commands.command(aliases=['a'])
-    @check_category('Elo by Anddy')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def archived(self, ctx, mode):

@@ -11,7 +11,6 @@ class Info_stats(commands.Cog):
 
     @commands.command(aliases=['lb'])
     @is_arg_in_modes(GAMES)
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     async def leaderboard(self, ctx, mode, stat_key="elo"):
         """Show current leaderboard.
@@ -34,7 +33,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command(aliases=['stats'])
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def info(self, ctx, mode, name=""):
@@ -66,7 +64,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command(aliases=['match'])
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def info_match(self, ctx, mode, id_game):
@@ -104,7 +101,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command(aliases=['h'])
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def history(self, ctx, mode, name=""):
@@ -144,7 +140,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command(aliases=['bans'])
-    @check_category('Elo by Anddy')
     @check_channel('bans')
     async def all_bans(self, ctx):
         GAMES[ctx.guild.id].remove_negative_bans()
@@ -154,7 +149,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command()
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def ranks(self, ctx, mode):
@@ -167,7 +161,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command()
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def rank(self, ctx, mode, name):
@@ -184,7 +177,6 @@ class Info_stats(commands.Cog):
 
 
     @commands.command()
-    @check_category('Elo by Anddy')
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
     async def most(self, ctx, mode, name="", order_key="games", with_or_vs="with"):

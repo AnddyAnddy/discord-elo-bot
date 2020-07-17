@@ -17,21 +17,6 @@ class Init(commands.Cog):
 
 
     @commands.command()
-    async def test(self, ctx):
-        guild = ctx.guild
-        perms_secret_chan = {
-            guild.default_role:
-                discord.PermissionOverwrite(read_messages=False),
-            guild.me:
-                discord.PermissionOverwrite(read_messages=True),
-            discord.utils.get(guild.roles, name="Elo Admin"):
-                discord.PermissionOverwrite(read_messages=True)
-        }
-        await guild.create_text_channel(name="test",
-                                        # category=base_cat,
-                                        overwrites=perms_secret_chan)
-
-    @commands.command()
     async def init_elo_by_anddy(self, ctx):
         """Init the bot in the server.
 

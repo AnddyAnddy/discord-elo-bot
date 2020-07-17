@@ -13,7 +13,6 @@ class Core(commands.Cog):
 
     @commands.command(aliases=['r', 'reg'])
     @check_channel('register')
-    @check_category('Elo by Anddy')
     @is_arg_in_modes(GAMES)
     async def register(self, ctx, mode):
         """Register the player to the elo leaderboard.
@@ -40,7 +39,6 @@ class Core(commands.Cog):
 
     @commands.command(aliases=['r_all', 'reg_all'])
     @check_channel('register')
-    @check_category('Elo by Anddy')
     async def register_all(self, ctx):
         """Register to every available modes in one command."""
         game = GAMES[ctx.guild.id]
@@ -56,7 +54,6 @@ class Core(commands.Cog):
                                    description=f"<@{name}> has been registered for every mode."))
 
     @commands.command(aliases=['quit'])
-    @check_category('Elo by Anddy')
     @check_channel('register')
     async def quit_elo(self, ctx):
         """Delete the user from the registered players.

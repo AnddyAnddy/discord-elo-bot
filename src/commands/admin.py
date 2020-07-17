@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
 from queue_elo import Queue
+from utils.exceptions import get_player, PassException
 
 
 class Admin(commands.Cog):
@@ -18,14 +19,12 @@ class Admin(commands.Cog):
     @has_role_or_above('Elo Admin')
     async def force_remove(self, ctx, name):
         """Remove the player from the current queue."""
-        if not name[3: -1].isdigit():
-            await ctx.send("You better ping the player")
-        name = int(name[3: -1])
         mode = int(ctx.channel.name.split('vs')[0])
+        player = await get_player(ctx, mode, name)
         game = GAMES[ctx.guild.id]
         queue = game.queues[mode]
         await ctx.send(queue.remove_player(game.leaderboards[mode]
-                      [name]))
+                      [player.id]))
 
     @commands.command()
     @has_role_or_above('Elo Admin')
