@@ -37,7 +37,7 @@ class Queue():
     def add_player(self, player, game):
         """Add a player in the queue."""
         if player in self.players:
-            return "You can't join twice, maybe you look for !l"
+            return "You can't join twice, maybe you're looking for !l"
         if self.is_queue_full() or self.has_queue_been_full:
             return "Queue is full..."
         self.players.append(player)
