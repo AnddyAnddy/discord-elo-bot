@@ -97,7 +97,7 @@ def check_if_premium(game, before, after):
         new_role = next(
             role for role in after.roles if role not in before.roles)
         role_name = new_role.name.lower().split()
-        return double in role_name
+        return "double" in role_name
     return False
 
 
