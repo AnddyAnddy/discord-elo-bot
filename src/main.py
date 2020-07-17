@@ -50,7 +50,7 @@ async def on_ready():
     """On ready event."""
     print(f'{BOT.user} has connected\n')
     for guild in BOT.guilds:
-        print(guild.name)
+        print(guild.name + " owned by: " + str(guild.owner))
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             print(f"The file from data/{guild.id}.data was correctly loaded.")

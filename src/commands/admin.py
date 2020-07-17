@@ -70,7 +70,6 @@ class Admin(commands.Cog):
 
     @commands.command()
     @has_role_or_above('Elo Admin')
-    @check_category('Elo by Anddy')
     @check_channel('bans')
     async def ban(self, ctx, name, time, unity, reason=""):
         """Bans the player for a certain time.
@@ -95,7 +94,6 @@ class Admin(commands.Cog):
 
 
     @commands.command()
-    @check_category('Elo by Anddy')
     @check_channel('bans')
     @has_role_or_above('Elo Admin')
     async def unban(self, ctx, name):
