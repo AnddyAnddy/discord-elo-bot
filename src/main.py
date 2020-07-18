@@ -93,6 +93,8 @@ async def on_member_update(before, after):
     if before.bot:
         return
     discord_id = DISCORD_MAIN_GUILD_ID
+    if discord_id not in GAMES:
+        return
     if check_if_premium(GAMES[discord_id], before, after):
         channel = discord.utils.get(after.guild.channels, name="premium")
         await channel.send(f"Hi <@{before.id}>, You got your {nb_games} double xp ! " \
@@ -132,13 +134,12 @@ async def on_command_error(ctx, error):
     elif isinstance(error.original, PassException):
         pass
     else:
-        pass
-        # print(ctx.invoked_with)
-        # try:
-        #     await discord.utils.get(ctx.guild.channels, name="bugs")\
-        #         .send(f"{ctx.invoked_with}: \n{error}")
-        # except AttributeError:
-        #     await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
-        # raise error
+        print(ctx.invoked_with)
+        try:
+            await discord.utils.get(ctx.guild.channels, name="bugs")\
+                .send(f"{ctx.invoked_with}: \n{error}")
+        except AttributeError:
+            await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
+        raise error
 
 BOT.run(TOKEN)
