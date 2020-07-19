@@ -6,6 +6,7 @@ from utils.utils import get_player_lb_pos, team_players_stats, most_stat_embed, 
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
 from utils.utils import add_scroll
+from modules.queue_elo import team_to_player_name
 
 
 class Info_stats(commands.Cog):
@@ -87,8 +88,8 @@ class Info_stats(commands.Cog):
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
                 f"{'Winner':12}: {winner_str}\n"
-                f"{'Red team':12}: {queue.team_to_player_name(queue.red_team)}\n"
-                f"{'Blue team':12}: {queue.team_to_player_name(queue.blue_team)}\n"
+                f"{'Red team':12}: {team_to_player_name(queue.red_team)}\n"
+                f"{'Blue team':12}: {team_to_player_name(queue.blue_team)}\n"
                 f"```"
             ))
         else:
@@ -96,8 +97,8 @@ class Info_stats(commands.Cog):
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
-                f"{'Red team':12}: {queue.team_to_player_name(queue.red_team)}\n"
-                f"{'Blue team':12}: {queue.team_to_player_name(queue.blue_team)}\n"
+                f"{'Red team':12}: {team_to_player_name(queue.red_team)}\n"
+                f"{'Blue team':12}: {team_to_player_name(queue.blue_team)}\n"
                 f"```"
             ))
 

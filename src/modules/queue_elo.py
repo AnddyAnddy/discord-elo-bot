@@ -181,7 +181,7 @@ def team_to_player_name(team):
 
 
 def team_to_player_id(team):
-    return "[" + ', '.join([f'{p.id_user}' for p in team]) + "]"
+    return "[" + ', '.join([f'<@{p.id_user}>' for p in team]) + "]"
 
 
 HISTORIQUE = []
