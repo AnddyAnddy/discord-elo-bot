@@ -242,7 +242,7 @@ async def add_emojis(msg, game, mode, id):
 async def add_scroll(message):
     """Add ⏮️ ⬅️ ➡️ ⏭️ emojis to the message."""
     for e in "⏮️⬅️➡️⏭️":
-        await msg.add_reaction(e)
+        await message.add_reaction(e)
     # await msg.add_reaction("⏮️")
     # await msg.add_reaction("⬅️")
     # await msg.add_reaction("➡️")
