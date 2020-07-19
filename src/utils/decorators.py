@@ -34,7 +34,6 @@ def check_channel(name):
         if to_be_channel is None:
             raise ValueError(f"Parameter {name} isn't a real channel")
         if ctx_channel != to_be_channel:
-            print("là")
             raise commands.errors.BadArgument(f"You should write this command in #{name}.")
         return True
 
