@@ -5,7 +5,7 @@ from main import GAMES
 from utils.utils import get_player_lb_pos, team_players_stats, most_stat_embed, build_most_played_with
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
-from utils.utils import add_emojis
+from utils.utils import add_scroll
 
 
 class Info_stats(commands.Cog):
@@ -126,7 +126,7 @@ class Info_stats(commands.Cog):
 
         # if name in game.leaderboards[mode]:
         msg = await ctx.send(embed=game.history(mode, player))
-        await add_emojis(msg)
+        await add_scroll(msg)
         # else:
         #     await ctx.send(embed=Embed(color=0x000000,
         #        description=f"No player called <@{name}>"))
@@ -156,7 +156,7 @@ class Info_stats(commands.Cog):
     async def ranks(self, ctx, mode):
         """Show the available ranks."""
         msg = await ctx.send(embed=get_game(ctx).display_ranks(int(mode)))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
 
     @commands.command()
@@ -210,13 +210,13 @@ class Info_stats(commands.Cog):
         # most_played_with = build_most_played_with(game, mode, name)
         msg = await ctx.send(embed=most_stat_embed(game, mode, player,
             order_key, with_or_vs=with_or_vs))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
     @commands.command()
     async def maps(self, ctx):
         """Show the available maps."""
         msg = await ctx.send(embed=get_game(ctx).maps())
-        await add_emojis(msg)
+        await add_scroll(msg)
 
 
 
