@@ -7,7 +7,11 @@ from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
 from queue_elo import Queue
-from utils.exceptions import get_player, PassException
+from utils.exceptions import get_player_by_mention
+from utils.exceptions import get_id
+from utils.exceptions import get_total_sec
+from utils.exceptions import get_game
+from utils.exceptions import PassException
 
 
 class Admin(commands.Cog):
@@ -17,20 +21,19 @@ class Admin(commands.Cog):
     @commands.command(aliases=['fr'])
     @check_category('Solo elo')
     @has_role_or_above('Elo Admin')
-    async def force_remove(self, ctx, name):
+    async def force_remove(self, ctx, mention):
         """Remove the player from the current queue."""
         mode = int(ctx.channel.name.split('vs')[0])
-        player = await get_player(ctx, mode, name)
-        game = GAMES[ctx.guild.id]
+        player = await get_player_by_mention(ctx, mode, mention)
+        game = get_game(ctx)
         queue = game.queues[mode]
-        await ctx.send(queue.remove_player(game.leaderboards[mode]
-                      [player.id]))
+        await ctx.send(queue.remove_player(player))
 
     @commands.command()
     @has_role_or_above('Elo Admin')
     @check_category('Elo by Anddy')
     @check_channel('register')
-    async def force_quit(self, ctx, name):
+    async def force_quit(self, ctx, mention):
         """Delete the seized user from the registered players.
 
         Example: !force_quit @Anddy
@@ -38,17 +41,13 @@ class Admin(commands.Cog):
         someone else quit the Elo.
         This can be used only in Bye channel.
         Can't be undone."""
-        game = GAMES[ctx.guild.id]
-        name = name[3: -1]
-        if not name.isdigit():
-            await ctx.send("You better ping the player !")
-            return
-        name = int(name)
-        game.erase_player_from_queues(name)
-        game.erase_player_from_leaderboards(name)
+        game = get_game(ctx)
+        id = await get_id(ctx, mention)
+        game.erase_player_from_queues(id)
+        game.erase_player_from_leaderboards(id)
 
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=f'<@{name}> has been removed from the rankings'))
+            description=f'{mention} has been removed from the rankings'))
 
 
     @commands.command(aliases=['cq', 'c_queue'])
@@ -56,7 +55,7 @@ class Admin(commands.Cog):
     @check_category('Solo elo')
     async def clear_queue(self, ctx):
         """Clear the current queue."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
         last_id = game.queues[mode].game_id
         if not game.queues[mode].has_queue_been_full:
@@ -71,41 +70,29 @@ class Admin(commands.Cog):
     @commands.command()
     @has_role_or_above('Elo Admin')
     @check_channel('bans')
-    async def ban(self, ctx, name, time, unity, reason=""):
+    async def ban(self, ctx, mention, time, unity, *reason):
         """Bans the player for a certain time.
 
         unity must be in s, m, h, d (secs, mins, hours, days).
         reason must be into " "
         """
-        name = name[3: -1]
-        if not time.isdigit():
-            raise commands.errors.MissingRequiredArgument(time)
-        if not name.isdigit():
-            await ctx.send("You better ping the player !")
-            return
-        name = int(name)
-        formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
-        if not unity in formats.keys():
-            raise commands.errors.MissingRequiredArgument(unity)
-        total_sec = int(time) * formats[unity]
-        GAMES[ctx.guild.id].ban_player(name, total_sec, reason)
+
+        id = await get_id(ctx, name)
+        total_sec = await get_total_sec(ctx, time, unity)
+        get_game(ctx).ban_player(id, total_sec, ' '.join(reason))
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description="The player has been banned ! Check !bans"))
+            description=f"{mention} has been banned ! Check !bans"))
 
 
     @commands.command()
     @check_channel('bans')
     @has_role_or_above('Elo Admin')
-    async def unban(self, ctx, name):
+    async def unban(self, ctx, mention):
         """Unban the player."""
-        name = name[3: -1]
-        if not name.isdigit():
-            await ctx.send("You better ping the player !")
-            return
-        name = int(name)
-        GAMES[ctx.guild.id].unban_player(name)
+        id = await get_id(ctx, mention)
+        get_game(ctx).unban_player(id)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description="The player has been unbanned ! Check !bans"))
+            description=f"{mention} has been unbanned ! Check !bans"))
 
 
 
@@ -114,7 +101,7 @@ class Admin(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def setelo(self, ctx, mode, name, elo):
         """Set the elo to the player in the specific mode."""
-        GAMES[ctx.guild.id].set_elo(int(mode), int(name[3: -1]), int(elo))
+        get_game(ctx).set_elo(int(mode), int(name[3: -1]), int(elo))
         await ctx.send("Worked!")
 
     @commands.command()
@@ -129,7 +116,7 @@ class Admin(commands.Cog):
             current_lose_streak, double_xp]
             The wlr will anyway be calculated at the end.
         """
-        player = GAMES[ctx.guild.id].leaderboards[int(mode)][int(name[3: -1])]
+        player = get_game(ctx).leaderboards[int(mode)][int(name[3: -1])]
         stats_name = Player.STATS[1: -1]
         if len(stats) > len(stats_name):
             await ctx.send("Too much arguments ! I'll cancel in case you messed up")
@@ -149,7 +136,7 @@ class Admin(commands.Cog):
     @commands.command()
     @check_channel('init')
     async def setdoublexp(self, ctx, player, value):
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         player = int(player[3: -1])
         for mode in game.available_modes:
             if player in game.leaderboards[mode]:
@@ -159,7 +146,7 @@ class Admin(commands.Cog):
     @check_channel('init')
     async def remove_non_server_players(self, ctx):
         """Remove people that aren't in the server anymore."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         guild = self.bot.get_guild(ctx.guild.id)
         start = sum(len(v) for mode, v in game.leaderboards.items())
         for mode in game.available_modes:

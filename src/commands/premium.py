@@ -2,9 +2,11 @@ import discord
 from discord import Embed
 from discord.ext import commands
 from main import GAMES, DISCORD_MAIN_GUILD_ID
+from utils.exceptions import get_player_by_id, get_player_by_mention
+from utils.exceptions import get_game
 
 
-class Premium_class(commands.Cog):
+class Premium(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,7 +28,7 @@ class Premium_class(commands.Cog):
         return 0
 
     async def set_premium(self, ctx, id):
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         nb_games = self.get_premium_nb_games(id)
         for mode in game.available_modes:
             if id in game.leaderboards[mode]:
@@ -66,4 +68,4 @@ class Premium_class(commands.Cog):
         await self.remove_role(id)
 
 def setup(bot):
-    bot.add_cog(Premium_class(bot))
+    bot.add_cog(Premium(bot))

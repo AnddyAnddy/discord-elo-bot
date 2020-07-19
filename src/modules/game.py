@@ -142,12 +142,11 @@ class Game():
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
-    def history(self, mode, name, startpage=1):
+    def history(self, mode, player, startpage=1):
         """Return the string showing the history of the chosen mode."""
         len_page = 10
         cpage = len_page * (startpage - 1)  # current page
         npage = len_page * startpage  # next page
-        player = self.leaderboards[mode][name]
         history = [(id, (queue, winner, elo)) for (id, (queue, winner, elo))
             in self.archive[mode].items() if player in queue]
         nb_pages = 1 + len(history) // len_page

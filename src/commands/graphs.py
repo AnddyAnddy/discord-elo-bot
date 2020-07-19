@@ -5,6 +5,8 @@ import numpy as np
 from discord.ext import commands
 from GAMES import GAMES
 from utils.decorators import is_arg_in_modes, check_channel
+from utils.exceptions import get_player_by_id, get_player_by_mention
+from utils.exceptions import get_game
 
 
 class Graph(commands.Cog):
@@ -42,24 +44,26 @@ class Graph(commands.Cog):
     @is_arg_in_modes(GAMES)
     @commands.command(aliases=['g'])
     @check_channel('info_chat')
-    async def graph(self, ctx, mode, name="", stat_key="elo"):
+    async def graph(self, ctx, mode, mention="", stat_key="elo"):
         """Show the graph of previous elo points.
 
         This doesn't count the boosts due to double xp or win streaks.
         Name MUST be given if you want to make a graph based on the wlr.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(mode)
-        name = str(ctx.author.id) if not name else name[3: -1]
-
-        if not name.isdigit():
-            await ctx.send("You better ping the player !")
-            return
-        name = int(name)
-        if name not in game.leaderboards[mode]:
-            await ctx.send("Couldn't find this player in the leaderboard !")
-            return
-        player = game.leaderboards[mode][name]
+        player = get_player_by_mention(ctx, mode, mention) if mention\
+            else get_player_by_id(ctx, mode, ctx.author.id)
+        # name = str(ctx.author.id) if not name else name[3: -1]
+        #
+        # if not name.isdigit():
+        #     await ctx.send("You better ping the player !")
+        #     return
+        # name = int(name)
+        # if name not in game.leaderboards[mode]:
+        #     await ctx.send("Couldn't find this player in the leaderboard !")
+        #     return
+        # player = game.leaderboards[mode][name]
         values = list(game.archive[mode].values())
         yList = []
         if stat_key == "elo":
@@ -88,7 +92,7 @@ class Graph(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def overall_stats(self, ctx, mode):
         """Show the number of wins of red/blue."""
-        archive = GAMES[ctx.guild.id].archive[int(mode)]
+        archive = get_game(ctx).archive[int(mode)]
         wins = [0, 0, 0]
         yDlist, yRlist, yBlist = [], [], []
         for _, winner, _ in archive.values():

@@ -115,8 +115,8 @@ def cmds_embed(bot, startpage=1):
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
 
-def most_stat_embed(game, mode, id, order_key="game", startpage=1, with_or_vs="with"):
-    most_played_with = build_most_played_with(game, mode, id, with_or_vs)
+def most_stat_embed(game, mode, player, order_key="game", startpage=1, with_or_vs="with"):
+    most_played_with = build_most_played_with(game, mode, player, with_or_vs)
     len_page = 20
     nb_pages = 1 + len(most_played_with) // len_page
     cpage = len_page * (startpage - 1)
@@ -134,7 +134,7 @@ def most_stat_embed(game, mode, id, order_key="game", startpage=1, with_or_vs="w
         ).add_field(name="name", value="most") \
         .add_field(name="key", value=f"{order_key} {with_or_vs}") \
         .add_field(name="mode", value=mode) \
-        .add_field(name="id", value=id) \
+        .add_field(name="id", value=player.id_user) \
         .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
 
@@ -145,10 +145,10 @@ def get_player_lb_pos(leaderboard, player, key):
         res += getattr(p, "elo") > getattr(player, "elo")
     return res
 
-def build_most_played_with(game, mode, name, with_or_vs):
+def build_most_played_with(game, mode, player, with_or_vs):
     most_played_with = {}
     archive = game.archive[mode]
-    player = game.leaderboards[mode][name]
+    # player = game.leaderboards[mode][name]
     team = []
     for (queue, win, _) in archive.values():
         if player in queue:
@@ -238,3 +238,12 @@ async def add_emojis(msg, game, mode, id):
     maps = game.available_maps
     for map in game.maps_archive[mode][id]:
         await msg.add_reaction(maps[map])
+
+async def add_scroll(message):
+    """Add ⏮️ ⬅️ ➡️ ⏭️ emojis to the message."""
+    for e in "⏮️⬅️➡️⏭️":
+        await msg.add_reaction(e)
+    # await msg.add_reaction("⏮️")
+    # await msg.add_reaction("⬅️")
+    # await msg.add_reaction("➡️")
+    # await msg.add_reaction("⏭️")

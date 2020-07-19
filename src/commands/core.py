@@ -6,6 +6,8 @@ from utils.decorators import check_category, check_channel, is_arg_in_modes
 from modules.player import Player
 from main import GAMES
 from utils.utils import add_emojis
+from utils.exceptions import get_player_by_id, get_player_by_mention
+from utils.exceptions import get_game
 
 class Core(commands.Cog):
     def __init__(self, bot):
@@ -23,7 +25,7 @@ class Core(commands.Cog):
         This command can be used only in the register channel.
         The command will fail if the mode doesn't exist (use !modes to check)."""
 
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(mode)
         name = ctx.author.id
         if name in game.leaderboards[mode]:
@@ -41,7 +43,7 @@ class Core(commands.Cog):
     @check_channel('register')
     async def register_all(self, ctx):
         """Register to every available modes in one command."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         name = ctx.author.id
         for mode in game.leaderboards:
             if name not in game.leaderboards[mode]:
@@ -61,14 +63,14 @@ class Core(commands.Cog):
         The user will lose all of his data after the command.
         Can be used only in Bye channel.
         Can't be undone."""
-        game = GAMES[ctx.guild.id]
-        name = ctx.author.id
+        game = get_game(ctx)
+        id = ctx.author.id
 
-        game.erase_player_from_queues(name)
-        game.erase_player_from_leaderboards(name)
+        game.erase_player_from_queues(id)
+        game.erase_player_from_leaderboards(id)
 
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=f'<@{name}> has been removed from the rankings'))
+            description=f'<@{id}> has been removed from the rankings'))
 
     @commands.command(pass_context=True, aliases=['j'])
     @check_category('Solo elo')
@@ -80,7 +82,7 @@ class Core(commands.Cog):
         Can't be used outside Modes category.
         The user can leave afterward by using !l.
         The user needs to have previously registered in this mode."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
         name = ctx.author.id
         g_queue = game.queues[mode]
@@ -125,17 +127,11 @@ class Core(commands.Cog):
         Can't be used outside Modes category.
         The user needs to be in the queue for using this command.
         The user can't leave a queue after it went full."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
-        name = ctx.author.id
-
-        if name in game.leaderboards[mode]:
-            await ctx.send(embed=Embed(color=0x00FF00, description=game.queues[mode].
-                                       remove_player(game.leaderboards[mode]
-                                                     [name])))
-        else:
-            await ctx.send(embed=Embed(color=0x000000,
-                                       description="You didn't even register lol."))
+        player = await get_player_by_id(ctx, mode, ctx.author.id)
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=game.queues[mode].remove_player(player)))
 
     @commands.command(aliases=['q'])
     @check_category('Solo elo')
@@ -146,9 +142,10 @@ class Core(commands.Cog):
         current queue with everyone's Elo.
         Can't be used outside Modes category.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
-        await ctx.send(embed=Embed(color=0x00FF00, description=str(game.queues[int(mode)])))
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=str(game.queues[mode])))
 
     @commands.command(aliases=['p'])
     @check_category('Solo elo')
@@ -165,7 +162,7 @@ class Core(commands.Cog):
         !p 1
         You can only pick players one by one, the index may change after a pick.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
         g_queue = game.queues[mode]
         name, is_index = (int(name), True) if name.isdigit() else (
@@ -247,22 +244,23 @@ class Core(commands.Cog):
         Will tell the bot that my prefered position is dm, then st, then gk...
         And it will be shown on the queue.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(mode)
-        if ctx.author.id not in game.leaderboards[mode]:
-            await ctx.send(embed=Embed(color=0x000000,
-                                       description=f"You must register first lol"))
-            return
+        player = await get_player_by_id(ctx, mode, ctx.author.id)
+        # if ctx.author.id not in game.leaderboards[mode]:
+        #     await ctx.send(embed=Embed(color=0x000000,
+        #                                description=f"You must register first lol"))
+        #     return
         if len(args) > len(game.available_positions) or \
                 any(elem for elem in args if elem not in game.available_positions):
             await ctx.send(embed=Embed(color=0x000000,
-                                       description=f"Your positions couldn't be saved, \
-    all of your args must be in {game.available_positions}"))
+                description=f"Your positions couldn't be saved, "\
+                    f"all of your args must be in {game.available_positions}"))
             return
 
-        setattr(game.leaderboards[mode][ctx.author.id], "fav_pos", list(args))
+        setattr(player, "fav_pos", list(args))
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description="Your positions have been saved!"))
+            description="Your positions have been saved!"))
 
     @commands.command()
     @check_channel('register')
@@ -272,7 +270,7 @@ class Core(commands.Cog):
         With no argument, the user will have his name resetted.
         Only usable in #register
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         if not new_name:
             new_name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
         for mode in game.leaderboards:

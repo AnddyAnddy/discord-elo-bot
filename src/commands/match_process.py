@@ -1,10 +1,14 @@
 from discord import Embed
 from main import GAMES
 from discord.ext import commands
-from discord.ext.commands import has_permissions, MissingPermissions
-from utils.decorators import check_category, check_channel, is_arg_in_modes
+from discord.ext.commands import MissingPermissions
+from utils.decorators import check_category, check_channel, is_arg_in_modes, has_role_or_above
 from utils.utils import team_name, get_elem_from_embed
 from utils.utils import autosubmit_reactions, map_pick_reactions
+from utils.exceptions import get_player_by_id, get_player_by_mention
+from utils.exceptions import get_game
+from utils.utils import add_emojis
+
 
 
 class Match_process(commands.Cog):
@@ -42,7 +46,7 @@ class Match_process(commands.Cog):
         in the mode 1vs1, in the 7th game, the team 1 (red) won.
         This will update NOT the rankings until the game is approved.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         if not id_game.isdigit() or not winner.isdigit():
             raise commands.errors.MissingRequiredArgument(id_game)
         mode, id_game, winner = int(mode), int(id_game), int(winner)
@@ -86,7 +90,7 @@ class Match_process(commands.Cog):
 
 
     @commands.command(aliases=['s', 'game'])
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def submit(self, ctx, mode, id_game, winner):
@@ -96,7 +100,7 @@ class Match_process(commands.Cog):
         in the mode 1vs1, in the 7th game, the team 1 (red) won.
         This will update the rankings.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         if not id_game.isdigit() or not winner.isdigit():
             raise commands.errors.MissingRequiredArgument(id_game)
         mode, id_game, winner = int(mode), int(id_game), int(winner)
@@ -107,7 +111,7 @@ class Match_process(commands.Cog):
             game.waiting_for_approval[mode].pop(id_game, None)
 
     @commands.command()
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def undo(self, ctx, mode, id_game):
@@ -118,12 +122,12 @@ class Match_process(commands.Cog):
         This will reset the ranking updates of this match.
         The game will be in undecided.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=game.undo(int(mode), int(id_game))))
+            description=game.undo(int(mode), int(id_game))))
 
     @commands.command(aliases=['c', 'clear'])
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def cancel(self, ctx, mode, id_game):
@@ -132,16 +136,16 @@ class Match_process(commands.Cog):
         Example: !cancel 1 3
         will cancel the game with the id 3 in the mode 1vs1.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         if game.cancel(int(mode), int(id_game)):
             await ctx.send(embed=Embed(color=0x00FF00,
-                                       description=f"The game {id_game} has been canceled"))
+                description=f"The game {id_game} has been canceled"))
         else:
             await ctx.send(embed=Embed(color=0x000000,
-                                       description=f"Couldn't find the game {id_game} in the current games."))
+                description=f"Couldn't find the game {id_game} in the current games."))
 
     @commands.command(aliases=['uc', 'uclear'])
-    @has_permissions(manage_roles=True)
+    @has_role_or_above('Elo Admin')
     @check_channel('submit')
     @is_arg_in_modes(GAMES)
     async def uncancel(self, ctx, mode, id_game):
@@ -150,9 +154,9 @@ class Match_process(commands.Cog):
         Example: !uncancel 1 3
         will uncancel the game with the id 3 in the mode 1vs1.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=game.uncancel(int(mode), int(id_game))))
+            description=game.uncancel(int(mode), int(id_game))))
 
     @commands.command(aliases=['u'])
     @check_channel('submit')
@@ -163,12 +167,9 @@ class Match_process(commands.Cog):
         Example: !undecided 2
         Will show every undecided games in 2vs2, with the format below.
         id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         msg = await ctx.send(embed=game.undecided(int(mode)))
-        await msg.add_reaction("⏮️")
-        await msg.add_reaction("⬅️")
-        await msg.add_reaction("➡️")
-        await msg.add_reaction("⏭️")
+        await add_emojis(msg)
 
     @commands.command(aliases=['cl'])
     @check_channel('submit')
@@ -179,12 +180,9 @@ class Match_process(commands.Cog):
         Example: !cl 2
         Will show every canceled games in 2vs2.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         msg = await ctx.send(embed=game.canceled(int(mode)))
-        await msg.add_reaction("⏮️")
-        await msg.add_reaction("⬅️")
-        await msg.add_reaction("➡️")
-        await msg.add_reaction("⏭️")
+        await add_emojis(msg)
 
     @commands.command(aliases=['a'])
     @check_channel('submit')
@@ -196,12 +194,9 @@ class Match_process(commands.Cog):
         Will show every games in 2vs2, with the format below.
         id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
         Blue team: [player3, player4]."""
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         msg = await ctx.send(embed=game.archived(int(mode)))
-        await msg.add_reaction("⏮️")
-        await msg.add_reaction("⬅️")
-        await msg.add_reaction("➡️")
-        await msg.add_reaction("⏭️")
+        await add_emojis(msg)
 
 
 def setup(bot):

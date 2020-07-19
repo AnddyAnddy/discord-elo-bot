@@ -9,7 +9,7 @@ from utils.decorators import check_category, is_arg_in_modes, check_channel, has
 from utils.utils import is_url_image
 from modules.rank import Rank
 from modules.game import Game
-from utils.exceptions import get_player_by_id, get_player_by_mention
+# from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
 
 
@@ -24,7 +24,7 @@ class Init(commands.Cog):
 
         Initialize the bot to be ready on a guild.
         This command creates every channel needed for the Bot to work.
-        Can be used anywhere. Need to have manage_roles
+        Can be used anywhere. Need to have Elo Admin role
         Read https://github.com/AnddyAnddy/discord-elo-bot/wiki/How-to-set-up
         """
         guild = ctx.guild
@@ -87,7 +87,7 @@ class Init(commands.Cog):
         Example: !add_mode 4
         Will add the mode 4vs4 into the available modes, a channel will be
         created and the leaderboard will now have a 4 key.
-        Can be used only in init channel by a manage_roles having user."""
+        Can be used only in init channel by a Elo Admin role having user."""
         if mode.isdigit() and int(mode) > 0:
             nb_p = int(mode)
             if get_game(ctx).add_mode(nb_p):
