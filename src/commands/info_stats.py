@@ -28,7 +28,7 @@ class Info_stats(commands.Cog):
         """
         game = get_game(ctx)
         msg = await ctx.send(embed=game.leaderboard(int(mode), stat_key, 1))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
 
 
