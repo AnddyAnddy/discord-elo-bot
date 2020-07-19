@@ -7,7 +7,7 @@ from utils.utils import team_name, get_elem_from_embed
 from utils.utils import autosubmit_reactions, map_pick_reactions
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
-from utils.utils import add_emojis
+from utils.utils import add_scroll
 
 
 
@@ -169,7 +169,7 @@ class Match_process(commands.Cog):
         id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
         game = get_game(ctx)
         msg = await ctx.send(embed=game.undecided(int(mode)))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
     @commands.command(aliases=['cl'])
     @check_channel('submit')
@@ -182,7 +182,7 @@ class Match_process(commands.Cog):
         """
         game = get_game(ctx)
         msg = await ctx.send(embed=game.canceled(int(mode)))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
     @commands.command(aliases=['a'])
     @check_channel('submit')
@@ -196,7 +196,7 @@ class Match_process(commands.Cog):
         Blue team: [player3, player4]."""
         game = get_game(ctx)
         msg = await ctx.send(embed=game.archived(int(mode)))
-        await add_emojis(msg)
+        await add_scroll(msg)
 
 
 def setup(bot):
