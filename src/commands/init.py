@@ -9,6 +9,8 @@ from utils.decorators import check_category, is_arg_in_modes, check_channel, has
 from utils.utils import is_url_image
 from modules.rank import Rank
 from modules.game import Game
+from utils.exceptions import get_player_by_id, get_player_by_mention
+from utils.exceptions import get_game
 
 
 class Init(commands.Cog):
@@ -88,7 +90,7 @@ class Init(commands.Cog):
         Can be used only in init channel by a manage_roles having user."""
         if mode.isdigit() and int(mode) > 0:
             nb_p = int(mode)
-            if GAMES[ctx.guild.id].add_mode(nb_p):
+            if get_game(ctx).add_mode(nb_p):
                 guild = ctx.message.guild
                 solo_cat = discord.utils.get(guild.categories, name="Solo elo")
                 teams_cat = discord.utils.get(guild.categories, name="Teams elo")
@@ -113,7 +115,7 @@ class Init(commands.Cog):
     @check_channel('init')
     @is_arg_in_modes(GAMES)
     async def delete_mode(self, ctx, mode):
-        GAMES[ctx.guild.id].remove_mode(int(mode))
+        get_game(ctx).remove_mode(int(mode))
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description="The mode has been deleted, please delete the channel."))
 
@@ -132,7 +134,7 @@ class Init(commands.Cog):
         from_points is the points required to have this rank.
         to_points is the max points of this rank.
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(mode)
         from_points = int(from_points)
         to_points = int(to_points)
@@ -158,10 +160,10 @@ class Init(commands.Cog):
         :param: new_mode must be a number [0, 1, 2, 3]:
             [random teams, balanced random, random cap, best cap]
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         mode = int(mode)
         new_mode = int(new_mode)
-        if new_mode not in range(3):
+        if new_mode not in range(4):
             await ctx.send("Wrong new_mode given, read help pickmode")
             return
         pickmodes = ["random teams", "balanced random", "random cap", "best cap"]
@@ -180,7 +182,7 @@ class Init(commands.Cog):
         will allow the players to use
         !pos st gk am dm
         """
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         setattr(game, "available_positions", list(args))
         await ctx.send(f"The available_positions are now {game.available_positions}")
 
@@ -190,14 +192,14 @@ class Init(commands.Cog):
     @check_channel('init')
     async def add_map(self, ctx, emoji, name):
         """Add the map in the available maps."""
-        await ctx.send(GAMES[ctx.guild.id].add_map(emoji, name))
+        await ctx.send(get_game(ctx).add_map(emoji, name))
 
 
     @commands.command()
     @check_channel('init')
     async def delete_map(self, ctx, name):
         """Delete the map from the available maps."""
-        await ctx.send(GAMES[ctx.guild.id].delete_map(name))
+        await ctx.send(get_game(ctx).delete_map(name))
 
     @commands.command()
     @check_channel('init')
@@ -215,7 +217,7 @@ class Init(commands.Cog):
             return
         pickmode = int(pickmode)
         mode = int(mode)
-        game = GAMES[ctx.guild.id]
+        game = get_game(ctx)
         game.queues[mode].mapmode = pickmode
         pickmodes = ["Maps aren't used", "The map is randomly picked",
             "The map is picked with emojis"]
