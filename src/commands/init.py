@@ -151,6 +151,7 @@ class Init(commands.Cog):
 
     @commands.command()
     @check_channel('init')
+    @is_arg_in_modes(GAMES)
     async def setpickmode(self, ctx, mode, new_mode):
         """Set the pickmode to the new_mode set
 
