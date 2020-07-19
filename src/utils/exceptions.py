@@ -59,7 +59,7 @@ async def get_id(ctx, mention):
 
 async def get_total_sec(ctx, time, unity):
     formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
-    if not time.isdigit() or unity not in format.keys():
+    if not time.isdigit() or unity not in formats.keys():
         await send_error(ctx, "Your ban was incorrectly set\n" +\
             f"Time must be a positive integer, currently it is {time}.\n" +
             f"Unity must be something in s, m, h, d (secs, mins, hours, days)")
