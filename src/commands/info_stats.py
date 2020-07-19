@@ -46,8 +46,8 @@ class Info_stats(commands.Cog):
         """
         game = get_game(ctx)
         mode = int(mode)
-        player = get_player_by_mention(ctx, mode, mention) if mention\
-            else get_player_by_id(ctx, mode, ctx.author.id)
+        player = await get_player_by_mention(ctx, mode, mention) if mention\
+            else await get_player_by_id(ctx, mode, ctx.author.id)
         # name = str(ctx.author.id) if not name else name[3: -1]
         # if not name.isdigit():
         #     await ctx.send("You better ping the player !")
@@ -121,8 +121,8 @@ class Info_stats(commands.Cog):
         #     await ctx.send("You better ping the player !")
         #     return
         # name = int(name)
-        player = get_player_by_mention(ctx, mode, mention) if mention\
-            else get_player_by_id(ctx, mode, ctx.author.id)
+        player = await get_player_by_mention(ctx, mode, mention) if mention\
+            else await get_player_by_id(ctx, mode, ctx.author.id)
 
         # if name in game.leaderboards[mode]:
         msg = await ctx.send(embed=game.history(mode, player))
@@ -196,8 +196,8 @@ class Info_stats(commands.Cog):
         #     await ctx.send("You better ping the player !")
         #     return
         # name = int(name)
-        player = get_player_by_mention(ctx, mode, mention) if mention\
-            else get_player_by_id(ctx, mode, ctx.author.id)
+        player = await get_player_by_mention(ctx, mode, mention) if mention\
+            else await get_player_by_id(ctx, mode, ctx.author.id)
         # if name not in game.leaderboards[mode]:
         #     await ctx.send(embed=Embed(color=0x000000,
         #         description="You are not registered on the leaderboard."))

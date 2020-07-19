@@ -52,8 +52,8 @@ class Graph(commands.Cog):
         """
         game = get_game(ctx)
         mode = int(mode)
-        player = get_player_by_mention(ctx, mode, mention) if mention\
-            else get_player_by_id(ctx, mode, ctx.author.id)
+        player = await get_player_by_mention(ctx, mode, mention) if mention\
+            else await get_player_by_id(ctx, mode, ctx.author.id)
         # name = str(ctx.author.id) if not name else name[3: -1]
         #
         # if not name.isdigit():
