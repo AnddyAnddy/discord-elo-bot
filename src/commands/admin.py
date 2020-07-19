@@ -77,7 +77,7 @@ class Admin(commands.Cog):
         reason must be into " "
         """
 
-        id = await get_id(ctx, name)
+        id = await get_id(ctx, mention)
         total_sec = await get_total_sec(ctx, time, unity)
         get_game(ctx).ban_player(id, total_sec, ' '.join(reason))
         await ctx.send(embed=Embed(color=0x00FF00,
