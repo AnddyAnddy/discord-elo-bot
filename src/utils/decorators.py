@@ -74,3 +74,30 @@ def has_role_or_above(roleName):
         role = discord.utils.get(ctx.guild.roles, name=roleName)
         return role is None or ctx.author.top_role >= role
     return commands.check(predicate)
+
+def check_if_banned(games):
+    def predicate(ctx):
+        game = games[ctx.guild.id]
+        id = ctx.author.id
+        if id in game.bans:
+            game.remove_negative_bans()
+            # the ban might have been removed in the function above
+            if id in game.bans:
+                raise commands.errors.BadArgument(str(game.bans[id]))
+        return True
+    return commands.check(predicate)
+
+
+def check_captain_mode(games):
+    def predicate(ctx):
+        game = games[ctx.guild.id]
+        mode = ctx.channel.name.split('vs')[0]
+        if not mode.isdigit():
+            return False
+        queue = game.queues[int(mode)]
+        if queue.mode < 2:
+            raise commands.errors.BadArgument("This mode doesn't allow picks")
+        if not queue.has_queue_been_full:
+            raise commands.errors.BadArgument("The pick session hasn't started")
+        return True
+    return commands.check(predicate)
