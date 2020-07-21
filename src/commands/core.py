@@ -2,12 +2,14 @@ from datetime import datetime
 import discord
 from discord import Embed
 from discord.ext import commands
-from utils.decorators import check_category, check_channel, is_arg_in_modes
+from utils.decorators import check_category, check_channel, is_arg_in_modes, check_if_banned, check_captain_mode
 from modules.player import Player
 from main import GAMES
-from utils.utils import add_emojis
+from utils.utils import add_emojis, set_map, announce_game, finish_the_pick, team_name
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
+from utils.exceptions import get_picked_player
+from utils.exceptions import get_captain_team
 
 class Core(commands.Cog):
     def __init__(self, bot):
@@ -30,11 +32,11 @@ class Core(commands.Cog):
         name = ctx.author.id
         if name in game.leaderboards[mode]:
             await ctx.send(embed=Embed(color=0x000000,
-                                       description=f"There's already a played called <@{name}>."))
+                description=f"There's already a played called <@{name}>."))
             return
         game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=f"<@{name}> has been registered."))
+            description=f"<@{name}> has been registered."))
         role = discord.utils.get(
             ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
         await ctx.author.add_roles(role)
@@ -53,7 +55,7 @@ class Core(commands.Cog):
                 ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
             await ctx.author.add_roles(role)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=f"<@{name}> has been registered for every mode."))
+            description=f"<@{name}> has been registered for every mode."))
 
     @commands.command(aliases=['quit'])
     @check_channel('register')
@@ -74,6 +76,7 @@ class Core(commands.Cog):
 
     @commands.command(pass_context=True, aliases=['j'])
     @check_category('Solo elo')
+    @check_if_banned(GAMES)
     async def join(self, ctx):
         """Let the player join a queue.
 
@@ -82,40 +85,27 @@ class Core(commands.Cog):
         Can't be used outside Modes category.
         The user can leave afterward by using !l.
         The user needs to have previously registered in this mode."""
+
         game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
-        name = ctx.author.id
-        g_queue = game.queues[mode]
-        if name in game.bans:
-            game.remove_negative_bans()
-            # the ban might have been removed in the function above
-            if name in game.bans:
-                await ctx.send(embed=Embed(color=0x000000, description=str(game.bans[name])))
-                return
-        if name in game.leaderboards[mode]:
-            player = game.leaderboards[mode][name]
-            player.id_user = ctx.author.id
-            setattr(player, "last_join", datetime.now())
-            res = g_queue.add_player(player, game)
-            await ctx.send(embed=Embed(color=0x00FF00, description=res))
-            if g_queue.is_finished():
-                await ctx.send(embed=Embed(color=0x00FF00,
-                    description=game.add_game_to_be_played(g_queue)))
-                if g_queue.mapmode != 0:
-                    msg = await ctx.send(g_queue.ping_everyone(),
-                        embed=game.lobby_maps(mode, g_queue.game_id))
-                    if g_queue.mapmode == 2:
-                        await add_emojis(msg, game, mode, g_queue.game_id)
-                if res != "Queue is full...":
-                    await discord.utils.get(ctx.guild.channels,
-                        name="game_announcement").\
-                        send(embed=Embed(color=0x00FF00,
-                        description=res),
-                        content=g_queue.ping_everyone())
+        id = ctx.author.id
+        queue = game.queues[mode]
+        player = await get_player_by_id(ctx, mode, id)
+        setattr(player, "last_join", datetime.now())
+        is_queue_now_full = queue.has_queue_been_full
+        res = queue.add_player(player, game)
+        # await ctx.send(embed=Embed(color=0x00FF00, description=res))
+        is_queue_now_full = queue.has_queue_been_full != is_queue_now_full
 
-        else:
-            await ctx.send(embed=Embed(color=0x000000,
-                description="Make sure you register before joining the queue."))
+        await ctx.send(content=queue.ping_everyone() if is_queue_now_full else "",
+            embed=Embed(color=0x00FF00, description=res))
+
+        if queue.is_finished():
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description=game.add_game_to_be_played(queue)))
+            await set_map(ctx, game, queue, mode)
+            await announce_game(ctx, res, queue)
+
 
     @commands.command(pass_context=True, aliases=['l'])
     @check_category('Solo elo')
@@ -149,6 +139,7 @@ class Core(commands.Cog):
 
     @commands.command(aliases=['p'])
     @check_category('Solo elo')
+    @check_captain_mode(GAMES)
     async def pick(self, ctx, name):
         """Pick a player in the remaining player.
 
@@ -165,73 +156,13 @@ class Core(commands.Cog):
         game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
         g_queue = game.queues[mode]
-        name, is_index = (int(name), True) if name.isdigit() else (
-            name[3: -1], False)
-
-        if not is_index:
-            if not name.isdigit():
-                await ctx.send("You better ping the player or use the index!")
-                return
-            else:
-                name = int(name)
-        if g_queue.mode < 2:
-            await ctx.send(embed=Embed(color=0x000000,
-                                       description="The mode is not a captaining mode."))
-            return
-
-        team = g_queue.get_captain_team(ctx.author.id)
-        if team == 0:
-            await ctx.send(embed=Embed(color=0x000000,
-                                       description="You are not captain."))
-            return
-
-        team_length = (0, len(g_queue.red_team),
-                       len(g_queue.blue_team))
-        l_oth = team_length[1 if team == 2 else 2]
-        l_my = team_length[team]
-
-        if not ((l_oth == l_my and team == 1) or (l_oth > l_my)):
-            await ctx.send(embed=Embed(color=0x000000,
-                                       description="Not your turn to pick."))
-            return
-        if not is_index:
-            player = discord.utils.get(g_queue.players, id_user=name)
-
-            if player is None:
-                await ctx.send(embed=Embed(color=0x000000,
-                                           description=f"Couldn't find the player <@{name}>."))
-                return
-            g_queue.set_player_team(team, player)
-        else:
-            team = g_queue.red_team if team == 1 else g_queue.blue_team
-            other_team = g_queue.red_team if team == 2 else g_queue.blue_team
-            name -= 1
-            if name < 0 or name >= len(g_queue.players):
-                await ctx.send(embed=Embed(color=0x000000,
-                                           description="Couldn't find the player with this index."))
-                return
-            player = g_queue.players.pop(name)
-            team.append(player)
-
+        player = await get_picked_player(ctx, mode, g_queue, name)
+        team_id = await get_captain_team(ctx, g_queue, mode, ctx.author.id)
+        await g_queue.set_player_team(ctx, team_id, player)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=f"Good pick!"))
-        await ctx.send(embed=Embed(color=0x00FF00,
-                                   description=str(g_queue)))
-        if len(g_queue.players) == 1:
-            g_queue.set_player_team(2, g_queue.players[0])
-        if g_queue.is_finished():
-            await ctx.send(embed=Embed(color=0x00FF00,
-                                       description=str(g_queue)))
-            await discord.utils.get(ctx.guild.channels,
-                                    name="game_announcement").send(embed=Embed(color=0x00FF00,
-                                                                               description=str(g_queue)),
-                                                                   content=g_queue.ping_everyone())
-            game.add_game_to_be_played(game.queues[mode])
-            if g_queue.mapmode != 0:
-                msg = await ctx.send(g_queue.ping_everyone(),
-                    embed=game.lobby_maps(mode, g_queue.game_id))
-                if g_queue.mapmode == 2:
-                    await add_emojis(msg, game, mode, g_queue.game_id)
+            description=f"<@{player.id_user}> was moved to {team_name(team_id)}!"))
+        await finish_the_pick(ctx, game, g_queue, mode)
+
 
     @commands.command(aliases=['pos'])
     @check_channel('register')

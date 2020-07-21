@@ -2,7 +2,8 @@
 from random import shuffle
 from random import choice
 from random import sample
-
+from utils.exceptions import send_error
+from utils.exceptions import PassException
 
 class Queue():
     """Docstring for Queue."""
@@ -30,7 +31,7 @@ class Queue():
         self.mapmode = mapmode
         self.game_id = last_id + 1
 
-    def is_queue_full(self):
+    def is_full(self):
         """Return true if the queue is full."""
         return self.max_queue == len(self.players)
 
@@ -38,14 +39,14 @@ class Queue():
         """Add a player in the queue."""
         if player in self.players:
             return "You can't join twice, maybe you're looking for !l"
-        if self.is_queue_full() or self.has_queue_been_full:
+        if self.is_full() or self.has_queue_been_full:
             return "Queue is full..."
         self.players.append(player)
         # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
         # self.timeout[player].start()
         res = f'<@{player.id_user}> has been added to the queue.  \
 **[{len(self.players)}/{int(self.max_queue)}]**'
-        if self.is_queue_full():
+        if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game)
         return res
@@ -120,18 +121,24 @@ class Queue():
                     min(3, len(game.available_maps)))
 
 
-    def get_captain_team(self, id):
+    async def get_captain_team(self, ctx, player):
         """Return 1 if red, 2 if blue, 0 if none."""
         red_cap, blue_cap = self.red_team[0], self.blue_team[0]
         for i, p in enumerate([red_cap, blue_cap], start=1):
-            if p.id_user == id:
+            if p == player:
                 return i
-        return 0
+        await send_error(ctx, "You are not captain.")
+        raise PassException()
 
-    def set_player_team(self, team_id, player):
+    async def set_player_team(self, ctx, team_id, player):
         """Move the player from the players to the team."""
         team = self.red_team if team_id == 1 else self.blue_team
-        team.append(self.players.pop(self.players.index(player)))
+        try:
+            team.append(self.players.pop(self.players.index(player)))
+        except Exception as e:
+            await send_error(ctx, f"Couldn't find <@{player.id_user}> here.")
+            raise PassException()
+
 
     def ping_everyone(self):
         """Ping everyone present in the queue."""

@@ -1,6 +1,6 @@
 import requests
 from discord import Embed
-
+import discord
 
 def is_url_image(url):
     """Return True if the url is an existing image."""
@@ -242,9 +242,41 @@ async def add_emojis(msg, game, mode, id):
 async def add_scroll(message):
     """Add ⏮️ ⬅️ ➡️ ⏭️ emojis to the message."""
     for e in ['⏮️', '⬅️', '➡️', '⏭️']:
-        # print(e)
         await message.add_reaction(e)
-    # await msg.add_reaction("⏮️")
-    # await msg.add_reaction("⬅️")
-    # await msg.add_reaction("➡️")
-    # await msg.add_reaction("⏭️")
+
+async def set_map(ctx, game, queue, mode):
+    if queue.mapmode != 0:
+        msg = await ctx.send(queue.ping_everyone(),
+            embed=game.lobby_maps(mode, queue.game_id))
+        if queue.mapmode == 2:
+            await add_emojis(msg, game, mode, queue.game_id)
+
+
+async def announce_game(ctx, res, queue):
+    if res != "Queue is full...":
+        await discord.utils.get(ctx.guild.channels,
+            name="game_announcement")\
+        .send(embed=Embed(color=0x00FF00,
+            description=res),
+            content=queue.ping_everyone())
+
+
+async def finish_the_pick(ctx, game, queue, mode):
+    if len(queue.players) == 1:
+        await queue.set_player_team(ctx, 2, queue.players[0])
+    else:
+        await ctx.send(embed=Embed(color=0x00FF00, description=str(queue)))
+    if queue.is_finished():
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=str(queue)))
+        await discord.utils.get(ctx.guild.channels,
+            name="game_announcement")\
+                .send(embed=Embed(color=0x00FF00,
+                    description=str(queue)),
+                    content=queue.ping_everyone())
+        game.add_game_to_be_played(game.queues[mode])
+        if queue.mapmode != 0:
+            msg = await ctx.send(queue.ping_everyone(),
+                embed=game.lobby_maps(mode, queue.game_id))
+            if queue.mapmode == 2:
+                await add_emojis(msg, game, mode, queue.game_id)
