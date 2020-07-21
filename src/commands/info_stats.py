@@ -106,7 +106,7 @@ class Info_stats(commands.Cog):
     @commands.command(aliases=['h'])
     @check_channel('info_chat')
     @is_arg_in_modes(GAMES)
-    async def history(self, ctx, mode, name=""):
+    async def history(self, ctx, mode, mention=""):
         """Show every matches the user played in.
 
         Example: !h 1 @Anddy
@@ -117,21 +117,11 @@ class Info_stats(commands.Cog):
         """
         game = get_game(ctx)
         mode = int(mode)
-        # name = str(ctx.author.id) if not name else name[3: -1]
-        # if not name.isdigit():
-        #     await ctx.send("You better ping the player !")
-        #     return
-        # name = int(name)
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
 
-        # if name in game.leaderboards[mode]:
         msg = await ctx.send(embed=game.history(mode, player))
         await add_scroll(msg)
-        # else:
-        #     await ctx.send(embed=Embed(color=0x000000,
-        #        description=f"No player called <@{name}>"))
-
 
 
     @commands.command()
