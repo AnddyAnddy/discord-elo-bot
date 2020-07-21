@@ -162,7 +162,7 @@ class Game():
             .add_field(name="name", value="history") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
-            .add_field(name="id", value=name) \
+            .add_field(name="id", value=player.id_user) \
             .set_footer(text=f"[ {startpage} / {nb_pages} ]")
 
     def leaderboard(self, mode, key="elo", startpage=1):
