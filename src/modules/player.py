@@ -74,6 +74,8 @@ class Player():
                 res += f'{stat:<25} {getattr(self, stat):>14.3f}\n'
             elif stat == "last_join":
                 res += f'{stat:<25} {self.last_join.strftime("%d/%m/%Y"):>14}\n'
+            elif stat == "fav_pos":
+                res += f'{stat:<25} {" ".join(self.fav_pos):>14}\n'
             else:
                 res += f'{stat:<25} {str(getattr(self, stat)):>14}\n'
         res += '```'
