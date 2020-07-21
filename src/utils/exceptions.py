@@ -36,7 +36,7 @@ async def get_player_by_id(ctx, mode, id):
     if str(id).isdigit() and int(id) in game.leaderboards[mode]:
         return game.leaderboards[mode][int(id)]
 
-    await send_error(ctx, IncorrectName(mention))
+    await send_error(ctx, IncorrectName(f"<@{id}>"))
     raise PassException()
 
 
@@ -56,6 +56,20 @@ async def get_id(ctx, mention):
     raise PassException()
 
 
+async def get_player_on_queue(ctx, queue, pos):
+    try:
+        return queue.players[pos - 1]
+    except IndexError:
+        await send_error(ctx, f"{pos} is an incorrect index !\n"\
+            f"Your index must be between 1 and {len(queue.players)}.")
+        raise PassException()
+
+
+async def get_picked_player(ctx, mode, queue, name):
+    if not name.isdigit():
+        return await get_player_by_mention(ctx, mode, name)
+    else:
+        return await get_player_on_queue(ctx, queue, int(name))
 
 async def get_total_sec(ctx, time, unity):
     formats = {"s": 1, "m": 60, "h": 60 * 60, "d": 60 * 60 * 24}
@@ -65,3 +79,16 @@ async def get_total_sec(ctx, time, unity):
             f"Unity must be something in s, m, h, d (secs, mins, hours, days)")
         raise PassException()
     return int(time) * formats[unity]
+
+
+async def get_captain_team(ctx, queue, mode, captain_id):
+    captain = await get_player_by_id(ctx, mode, captain_id)
+    team_id = await queue.get_captain_team(ctx, captain)
+    team_length = (0, len(queue.red_team), len(queue.blue_team))
+    l_oth = team_length[1 if team_id == 2 else 2]
+    l_my = team_length[team_id]
+
+    if not ((l_oth == l_my and team_id == 1) or (l_oth > l_my)):
+        await send_error(ctx, "It is not your turn to pick.")
+        raise PassException()
+    return team_id
