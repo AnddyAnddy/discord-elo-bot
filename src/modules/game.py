@@ -73,7 +73,6 @@ class Game():
         """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
-            print(self.queues[mode].__dict__.keys())
             self.queues[mode] = Queue(
                 2 * mode, self.queues[mode].mode,
                 self.queues[mode].mapmode, last_id)
