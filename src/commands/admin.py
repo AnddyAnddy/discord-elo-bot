@@ -12,7 +12,7 @@ from utils.exceptions import get_id
 from utils.exceptions import get_total_sec
 from utils.exceptions import get_game
 from utils.exceptions import PassException
-
+from utils.utils import join_aux
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -49,6 +49,14 @@ class Admin(commands.Cog):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=f'{mention} has been removed from the rankings'))
 
+    @commands.command(aliases=['fj'])
+    @has_role_or_above('Elo Admin')
+    @check_category('Solo elo')
+    async def force_join(self, ctx, mention):
+        """Force a user to join the queue."""
+        mode = int(ctx.channel.name.split('vs')[0])
+        player = await get_player_by_mention(ctx, mode, mention)
+        await join_aux(ctx, player)
 
     @commands.command(aliases=['cq', 'c_queue'])
     @has_role_or_above('Elo Admin')
