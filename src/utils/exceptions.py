@@ -58,6 +58,8 @@ async def get_id(ctx, mention):
 
 async def get_player_on_queue(ctx, queue, pos):
     try:
+        if pos < 1: # create an error since the index has to be > 1
+            return queue.players[len(queue.players) + 1]
         return queue.players[pos - 1]
     except IndexError:
         await send_error(ctx, f"{pos} is an incorrect index !\n"\
