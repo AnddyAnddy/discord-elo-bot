@@ -157,17 +157,27 @@ class Init(commands.Cog):
     async def setpickmode(self, ctx, mode, new_mode):
         """Set the pickmode to the new_mode set
 
-        :param: new_mode must be a number [0, 1, 2, 3]:
-            [random teams, balanced random, random cap, best cap]
+        new mode:
+            0: random teams
+            1: balanced teams
+            2: random cap, picks 1-1 1-1
+            3: best cap, picks 1-1 1-1
+            4: random cap, picks 1-2 2-1
+            5: best cap, picks 1-2 2-1
         """
         game = get_game(ctx)
         mode = int(mode)
         new_mode = int(new_mode)
-        if new_mode not in range(4):
+        if new_mode not in range(6):
             await ctx.send("Wrong new_mode given, read help pickmode")
             return
-        pickmodes = ["random teams", "balanced random", "random cap", "best cap"]
+        pickmodes = ["random teams", "balanced random", "random cap (1-1)",
+            "best cap (1-1)", "random cap (1-2 2-1)", "best cap (1-2 2-1)"]
         game.queues[mode].mode = new_mode
+        if len(game.queues[mode].modes) <= 4: # backward compatibility
+            game.queues[mode].modes.append(game.queues[mode].modes[2])
+            game.queues[mode].modes.append(game.queues[mode].modes[3])
+        print(game.queues[mode].modes)
         game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
         await ctx.send(f"Pickmode changed to {pickmodes[new_mode]}!")
 

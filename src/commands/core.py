@@ -5,7 +5,7 @@ from discord.ext import commands
 from utils.decorators import check_category, check_channel, is_arg_in_modes, check_if_banned, check_captain_mode
 from modules.player import Player
 from main import GAMES
-from utils.utils import add_emojis, set_map, announce_game, finish_the_pick, team_name
+from utils.utils import add_emojis, set_map, announce_game, finish_the_pick, team_name, pick_players, join_aux
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
 from utils.exceptions import get_picked_player
@@ -85,27 +85,7 @@ class Core(commands.Cog):
         Can't be used outside Modes category.
         The user can leave afterward by using !l.
         The user needs to have previously registered in this mode."""
-
-        game = get_game(ctx)
-        mode = int(ctx.channel.name.split('vs')[0])
-        id = ctx.author.id
-        queue = game.queues[mode]
-        player = await get_player_by_id(ctx, mode, id)
-        setattr(player, "last_join", datetime.now())
-        is_queue_now_full = queue.has_queue_been_full
-        res = queue.add_player(player, game)
-        # await ctx.send(embed=Embed(color=0x00FF00, description=res))
-        is_queue_now_full = queue.has_queue_been_full != is_queue_now_full
-
-        await ctx.send(content=queue.ping_everyone() if is_queue_now_full else "",
-            embed=Embed(color=0x00FF00, description=res))
-
-        if queue.is_finished():
-            await ctx.send(embed=Embed(color=0x00FF00,
-                description=game.add_game_to_be_played(queue)))
-            await set_map(ctx, game, queue, mode)
-            await announce_game(ctx, res, queue)
-
+        await join_aux(ctx)
 
     @commands.command(pass_context=True, aliases=['l'])
     @check_category('Solo elo')
@@ -140,7 +120,8 @@ class Core(commands.Cog):
     @commands.command(aliases=['p'])
     @check_category('Solo elo')
     @check_captain_mode(GAMES)
-    async def pick(self, ctx, name):
+
+    async def pick(self, ctx, p1, p2=""):
         """Pick a player in the remaining player.
 
         Let's say Anddy is the red captain, and it's his turn to pick.
@@ -155,13 +136,10 @@ class Core(commands.Cog):
         """
         game = get_game(ctx)
         mode = int(ctx.channel.name.split('vs')[0])
-        g_queue = game.queues[mode]
-        player = await get_picked_player(ctx, mode, g_queue, name)
-        team_id = await get_captain_team(ctx, g_queue, mode, ctx.author.id)
-        await g_queue.set_player_team(ctx, team_id, player)
-        await ctx.send(embed=Embed(color=0x00FF00,
-            description=f"<@{player.id_user}> was moved to {team_name(team_id)}!"))
-        await finish_the_pick(ctx, game, g_queue, mode)
+        queue = game.queues[mode]
+        team_id = await get_captain_team(ctx, queue, mode, ctx.author.id)
+        await pick_players(ctx, queue, mode, team_id, p1, p2)
+        await finish_the_pick(ctx, game, queue, mode, team_id)
 
 
     @commands.command(aliases=['pos'])

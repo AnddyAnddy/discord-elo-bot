@@ -1,6 +1,9 @@
 import requests
 from discord import Embed
 import discord
+from utils.exceptions import send_error, get_picked_player
+from utils.exceptions import get_game, get_player_by_id, PassException
+from datetime import datetime
 
 def is_url_image(url):
     """Return True if the url is an existing image."""
@@ -261,11 +264,16 @@ async def announce_game(ctx, res, queue):
             content=queue.ping_everyone())
 
 
-async def finish_the_pick(ctx, game, queue, mode):
+async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
+    other_team_id = 1 if team_just_picked == 2 else 2
+    other_cap = queue.get_team_by_id(other_team_id)[0]
+    nb_to_pick = nb_players_to_pick(queue, other_team_id)
     if len(queue.players) == 1:
-        await queue.set_player_team(ctx, 2, queue.players[0])
+        await queue.set_player_team(ctx, other_team_id, queue.players[0])
     else:
-        await ctx.send(embed=Embed(color=0x00FF00, description=str(queue)))
+        await ctx.send(content=
+            f"<@{other_cap.id_user}> have to pick **{nb_to_pick}** players.",
+            embed=Embed(color=0x00FF00, description=str(queue)))
     if queue.is_finished():
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(queue)))
@@ -280,3 +288,53 @@ async def finish_the_pick(ctx, game, queue, mode):
                 embed=game.lobby_maps(mode, queue.game_id))
             if queue.mapmode == 2:
                 await add_emojis(msg, game, mode, queue.game_id)
+
+
+
+def nb_players_to_pick(queue, my_team_id):
+    if queue.mode in (2, 3):
+        return 1
+    my_team = queue.get_team_by_id(my_team_id)
+    other_team = queue.get_team_by_id(1 if my_team_id == 2 else 2)
+    if len(queue.players) >= 3:
+        return 1 if len(my_team) >= len(other_team) else 2
+    return 1
+
+async def pick_players(ctx, queue, mode, team_id, p1, p2):
+    nb_p = nb_players_to_pick(queue, team_id)
+    if nb_p == 2 and not p2 or nb_p == 1 and p2:
+        await send_error(ctx, f"You need to pick **{nb_p}** players.")
+        raise PassException()
+
+    lst = [await get_picked_player(ctx, mode, queue, p1)]
+    if nb_p > 1:
+        lst.append(await get_picked_player(ctx, mode, queue, p2))
+        if lst[0] == lst[1]:
+            await send_error(ctx, f"You picked twice <@{lst[0].id_user}>.")
+            raise PassException()
+    for i in range(nb_p):
+        await queue.set_player_team(ctx, team_id, lst[i])
+
+
+async def join_aux(ctx, player=None):
+    game = get_game(ctx)
+    mode = int(ctx.channel.name.split('vs')[0])
+    id = ctx.author.id
+    queue = game.queues[mode]
+    if player is None:
+        player = await get_player_by_id(ctx, mode, id)
+
+    setattr(player, "last_join", datetime.now())
+    is_queue_now_full = queue.has_queue_been_full
+    res = queue.add_player(player, game)
+    # await ctx.send(embed=Embed(color=0x00FF00, description=res))
+    is_queue_now_full = queue.has_queue_been_full != is_queue_now_full
+
+    await ctx.send(content=queue.ping_everyone() if is_queue_now_full else "",
+        embed=Embed(color=0x00FF00, description=res))
+
+    if queue.is_finished():
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=game.add_game_to_be_played(queue)))
+        await set_map(ctx, game, queue, mode)
+        await announce_game(ctx, res, queue)

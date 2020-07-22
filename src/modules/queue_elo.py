@@ -16,16 +16,14 @@ class Queue():
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number > 2")
-        if not 0 <= mode <= 3:
-            raise ValueError("The mode is not correct: [0, 1, 2, 3] = \
-[random teams, balanced random, highest rank cap, rank cap]")
         self.players = []
         self.timeout = {}
         self.red_team = []
         self.blue_team = []
         self.max_queue = max_queue
         self.has_queue_been_full = False
-        self.modes = [self.random_team, self.balanced_random, self.random_cap, self.best_cap]
+        self.modes = [self.random_team, self.balanced_random,
+            self.random_cap, self.best_cap, self.random_cap, self.best_cap]
         self.pick_fonction = self.modes[mode]
         self.mode = mode
         self.mapmode = mapmode
@@ -129,6 +127,9 @@ class Queue():
                 return i
         await send_error(ctx, "You are not captain.")
         raise PassException()
+
+    def get_team_by_id(self, id):
+        return self.red_team if id == 1 else self.blue_team
 
     async def set_player_team(self, ctx, team_id, player):
         """Move the player from the players to the team."""
