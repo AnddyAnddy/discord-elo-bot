@@ -29,7 +29,7 @@ class Game():
         self.waiting_for_approval = {}
         self.correctly_submitted = {}
         self.ranks = {}  # {modeK: {nameN: RankX, nameN+1: RankY}}
-        self.maps_archuve = {}  # {modeK: {idN: MapX, idN+1: MapY}}
+        self.maps_archive = {}  # {modeK: {idN: MapX, idN+1: MapY}}
         self.available_maps = {}  # {nameN: emojiN, nameK: emojiK}
         self.mappickmode = 0
         self.elo = Elo()
