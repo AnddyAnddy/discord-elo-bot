@@ -5,6 +5,13 @@ from utils.exceptions import send_error, get_picked_player
 from utils.exceptions import get_game, get_player_by_id, PassException
 from datetime import datetime
 
+def rename_attr(obj, old_name, new_name):
+    if hasattr(obj, old_name):
+        obj.__dict__[new_name] = obj.__dict__.pop(old_name)
+        return True
+    return False
+
+
 def is_url_image(url):
     """Return True if the url is an existing image."""
     img_formats = ('image/png', 'image/jpeg', 'image/jpg')
