@@ -121,11 +121,11 @@ class Admin(commands.Cog):
         In order:
             [elo, wins, losses, nb_matches, wlr, most_wins_in_a_row,
             most_losses_in_a_row, current_win_streak,
-            current_lose_streak, double_xp]
+            current_lose_streak]
             The wlr will anyway be calculated at the end.
         """
         player = get_game(ctx).leaderboards[int(mode)][int(name[3: -1])]
-        stats_name = Player.STATS[1: -1]
+        stats_name = Player.STATS[1: -2]
         if len(stats) > len(stats_name):
             await ctx.send("Too much arguments ! I'll cancel in case you messed up")
             return

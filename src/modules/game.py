@@ -310,6 +310,8 @@ class Game():
         """Return the name corresponding to the elo rank."""
         if player.double_xp > 0:
             return "Premium"
+        if player.nb_matches < 20:
+            return "Unranked (20 games needed)"
         for name, rank in self.ranks[mode].items():
             if elo_points in rank.range:
                 return ' '.join(split_with_numbers(name)) +\
