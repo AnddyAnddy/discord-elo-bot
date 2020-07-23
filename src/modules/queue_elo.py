@@ -170,7 +170,7 @@ def display_team(team, team_name, max_queue):
     return f'```\n{team_name:20} {"Positions":20} {"Elo":>5}\n' + \
            '\n'.join([f"{i}) {p.name:20} {str(p.fav_pos_str()):20} {p.elo:>5}"
                       for i, p in enumerate(team, 1)]) + \
-           f'```\n**[{len(team)}/{int(max_queue)}]**'
+           f'```**[{len(team)}/{int(max_queue)}]**'
 
 
 def message_on_queue_full(players, red_team, blue_team, max_queue):
