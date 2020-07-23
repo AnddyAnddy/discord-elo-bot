@@ -376,10 +376,12 @@ class Game():
         self.maps_archive[mode].pop(id, None)
 
     def lobby_maps(self, mode, id):
+        print(self.maps_archive[mode])
         if len(self.maps_archive[mode][id]) == 1:
             map = self.maps_archive[mode][id][0]
             emoji = self.available_maps[map]
             return Embed(color=0x00FF00,
+                title="Only one map",
                 description=f"The bot randomly picked the map ** {emoji} {map}**")
 
         return Embed(title="Lobby maps",

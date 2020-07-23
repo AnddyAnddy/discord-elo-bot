@@ -218,6 +218,8 @@ async def autosubmit_reactions(reaction, user, game):
                         Please submit again"))
 
 async def map_pick_reactions(reaction, user, game):
+    if reaction.message.embeds[0].title == "Only one map":
+        return
     embed = get_elem_from_embed(reaction)
     if embed["function"] != "lobby_maps":
         return
@@ -255,6 +257,7 @@ async def add_scroll(message):
         await message.add_reaction(e)
 
 async def set_map(ctx, game, queue, mode):
+    print("mapmode: ", queue.mapmode)
     if queue.mapmode != 0:
         msg = await ctx.send(queue.ping_everyone(),
             embed=game.lobby_maps(mode, queue.game_id))

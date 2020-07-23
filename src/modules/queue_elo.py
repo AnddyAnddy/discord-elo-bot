@@ -108,12 +108,13 @@ class Queue():
 
     def map_pick(self, game):
         """Do the process of picking a map."""
-        if self.mapmode == 0:
+        if self.mapmode == 0 or not game.available_maps:
             return None
         if self.mapmode == 1:
             game.maps_archive[self.max_queue // 2][self.game_id] =\
                 [choice(list(game.available_maps))]
         else:
+            print(min(3, len(game.available_maps)))
             game.maps_archive[self.max_queue // 2][self.game_id] =\
                 sample(list(game.available_maps),
                     min(3, len(game.available_maps)))

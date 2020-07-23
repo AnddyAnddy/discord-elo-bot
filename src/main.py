@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from discord import Embed
 from GAMES import GAMES
-from utils.utils import check_if_premium, build_other_page
+from utils.utils import check_if_premium, build_other_page, rename_attr
 from modules.queue_elo import Queue
 from modules.game import Game
 from utils.exceptions import PassException, send_error
@@ -53,6 +53,9 @@ async def on_ready():
         print(guild.name + " owned by: " + str(guild.owner))
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
+            rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
+            setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
+            GAMES[guild.id].save_to_file()
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
