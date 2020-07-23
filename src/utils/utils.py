@@ -1,6 +1,7 @@
 import requests
-from discord import Embed
 import discord
+import re
+from discord import Embed
 from utils.exceptions import send_error, get_picked_player
 from utils.exceptions import get_game, get_player_by_id, PassException
 from datetime import datetime
@@ -10,6 +11,12 @@ def rename_attr(obj, old_name, new_name):
         obj.__dict__[new_name] = obj.__dict__.pop(old_name)
         return True
     return False
+
+def split_with_numbers(name):
+    match = re.match(r"([a-z]+)([0-9]+)", name, re.I)
+    if match:
+        return match.groups()
+    return [name]
 
 
 def is_url_image(url):

@@ -49,21 +49,13 @@ class Info_stats(commands.Cog):
         mode = int(mode)
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
-        # name = str(ctx.author.id) if not name else name[3: -1]
-        # if not name.isdigit():
-        #     await ctx.send("You better ping the player !")
-        #     return
-        # name = int(name)
-        # if name in game.leaderboards[mode]:
-        # player = game.leaderboards[mode][name]
+
         pos = get_player_lb_pos(game.leaderboards[mode], player, "elo")
         await ctx.send(embed=Embed(color=0x00FF00,
-           description=str(player))\
-           .set_thumbnail(url=game.get_rank_url(mode, player.elo, player))\
-           .set_footer(text=f"Position on leaderboard: {pos}"))
-        # else:
-        #     await ctx.send(embed=Embed(color=0x000000,
-        #                                description=f"No player called <@{name}>"))
+            title=game.get_rank_name(mode, player.elo, player),
+            description=str(player))\
+            .set_thumbnail(url=game.get_rank_url(mode, player.elo, player))\
+            .set_footer(text=f"Position on leaderboard: {pos}"))
 
 
     @commands.command(aliases=['match'])

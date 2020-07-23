@@ -9,7 +9,7 @@ from modules.elo import Elo
 from modules.player import Player
 from modules.queue_elo import Queue
 from modules.queue_elo import team_to_player_name
-from utils.utils import team_name
+from utils.utils import team_name, split_with_numbers
 from emoji import UNICODE_EMOJI
 
 class Game():
@@ -305,6 +305,16 @@ class Game():
             if elo_points in rank.range:
                 return rank.url
         return ""
+
+    def get_rank_name(self, mode, elo_points, player):
+        """Return the name corresponding to the elo rank."""
+        if player.double_xp > 0:
+            return "Premium"
+        for name, rank in self.ranks[mode].items():
+            if elo_points in rank.range:
+                return ' '.join(split_with_numbers(name)) +\
+                    f" ({rank.start()} - {rank.stop()})"
+        return "Unranked"
 
     def update_ranks(self, mode):
         """Adapt the range of the ranks to keep a 1/10 spread."""
