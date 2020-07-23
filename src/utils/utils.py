@@ -231,6 +231,8 @@ async def map_pick_reactions(reaction, user, game):
     if embed["function"] != "lobby_maps":
         return
     mode, id = embed["mode"], embed["id"]
+    if id in game.maps_archive[mode]:
+        return
     queue = game.undecided_games[mode][id]
     if user.id not in game.leaderboards[mode] or\
         game.leaderboards[mode][user.id] not in queue:
