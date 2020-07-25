@@ -2,6 +2,7 @@ import discord
 from utils.utils import list_to_int, is_url_image
 from discord.ext import commands
 from utils.exceptions import get_game
+from utils.exceptions import get_channel_mode
 
 
 def is_arg_in_modes(games):
