@@ -45,7 +45,7 @@ def load_file_to_game(guild_id):
         print("The file couldn't be loaded")
 
 def mode_to_mode_s(game):
-    for k, v in GAMES[guild.id].__dict__.items():
+    for k, v in game.__dict__.items():
         if isinstance(v, dict) and 1 in v:
             for mode in v:
                 v[f'{mode}s'] = v.pop(mode)
@@ -61,7 +61,7 @@ async def on_ready():
         if GAMES[guild.id] is not None:
             # rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
             # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
-            mode_to_mode_s(game)
+            mode_to_mode_s(GAMES[guild.id])
             # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
             # GAMES[guild.id].save_to_file()
             print(f"The file from data/{guild.id}.data was correctly loaded.")
