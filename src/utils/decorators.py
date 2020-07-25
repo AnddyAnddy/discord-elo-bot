@@ -110,7 +110,7 @@ def check_if_banned(games):
 def check_captain_mode(games):
     def predicate(ctx):
         game = games[ctx.guild.id]
-        mode = ctx.channel.name.split('vs')[0]
+        mode = get_channel_mode(ctx)
         if not mode.isdigit():
             return False
         queue = game.queues[mode]

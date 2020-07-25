@@ -63,8 +63,8 @@ async def on_ready():
             # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
             mode_to_mode_s(GAMES[guild.id])
             # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
-            # GAMES[guild.id].save_to_file()
-            print(GAMES[guild.id].leaderboards.keys())
+            GAMES[guild.id].save_to_file()
+            # print(GAMES[guild.id].leaderboards.keys())
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)

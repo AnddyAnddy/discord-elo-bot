@@ -236,8 +236,8 @@ class Game():
         """Save the whole class in it's data/guild_id file."""
         with open(f'./data/{self.guild_id}.data', "wb") as outfile:
             pickle.dump(self, outfile, -1)
-        # with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
-        #     pickle.dump(self, outfile, -1)
+        with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
+            pickle.dump(self, outfile, -1)
 
     def unban_player(self, name):
         """Unban a player."""
