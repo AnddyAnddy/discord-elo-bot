@@ -55,8 +55,9 @@ class Core(commands.Cog):
             if name not in game.leaderboards[mode]:
                 game.leaderboards[mode][name] = Player(
                     ctx.author.name, ctx.author.id)
+            num = int(split_with_numbers(mode)[0])
             role = discord.utils.get(
-                ctx.guild.roles, name=f"{mode}vs{mode} Elo Player")
+                ctx.guild.roles, name=f"{num}vs{num} Elo Player")
             await ctx.author.add_roles(role)
         await ctx.send(embed=Embed(color=0x00FF00,
             description=f"<@{name}> has been registered for every mode."))
