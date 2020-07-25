@@ -48,7 +48,7 @@ def mode_to_mode_s(game):
     for k, v in game.__dict__.items():
         if isinstance(v, dict) and 1 in v:
             for mode in v:
-                if mode.isdigit():
+                if str(mode).isdigit():
                     v[f'{mode}s'] = v.pop(mode)
     game.available_modes = {f'{mode}s' for mode in game.available_modes}
 
