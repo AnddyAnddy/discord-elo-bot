@@ -46,11 +46,10 @@ def load_file_to_game(guild_id):
 
 def mode_to_mode_s(game):
     for k, v in game.__dict__.items():
-        if isinstance(v, dict) and 1 in v:
-            for mode in v:
-                if str(mode).isdigit():
-                    v[f'{mode}s'] = v.pop(mode)
-    game.available_modes = {f'{mode}s' for mode in game.available_modes}
+        if isinstance(v, dict):
+            if any(e in v for e in range(1, 5)):
+                setattr(game, k, {f'{mode}s': val for mode, val in v.items() if str(mode).isdigit()})
+    game.available_modes = {f'{mode}s' for mode in game.available_modes if str(mode).isdigit()}
 
 @BOT.event
 async def on_ready():
