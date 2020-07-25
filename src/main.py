@@ -49,7 +49,7 @@ def mode_to_mode_s(game):
         if isinstance(v, dict):
             if any(e in v for e in range(1, 5)):
                 setattr(game, k, {f'{mode}s': val for mode, val in v.items() if str(mode).isdigit()})
-    game.available_modes = {f'{mode}s' for mode in game.available_modes if str(mode).isdigit()}
+    game.available_modes = set(game.leaderboards.keys())
 
 @BOT.event
 async def on_ready():
