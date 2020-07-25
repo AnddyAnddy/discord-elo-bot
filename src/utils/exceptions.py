@@ -94,3 +94,8 @@ async def get_captain_team(ctx, queue, mode, captain_id):
         await send_error(ctx, "It is not your turn to pick.")
         raise PassException()
     return team_id
+
+
+def get_channel_mode(ctx):
+    return f"{ctx.channel.name.split('vs')[0]}"\
+        f"{ctx.channel.category.name[0].lower()}"

@@ -28,7 +28,7 @@ class Info_stats(commands.Cog):
         By default, if the stats key is missing, the bot will show the elo lb.
         """
         game = get_game(ctx)
-        msg = await ctx.send(embed=game.leaderboard(int(mode), stat_key, 1))
+        msg = await ctx.send(embed=game.leaderboard(mode, stat_key, 1))
         await add_scroll(msg)
 
 
@@ -46,7 +46,6 @@ class Info_stats(commands.Cog):
         Can be used only in info_chat channel.
         """
         game = get_game(ctx)
-        mode = int(mode)
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
 
@@ -64,7 +63,6 @@ class Info_stats(commands.Cog):
     async def info_match(self, ctx, mode, id_game):
         """Display the infos of a specific match."""
         game = get_game(ctx)
-        mode = int(mode)
         if not id_game.isdigit():
             raise commands.errors.MissingRequiredArgument(id_game)
         id_game = int(id_game)
@@ -108,7 +106,6 @@ class Info_stats(commands.Cog):
         Can be used only in info_chat channel.
         """
         game = get_game(ctx)
-        mode = int(mode)
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
 
@@ -138,7 +135,7 @@ class Info_stats(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def ranks(self, ctx, mode):
         """Show the available ranks."""
-        msg = await ctx.send(embed=get_game(ctx).display_ranks(int(mode)))
+        msg = await ctx.send(embed=get_game(ctx).display_ranks(mode))
         await add_scroll(msg)
 
 
@@ -147,7 +144,7 @@ class Info_stats(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def rank(self, ctx, mode, name):
         """Show the rank of the name."""
-        ranks = get_game(ctx).ranks[int(mode)]
+        ranks = get_game(ctx).ranks[mode]
         if name not in ranks:
             await ctx.send(embed=Embed(color=0x000000,
                 description="Couldn't find the rank with that name."))
@@ -169,7 +166,6 @@ class Info_stats(commands.Cog):
         order_key must € [games, draws, wins, losses]
         is the key the table will be ordered by."""
         game = get_game(ctx)
-        mode = int(mode)
         # if ctx.author.id not in game.leaderboards[mode]:
         #     await ctx.send(embed=Embed(color=0x000000,
         #         description="You are not registered on the leaderboard."))

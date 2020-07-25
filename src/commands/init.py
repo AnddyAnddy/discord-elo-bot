@@ -7,6 +7,8 @@ from discord.ext.commands import MissingPermissions, CheckFailure, MissingRequir
 import utils.decorators as decorators
 from utils.decorators import check_category, is_arg_in_modes, check_channel, has_role_or_above
 from utils.utils import is_url_image
+from utils.utils import create_mode_discord
+from utils.utils import split_with_numbers
 from modules.rank import Rank
 from modules.game import Game
 # from utils.exceptions import get_player_by_id, get_player_by_mention
@@ -84,40 +86,38 @@ class Init(commands.Cog):
     async def add_mode(self, ctx, mode):
         """Add a mode to the game modes.
 
-        Example: !add_mode 4
-        Will add the mode 4vs4 into the available modes, a channel will be
-        created and the leaderboard will now have a 4 key.
+        Example: !add_mode 4s
+        Will add the mode solo 4vs4 into the available modes, a channel will be
+        created and the leaderboard will now have a 4s key.
         Can be used only in init channel by a Elo Admin role having user."""
-        if mode.isdigit() and int(mode) > 0:
-            nb_p = int(mode)
-            if get_game(ctx).add_mode(nb_p):
-                guild = ctx.message.guild
-                solo_cat = discord.utils.get(guild.categories, name="Solo elo")
-                teams_cat = discord.utils.get(guild.categories, name="Teams elo")
-                await guild.create_text_channel(f'{nb_p}vs{nb_p}',
-                                                category=solo_cat)
-                await guild.create_text_channel(f'{nb_p}vs{nb_p}',
-                                                category=teams_cat)
-                await ctx.send(embed=Embed(color=0x00FF00,
-                                           description="The game mode has been added."))
-                if not discord.utils.get(guild.roles, name=f"{mode}vs{mode} Elo Player"):
+        splitted = split_with_numbers(mode)
+        if len(splitted) == 2:
+            num, vsmode = splitted
 
-                    await guild.create_role(name=f"{mode}vs{mode} Elo Player",
-                        colour=discord.Colour(random.randint(0, 0xFFFFFF)))
-                    await ctx.send(f"{mode}vs{mode} Elo Player role created")
-                return
+            if num.isdigit() and int(num) > 0 and vsmode in ("s", "t"):
+                if get_game(ctx).add_mode(mode):
+                    guild = ctx.message.guild
+                    await create_mode_discord(num,
+                        {"s": "Solo elo", "t": "Teams elo"}[vsmode], ctx)
+                    if not discord.utils.get(guild.roles,
+                        name=f"{num}vs{num} Elo Player"):
+
+                        await guild.create_role(name=f"{num}vs{num} Elo Player",
+                            colour=discord.Colour(random.randint(0, 0xFFFFFF)))
+                        await ctx.send(f"{num}vs{num} Elo Player role created")
+                    return
 
         await ctx.send(embed=Embed(color=0x000000,
-                                   description="Couldn't add the game mode."))
+            description="Couldn't add the game mode."))
 
     @commands.command()
     @has_role_or_above('Elo Admin')
     @check_channel('init')
     @is_arg_in_modes(GAMES)
     async def delete_mode(self, ctx, mode):
-        get_game(ctx).remove_mode(int(mode))
+        get_game(ctx).remove_mode(mode)
         await ctx.send(embed=Embed(color=0x00FF00,
-                                   description="The mode has been deleted, please delete the channel."))
+            description="The mode has been deleted, please delete the channel."))
 
 
     @commands.command()
@@ -135,7 +135,6 @@ class Init(commands.Cog):
         to_points is the max points of this rank.
         """
         game = get_game(ctx)
-        mode = int(mode)
         from_points = int(from_points)
         to_points = int(to_points)
         if to_points < from_points:
@@ -166,8 +165,10 @@ class Init(commands.Cog):
             5: best cap, picks 1-2 2-1
         """
         game = get_game(ctx)
-        mode = int(mode)
         new_mode = int(new_mode)
+        if split_with_numbers(mode)[1] == 't':
+            await ctx.send("Can't set a pickmode for team vs team")
+            return
         if new_mode not in range(6):
             await ctx.send("Wrong new_mode given, read help pickmode")
             return
@@ -177,9 +178,8 @@ class Init(commands.Cog):
         if len(game.queues[mode].modes) <= 4: # backward compatibility
             game.queues[mode].modes.append(game.queues[mode].modes[2])
             game.queues[mode].modes.append(game.queues[mode].modes[3])
-        print(game.queues[mode].modes)
         game.queues[mode].pick_function = game.queues[mode].modes[new_mode]
-        await ctx.send(f"Pickmode changed to {pickmodes[new_mode]}!")
+        await ctx.send(f"Pickmode changed to {pickmodes[new_mode]} !")
 
 
     @commands.command()
@@ -226,7 +226,6 @@ class Init(commands.Cog):
                 description="Incorrect pickmode, read !help pickmode."))
             return
         pickmode = int(pickmode)
-        mode = int(mode)
         game = get_game(ctx)
         game.queues[mode].mapmode = pickmode
         pickmodes = ["Maps aren't used", "The map is randomly picked",

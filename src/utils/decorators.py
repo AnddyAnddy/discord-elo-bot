@@ -1,27 +1,39 @@
 import discord
 from utils.utils import list_to_int, is_url_image
 from discord.ext import commands
+from utils.exceptions import get_game
 
 
 def is_arg_in_modes(games):
     def predicate(ctx):
         args = ctx.message.content.split(' ')
-        modes = games[ctx.guild.id].available_modes
-        return len(args) >= 2 and \
-               args[1].isdigit() and \
-               int(args[1]) in modes
+        if len(args) < 2:
+            raise commands.errors.BadArgument(
+                "The mode argument is missing.")
+        if args[1] not in get_game(ctx).available_modes:
+            raise commands.errors.BadArgument(
+                f"The mode is incorrect, you wrote {args[1]}\n"
+                f"But it must be in {str(get_game(ctx).available_modes)}"
+            )
+
+        return True
 
     return commands.check(predicate)
 
 
-def check_category(name):
+def check_category(*names):
     def predicate(ctx):
         guild = ctx.guild
         ctx_cat = ctx.channel.category
-        to_be_cat = discord.utils.get(guild.categories, name=name)
-        if to_be_cat is None:
-            raise ValueError(f"Parameter {name} isn't a real category")
-        return ctx_cat == to_be_cat
+        for name in names:
+            to_be_cat = discord.utils.get(guild.categories, name=name)
+            if to_be_cat is None:
+                raise ValueError(f"Parameter {name} isn't a real category")
+            if ctx_cat == to_be_cat:
+                return True
+        raise commands.errors.BadArgument(
+            f"You should write this message in {name} category"
+        )
 
     return commands.check(predicate)
 
@@ -34,7 +46,8 @@ def check_channel(name):
         if to_be_channel is None:
             raise ValueError(f"Parameter {name} isn't a real channel")
         if ctx_channel != to_be_channel:
-            raise commands.errors.BadArgument(f"You should write this command in #{name}.")
+            raise commands.errors.BadArgument(
+                f"You should write this command in #{name}.")
         return True
 
     return commands.check(predicate)
@@ -72,8 +85,14 @@ def rank_update(GAMES, lst_pos_args):
 def has_role_or_above(roleName):
     def predicate(ctx):
         role = discord.utils.get(ctx.guild.roles, name=roleName)
-        return role is None or ctx.author.top_role >= role
+        if role is None or ctx.author.top_role >= role:
+            return True
+        raise commands.errors.BadArgument(
+            f"You don't have the permission to run this command.\n"
+            f"You must be at least {rolename}."
+        )
     return commands.check(predicate)
+
 
 def check_if_banned(games):
     def predicate(ctx):
@@ -94,10 +113,11 @@ def check_captain_mode(games):
         mode = ctx.channel.name.split('vs')[0]
         if not mode.isdigit():
             return False
-        queue = game.queues[int(mode)]
+        queue = game.queues[mode]
         if queue.mode < 2:
             raise commands.errors.BadArgument("This mode doesn't allow picks")
         if not queue.has_queue_been_full:
-            raise commands.errors.BadArgument("The pick session hasn't started")
+            raise commands.errors.BadArgument(
+                "The pick session hasn't started")
         return True
     return commands.check(predicate)

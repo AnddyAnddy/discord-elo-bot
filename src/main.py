@@ -44,6 +44,11 @@ def load_file_to_game(guild_id):
     except IOError:
         print("The file couldn't be loaded")
 
+def mode_to_mode_s(game):
+    for k, v in GAMES[guild.id].__dict__.items():
+        if isinstance(v, dict) and 1 in v:
+            for mode in v:
+                v[f'{mode}s'] = v.pop(mode)
 
 @BOT.event
 async def on_ready():
@@ -53,9 +58,11 @@ async def on_ready():
         print(guild.name + " owned by: " + str(guild.owner))
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
-            setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
-            GAMES[guild.id].save_to_file()
+            # rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
+            # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
+            mode_to_mode_s(game)
+            # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
+            # GAMES[guild.id].save_to_file()
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)

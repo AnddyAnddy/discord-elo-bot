@@ -4,14 +4,10 @@ from random import choice
 from random import sample
 from utils.exceptions import send_error
 from utils.exceptions import PassException
+from discord import Embed
 
 class Queue():
     """Docstring for Queue."""
-    RANDOM_TEAM = 0
-    BALANCED_RANDOM = 1
-    TOP_CAP = 2
-    RANDOM_CAP = 3
-
     def __init__(self, max_queue, mode, mapmode, last_id=0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
@@ -23,7 +19,8 @@ class Queue():
         self.max_queue = max_queue
         self.has_queue_been_full = False
         self.modes = [self.random_team, self.balanced_random,
-            self.random_cap, self.best_cap, self.random_cap, self.best_cap]
+            self.random_cap, self.best_cap, self.random_cap,
+            self.best_cap, self.top_bottom]
         self.pick_fonction = self.modes[mode]
         self.mode = mode
         self.mapmode = mapmode
@@ -33,17 +30,43 @@ class Queue():
         """Return true if the queue is full."""
         return self.max_queue == len(self.players)
 
-    def add_player(self, player, game):
+    async def add_player(self, ctx, player, game):
         """Add a player in the queue."""
         if player in self.players:
-            return "You can't join twice, maybe you're looking for !l"
+            await send_error(ctx, "You can't join twice, maybe you're looking for !l")
+            return
+            # raise PassException()
         if self.is_full() or self.has_queue_been_full:
-            return "Queue is full..."
+            await send_error(ctx, "Queue is full...")
+            raise PassException()
         self.players.append(player)
         # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
         # self.timeout[player].start()
-        res = f'<@{player.id_user}> has been added to the queue.  \
-**[{len(self.players)}/{int(self.max_queue)}]**'
+        res = f'<@{player.id_user}> has been added to the queue. '\
+            f'**[{len(self.players)}/{int(self.max_queue)}]**'
+        if self.is_full():
+            res += "\nQueue is full, let's start the next session.\n"
+            res += self.on_queue_full(game)
+        return res
+
+    async def add_players(self, ctx, players, game):
+        """Add multiple players in the queue."""
+        success = True
+        len_at_start = len(self.players)
+        for player in players:
+            if player in self.players or self.is_full() or self.has_queue_been_full:
+                success = False
+                break
+            self.players.append(player)
+        if not success:
+            len_at_end = len(self.players)
+            for _ in range(len_at_end - len_at_start):
+                self.players.pop()
+            await send_error(ctx, "One or more of your players cannot be added,\n")
+            raise PassException()
+        await ctx.send(embed=Embed(color=0x00FF00, description=\
+            f"Your team: {team_to_player_id(players)} was correctly added."))
+        res = ""
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game)
@@ -106,6 +129,15 @@ class Queue():
         self.red_team.append(self.players.pop())
         self.blue_team.append(self.players.pop())
 
+    def top_bottom(self):
+        """The [0, n / 2] top players go to red team, the others to blue."""
+        for _ in range(len(self.players) // 2):
+            self.blue_team.append(self.players.pop())
+
+        for _ in range(len(self.players)):
+            self.red_team.append(self.players.pop())
+
+
     def map_pick(self, game):
         """Do the process of picking a map."""
         if self.mapmode == 0 or not game.available_maps:
@@ -114,7 +146,6 @@ class Queue():
             game.maps_archive[self.max_queue // 2][self.game_id] =\
                 [choice(list(game.available_maps))]
         else:
-            print(min(3, len(game.available_maps)))
             game.maps_archive[self.max_queue // 2][self.game_id] =\
                 sample(list(game.available_maps),
                     min(3, len(game.available_maps)))

@@ -12,7 +12,9 @@ from utils.exceptions import get_id
 from utils.exceptions import get_total_sec
 from utils.exceptions import get_game
 from utils.exceptions import PassException
+from utils.exceptions import get_channel_mode
 from utils.utils import join_aux
+from utils.utils import split_with_numbers
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -23,7 +25,7 @@ class Admin(commands.Cog):
     @has_role_or_above('Elo Admin')
     async def force_remove(self, ctx, mention):
         """Remove the player from the current queue."""
-        mode = int(ctx.channel.name.split('vs')[0])
+        mode = get_channel_mode(ctx)
         player = await get_player_by_mention(ctx, mode, mention)
         game = get_game(ctx)
         queue = game.queues[mode]
@@ -54,21 +56,21 @@ class Admin(commands.Cog):
     @check_category('Solo elo')
     async def force_join(self, ctx, mention):
         """Force a user to join the queue."""
-        mode = int(ctx.channel.name.split('vs')[0])
+        mode = get_channel_mode(ctx)
         player = await get_player_by_mention(ctx, mode, mention)
         await join_aux(ctx, player)
 
     @commands.command(aliases=['cq', 'c_queue'])
     @has_role_or_above('Elo Admin')
-    @check_category('Solo elo')
+    @check_category('Solo elo', 'Teams elo')
     async def clear_queue(self, ctx):
         """Clear the current queue."""
         game = get_game(ctx)
-        mode = int(ctx.channel.name.split('vs')[0])
+        mode = get_channel_mode(ctx)
         last_id = game.queues[mode].game_id
         if not game.queues[mode].has_queue_been_full:
             game.queues[mode] = Queue(
-                2 * mode, game.queues[mode].mode,
+                2 * int(split_with_numbers(mode)[0]), game.queues[mode].mode,
                 game.queues[mode].mapmode, last_id)
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description="The queue is now empty"))
@@ -109,7 +111,7 @@ class Admin(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def setelo(self, ctx, mode, name, elo):
         """Set the elo to the player in the specific mode."""
-        get_game(ctx).set_elo(int(mode), int(name[3: -1]), int(elo))
+        get_game(ctx).set_elo(mode, int(name[3: -1]), int(elo))
         await ctx.send("Worked!")
 
     @commands.command()
@@ -124,7 +126,7 @@ class Admin(commands.Cog):
             current_lose_streak]
             The wlr will anyway be calculated at the end.
         """
-        player = get_game(ctx).leaderboards[int(mode)][int(name[3: -1])]
+        player = get_game(ctx).leaderboards[mode][int(name[3: -1])]
         stats_name = Player.STATS[1: -2]
         if len(stats) > len(stats_name):
             await ctx.send("Too much arguments ! I'll cancel in case you messed up")

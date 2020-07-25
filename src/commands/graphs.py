@@ -51,19 +51,8 @@ class Graph(commands.Cog):
         Name MUST be given if you want to make a graph based on the wlr.
         """
         game = get_game(ctx)
-        mode = int(mode)
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
-        # name = str(ctx.author.id) if not name else name[3: -1]
-        #
-        # if not name.isdigit():
-        #     await ctx.send("You better ping the player !")
-        #     return
-        # name = int(name)
-        # if name not in game.leaderboards[mode]:
-        #     await ctx.send("Couldn't find this player in the leaderboard !")
-        #     return
-        # player = game.leaderboards[mode][name]
         values = list(game.archive[mode].values())
         yList = []
         if stat_key == "elo":
@@ -92,7 +81,7 @@ class Graph(commands.Cog):
     @is_arg_in_modes(GAMES)
     async def overall_stats(self, ctx, mode):
         """Show the number of wins of red/blue."""
-        archive = get_game(ctx).archive[int(mode)]
+        archive = get_game(ctx).archive[mode]
         wins = [0, 0, 0]
         yDlist, yRlist, yBlist = [], [], []
         for _, winner, _ in archive.values():

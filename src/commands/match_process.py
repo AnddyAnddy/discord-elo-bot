@@ -49,7 +49,7 @@ class Match_process(commands.Cog):
         game = get_game(ctx)
         if not id_game.isdigit() or not winner.isdigit():
             raise commands.errors.MissingRequiredArgument(id_game)
-        mode, id_game, winner = int(mode), int(id_game), int(winner)
+        id_game, winner = int(id_game), int(winner)
         if not id_game in game.undecided_games[mode]:
             await ctx.send(embed=Embed(color=0x000000,
                 description="The game is not in undecided games!"))
@@ -103,7 +103,7 @@ class Match_process(commands.Cog):
         game = get_game(ctx)
         if not id_game.isdigit() or not winner.isdigit():
             raise commands.errors.MissingRequiredArgument(id_game)
-        mode, id_game, winner = int(mode), int(id_game), int(winner)
+        id_game, winner = int(id_game), int(winner)
         text, worked = game.add_archive(mode, id_game, winner)
         await ctx.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
                                    description=text))
@@ -124,7 +124,7 @@ class Match_process(commands.Cog):
         """
         game = get_game(ctx)
         await ctx.send(embed=Embed(color=0x00FF00,
-            description=game.undo(int(mode), int(id_game))))
+            description=game.undo(mode, int(id_game))))
 
     @commands.command(aliases=['c', 'clear'])
     @has_role_or_above('Elo Admin')
@@ -137,7 +137,7 @@ class Match_process(commands.Cog):
         will cancel the game with the id 3 in the mode 1vs1.
         """
         game = get_game(ctx)
-        if game.cancel(int(mode), int(id_game)):
+        if game.cancel(mode, int(id_game)):
             await ctx.send(embed=Embed(color=0x00FF00,
                 description=f"The game {id_game} has been canceled"))
         else:
@@ -156,7 +156,7 @@ class Match_process(commands.Cog):
         """
         game = get_game(ctx)
         await ctx.send(embed=Embed(color=0x00FF00,
-            description=game.uncancel(int(mode), int(id_game))))
+            description=game.uncancel(mode, int(id_game))))
 
     @commands.command(aliases=['u'])
     @check_channel('submit')
@@ -168,7 +168,7 @@ class Match_process(commands.Cog):
         Will show every undecided games in 2vs2, with the format below.
         id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
         game = get_game(ctx)
-        msg = await ctx.send(embed=game.undecided(int(mode)))
+        msg = await ctx.send(embed=game.undecided(mode))
         await add_scroll(msg)
 
     @commands.command(aliases=['cl'])
@@ -181,7 +181,7 @@ class Match_process(commands.Cog):
         Will show every canceled games in 2vs2.
         """
         game = get_game(ctx)
-        msg = await ctx.send(embed=game.canceled(int(mode)))
+        msg = await ctx.send(embed=game.canceled(mode))
         await add_scroll(msg)
 
     @commands.command(aliases=['a'])
@@ -195,7 +195,7 @@ class Match_process(commands.Cog):
         id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
         Blue team: [player3, player4]."""
         game = get_game(ctx)
-        msg = await ctx.send(embed=game.archived(int(mode)))
+        msg = await ctx.send(embed=game.archived(mode))
         await add_scroll(msg)
 
 

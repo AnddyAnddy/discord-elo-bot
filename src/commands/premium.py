@@ -11,7 +11,6 @@ class Premium(commands.Cog):
         self.bot = bot
 
     def is_premium_in_main_server(self, id_author):
-        print(self.bot.guilds)
         guild = discord.utils.get(self.bot.guilds, id=DISCORD_MAIN_GUILD_ID)
         player = guild.get_member(id_author)
         role = discord.utils.get(guild.roles, name="waiting for premium")

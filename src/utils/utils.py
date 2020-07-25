@@ -3,6 +3,7 @@ import discord
 import re
 from discord import Embed
 from utils.exceptions import send_error, get_picked_player
+from utils.exceptions import get_channel_mode
 from utils.exceptions import get_game, get_player_by_id, PassException
 from datetime import datetime
 
@@ -13,10 +14,7 @@ def rename_attr(obj, old_name, new_name):
     return False
 
 def split_with_numbers(name):
-    match = re.match(r"([a-z]+)([0-9]+)", name, re.I)
-    if match:
-        return match.groups()
-    return [name]
+    return re.findall(r'[A-Za-z]+|[0-9]+', name)
 
 
 def is_url_image(url):
@@ -45,7 +43,7 @@ def get_elem_from_embed(reaction):
         "last_page": int(footer[3]),
         "function": mb.fields[0].value,
         "key": mb.fields[1].value,
-        "mode": int(mb.fields[2].value),
+        "mode": mb.fields[2].value,
         "id": int(mb.fields[3].value) if len(mb.fields) == 4 else None
     }
 
@@ -266,7 +264,6 @@ async def add_scroll(message):
         await message.add_reaction(e)
 
 async def set_map(ctx, game, queue, mode):
-    print("mapmode: ", queue.mapmode)
     if queue.mapmode != 0:
         msg = await ctx.send(queue.ping_everyone(),
             embed=game.lobby_maps(mode, queue.game_id))
@@ -301,7 +298,7 @@ async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
                 .send(embed=Embed(color=0x00FF00,
                     description=str(queue)),
                     content=queue.ping_everyone())
-        game.add_game_to_be_played(game.queues[mode])
+        game.add_game_to_be_played(game.queues[mode], mode)
         if queue.mapmode != 0:
             msg = await ctx.send(queue.ping_everyone(),
                 embed=game.lobby_maps(mode, queue.game_id))
@@ -337,16 +334,14 @@ async def pick_players(ctx, queue, mode, team_id, p1, p2):
 
 async def join_aux(ctx, player=None):
     game = get_game(ctx)
-    mode = int(ctx.channel.name.split('vs')[0])
-    id = ctx.author.id
+    mode = get_channel_mode(ctx)
     queue = game.queues[mode]
     if player is None:
-        player = await get_player_by_id(ctx, mode, id)
+        player = await get_player_by_id(ctx, mode, ctx.author.id)
 
     setattr(player, "last_join", datetime.now())
     is_queue_now_full = queue.has_queue_been_full
-    res = queue.add_player(player, game)
-    # await ctx.send(embed=Embed(color=0x00FF00, description=res))
+    res = await queue.add_player(ctx, player, game)
     is_queue_now_full = queue.has_queue_been_full != is_queue_now_full
 
     await ctx.send(content=queue.ping_everyone() if is_queue_now_full else "",
@@ -354,6 +349,15 @@ async def join_aux(ctx, player=None):
 
     if queue.is_finished():
         await ctx.send(embed=Embed(color=0x00FF00,
-            description=game.add_game_to_be_played(queue)))
+            description=game.add_game_to_be_played(queue, mode)))
         await set_map(ctx, game, queue, mode)
         await announce_game(ctx, res, queue)
+
+
+
+async def create_mode_discord(nb_p, catName, ctx):
+    guild = ctx.message.guild
+    cat = discord.utils.get(guild.categories, name=catName)
+    await guild.create_text_channel(f'{nb_p}vs{nb_p}', category=cat)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The game mode has been added."))

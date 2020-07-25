@@ -61,20 +61,21 @@ class Game():
         self.elo.undo_elo(game[0], game[1], game[2])
         return "The game has been undone, the stats got canceled"
 
-    def add_game_to_be_played(self, queue):
+    def add_game_to_be_played(self, queue, mode):
         """Add a game to undecided games."""
-        mode = queue.max_queue / 2
         last_id = self.queues[mode].game_id
         self.undecided_games[mode][last_id] = queue
-        self.queues[mode] = Queue(2 * mode, queue.mode, queue.mapmode, last_id)
+        self.queues[mode] = Queue(2 * int(split_with_numbers(mode)[0]),
+            queue.mode, queue.mapmode, last_id)
         return "The teams have been made, a new queue is starting!"
 
     def cancel(self, mode, id):
         """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
+
             self.queues[mode] = Queue(
-                2 * mode, self.queues[mode].mode,
+                2 * int(split_with_numbers(mode)[0]), self.queues[mode].mode,
                 self.queues[mode].mapmode, last_id)
             return True
         res = self.undecided_games[mode].pop(id, None)
@@ -109,7 +110,6 @@ class Game():
     def undecided(self, mode, startpage=1):
         """Return string of undecided game ids."""
         nb_pages = 1 + len(self.undecided_games[mode]) // 25
-
         return Embed(color=0x00FF00,
                      description=f"\n```{'Id':5} {'Red captain':20} {'Blue captain':20}\n"
                          + '\n'.join([f"{str(id):5} "
@@ -201,7 +201,7 @@ class Game():
             index += 1
 
         res += '```'
-        nb_pages = 1 + len(self.leaderboards[int(mode)]) // 20
+        nb_pages = 1 + len(self.leaderboards[mode]) // 20
         return Embed(color=0x00AAFF,
                      title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
                      description=res).add_field(name="name", value="leaderboard") \
@@ -213,14 +213,16 @@ class Game():
         """Add the mode in the set."""
         if mode in self.available_modes:
             return False
-        self.available_modes.add(mode)
         self.leaderboards[mode] = {}
         self.undecided_games[mode] = {}
         self.archive[mode] = {}
         self.ranks[mode] = {}
         self.cancels[mode] = {}
-        self.bans = {}
-        self.queues[mode] = Queue(2 * mode, 0, 0)
+
+        self.available_modes.add(mode)
+        # self.bans = {}
+        pickmode = 0 if split_with_numbers(mode)[1] == 's' else 6
+        self.queues[mode] = Queue(2 * int(split_with_numbers(mode)[0]), pickmode, 0)
         return True
 
     def remove_mode(self, mode):
@@ -234,11 +236,8 @@ class Game():
         """Save the whole class in it's data/guild_id file."""
         with open(f'./data/{self.guild_id}.data', "wb") as outfile:
             pickle.dump(self, outfile, -1)
-        with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
-            pickle.dump(self, outfile, -1)
-
-    def in_modes(self, mode):
-        return mode.isdigit() and int(mode) in self.available_modes
+        # with open(f'./data2/{self.guild_id}.data', "wb") as outfile:
+        #     pickle.dump(self, outfile, -1)
 
     def unban_player(self, name):
         """Unban a player."""
@@ -388,7 +387,6 @@ class Game():
         self.maps_archive[mode].pop(id, None)
 
     def lobby_maps(self, mode, id):
-        print(self.maps_archive[mode])
         if len(self.maps_archive[mode][id]) == 1:
             map = self.maps_archive[mode][id][0]
             emoji = self.available_maps[map]
