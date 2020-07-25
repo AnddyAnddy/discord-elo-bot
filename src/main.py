@@ -48,7 +48,8 @@ def mode_to_mode_s(game):
     for k, v in game.__dict__.items():
         if isinstance(v, dict) and 1 in v:
             for mode in v:
-                v[f'{mode}s'] = v.pop(mode)
+                if mode.isdigit():
+                    v[f'{mode}s'] = v.pop(mode)
     game.available_modes = {f'{mode}s' for mode in game.available_modes}
 
 @BOT.event
@@ -64,6 +65,7 @@ async def on_ready():
             mode_to_mode_s(GAMES[guild.id])
             # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
             # GAMES[guild.id].save_to_file()
+            print(GAMES[guild.id].leaderboards.keys())
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
