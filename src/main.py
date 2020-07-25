@@ -49,7 +49,7 @@ def mode_to_mode_s(game):
         if isinstance(v, dict) and 1 in v:
             for mode in v:
                 v[f'{mode}s'] = v.pop(mode)
-    GAMES[guild.id].available_modes = {f'{mode}s' for mode in GAMES[guild.id].available_modes}
+    game.available_modes = {f'{mode}s' for mode in game.available_modes}
 
 @BOT.event
 async def on_ready():
