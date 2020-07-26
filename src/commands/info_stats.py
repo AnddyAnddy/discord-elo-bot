@@ -6,6 +6,7 @@ from utils.utils import get_player_lb_pos, team_players_stats, most_stat_embed, 
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
 from utils.utils import add_scroll
+from utils.utils import team_name
 from modules.queue_elo import team_to_player_name
 
 
@@ -73,22 +74,29 @@ class Info_stats(commands.Cog):
         if not game_not_from_archive:
             queue, winner, elo = req_game
             color = 0xFF0000 if winner == 1 else 0x0000FF
-            winner_str = "Red team" if winner == 1 else "Blue team"
+            winner_str = team_name(winner)
+            name, emoji = game.maps_archive[mode][id_game]\
+                if id_game in game.maps_archive[mode] else ['map', 'no']
             await ctx.send(embed=Embed(color=color,
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
                 f"{'Winner':12}: {winner_str}\n"
                 f"{'Red team':12}: {team_to_player_name(queue.red_team)}\n"
                 f"{'Blue team':12}: {team_to_player_name(queue.blue_team)}\n"
+                f"{'Elo':12}: {elo} points\n"
+                f"{'Map':12}: {emoji} {name}"
                 f"```"
             ))
         else:
             queue = req_game
+            name, emoji = game.maps_archive[mode][id_game]\
+                if id_game in game.maps_archive[mode] else ['map', 'no']
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
                 f"{'Red team':12}: {team_to_player_name(queue.red_team)}\n"
                 f"{'Blue team':12}: {team_to_player_name(queue.blue_team)}\n"
+                f"{'Map':12}: {emoji} {name}"
                 f"```"
             ))
 

@@ -4,6 +4,7 @@ from random import choice
 from random import sample
 from utils.exceptions import send_error
 from utils.exceptions import PassException
+from utils.exceptions import get_channel_mode
 from discord import Embed
 
 class Queue():
@@ -46,7 +47,7 @@ class Queue():
             f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
-            res += self.on_queue_full(game)
+            res += self.on_queue_full(game, get_channel_mode(ctx))
         return res
 
     async def add_players(self, ctx, players, game):
@@ -69,7 +70,7 @@ class Queue():
         res = ""
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
-            res += self.on_queue_full(game)
+            res += self.on_queue_full(game, get_channel_mode(ctx))
         return res
 
     def remove_player(self, player):
@@ -80,14 +81,14 @@ class Queue():
                 **[{len(self.players)} / {int(self.max_queue)}]**'
         return f"<@{player.id_user}> can't be removed from the queue"
 
-    def on_queue_full(self, game):
+    def on_queue_full(self, game, mode):
         """Set a game."""
         self.has_queue_been_full = True
         # for t in self.timeout.values():
         #     t.cancel()
         self.timeout = {}
         self.pick_fonction()
-        self.map_pick(game)
+        self.map_pick(game, mode)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
                                                                    self.red_team,
                                                                    self.blue_team,
@@ -138,15 +139,17 @@ class Queue():
             self.red_team.append(self.players.pop())
 
 
-    def map_pick(self, game):
+    def map_pick(self, game, mode):
         """Do the process of picking a map."""
         if self.mapmode == 0 or not game.available_maps:
             return None
         if self.mapmode == 1:
-            game.maps_archive[self.max_queue // 2][self.game_id] =\
-                [choice(list(game.available_maps))]
+            name = choice(list(game.available_maps))
+            game.add_map_to_archive(mode, self.game_id, name, game.available_maps[name])
+            # game.maps_archive[mode][self.game_id] =\
+            #     [choice(list(game.available_maps))]
         else:
-            game.maps_archive[self.max_queue // 2][self.game_id] =\
+            game.maps_archive[mode][self.game_id] =\
                 sample(list(game.available_maps),
                     min(3, len(game.available_maps)))
 

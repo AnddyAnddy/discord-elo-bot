@@ -59,7 +59,8 @@ class Game():
             return "The game couldn't be found"
         self.undecided_games[mode][id] = game[0]
         self.elo.undo_elo(game[0], game[1], game[2])
-        return "The game has been undone, the stats got canceled"
+        return f"The game has been undone, the stats got canceled "\
+            f"{game[2]} elo points canceled."
 
     def add_game_to_be_played(self, queue, mode):
         """Add a game to undecided games."""
@@ -379,6 +380,7 @@ class Game():
 
         Called on game announce."""
         self.maps_archive[mode][id] = (name, emoji)
+        print(self.maps_archive, emoji, name)
 
     def delete_map_from_archive(self, mode, id, name):
         """Delete the map from the played maps.
@@ -387,19 +389,20 @@ class Game():
         self.maps_archive[mode].pop(id, None)
 
     def lobby_maps(self, mode, id):
-        if len(self.maps_archive[mode][id]) == 1:
-            map = self.maps_archive[mode][id][0]
-            emoji = self.available_maps[map]
+        print(self.maps_archive)
+        print(isinstance(self.maps_archive[mode][id], tuple))
+        if isinstance(self.maps_archive[mode][id], tuple):
+            name, emoji = self.maps_archive[mode][id]
             return Embed(color=0x00FF00,
                 title="Only one map",
-                description=f"The bot randomly picked the map ** {emoji} {map}**")
+                description=f"The bot randomly picked the map ** {emoji} {name}**")
 
         return Embed(title="Lobby maps",
             color=0x00FF00,
             description=\
                 "```\n" +
-                '\n'.join([f"{self.available_maps[name]} {name:40} "
-                for name in self.maps_archive[mode][id]]) +\
+                '\n'.join([f"{emoji} {name:40} "
+                for name, emoji in self.maps_archive[mode][id]]) +\
                 "\n```" + \
                 f"We need **{2 * mode + 1}** total votes or a map getting "\
                 f"**{mode + 2}** votes to keep going!"
