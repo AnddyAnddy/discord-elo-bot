@@ -90,7 +90,7 @@ def has_role_or_above(roleName):
             return True
         raise commands.errors.BadArgument(
             f"You don't have the permission to run this command.\n"
-            f"You must be at least {rolename}."
+            f"You must be at least {roleName}."
         )
     return commands.check(predicate)
 
