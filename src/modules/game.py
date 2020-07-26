@@ -380,7 +380,6 @@ class Game():
 
         Called on game announce."""
         self.maps_archive[mode][id] = (name, emoji)
-        print(self.maps_archive, emoji, name)
 
     def delete_map_from_archive(self, mode, id, name):
         """Delete the map from the played maps.
@@ -389,8 +388,6 @@ class Game():
         self.maps_archive[mode].pop(id, None)
 
     def lobby_maps(self, mode, id):
-        print(self.maps_archive)
-        print(isinstance(self.maps_archive[mode][id], tuple))
         if isinstance(self.maps_archive[mode][id], tuple):
             name, emoji = self.maps_archive[mode][id]
             return Embed(color=0x00FF00,

@@ -91,7 +91,6 @@ class Admin(commands.Cog):
 
         id = await get_id(ctx, mention)
         time, unity = split_with_numbers(timeUnity)
-        print(time, unity)
         total_sec = await get_total_sec(ctx, time, unity)
         get_game(ctx).ban_player(id, total_sec, ' '.join(reason))
         await ctx.send(embed=Embed(color=0x00FF00,

@@ -229,7 +229,7 @@ async def map_pick_reactions(reaction, user, game):
     if embed["function"] != "lobby_maps":
         return
     mode, id = embed["mode"], embed["id"]
-    if id in game.maps_archive[mode]:
+    if id in game.maps_archive[mode] and isinstance(game.maps_archive[mode][id], tuple):
         return
     queue = game.undecided_games[mode][id]
     if user.id not in game.leaderboards[mode] or\
@@ -238,9 +238,10 @@ async def map_pick_reactions(reaction, user, game):
         return
     emoji, name = "", ""
     for i, r in enumerate(reaction.message.reactions):
+        print(r.count - 1, queue.max_queue // 2 + 1)
         if r.count - 1 >= queue.max_queue // 2 + 1:
             emoji, name = reaction.message.embeds[0].description.split('\n')[i + 1].split()
-
+            print(emoji, name)
             game.add_map_to_archive(mode, id, name, emoji)
             await reaction.message.channel.send(embed=Embed(color=0x00FF00,
                 description="Okay ! We got enough votes, the map is...\n"\

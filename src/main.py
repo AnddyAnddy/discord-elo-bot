@@ -61,13 +61,13 @@ async def on_ready():
         if GAMES[guild.id] is not None:
             # rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
             # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
-            mode_to_mode_s(GAMES[guild.id])
-            # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
-            for mode in GAMES[guild.id].maps_archive:
-                for id, elem in GAMES[guild.id].maps_archive[mode].items():
-                    if len(elem) == 1:
-                        GAMES[guild.id].maps_archive[mode][id] = (elem[0], GAMES[guild.id].available_maps[elem[0]])
-            GAMES[guild.id].save_to_file()
+            # mode_to_mode_s(GAMES[guild.id])
+            # # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
+            # for mode in GAMES[guild.id].maps_archive:
+            #     for id, elem in GAMES[guild.id].maps_archive[mode].items():
+            #         if len(elem) == 1:
+            #             GAMES[guild.id].maps_archive[mode][id] = (elem[0], GAMES[guild.id].available_maps[elem[0]])
+            # GAMES[guild.id].save_to_file()
             # print(GAMES[guild.id].leaderboards.keys())
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
