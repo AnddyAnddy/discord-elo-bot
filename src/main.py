@@ -68,6 +68,7 @@ async def on_ready():
             #         if len(elem) == 1:
             #             GAMES[guild.id].maps_archive[mode][id] = (elem[0], GAMES[guild.id].available_maps[elem[0]])
             # GAMES[guild.id].save_to_file()
+            # test
             # print(GAMES[guild.id].leaderboards.keys())
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
