@@ -89,14 +89,17 @@ class Info_stats(commands.Cog):
             ))
         else:
             queue = req_game
-            name, emoji = game.maps_archive[mode][id_game]\
-                if id_game in game.maps_archive[mode] else ['map', 'no']
+            maps = game.maps_archive[mode][id_game]\
+                if id_game in game.maps_archive[mode] else 'no map'
+            if (isinstance(maps, tuple)):
+                maps = [maps]
+            str_maps = ', '.join([f'{emoji}{name}' for name, emoji in maps])
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=f"```"
-                f"{'Id':12}: {id_game}\n"
-                f"{'Red team':12}: {team_to_player_name(queue.red_team)}\n"
-                f"{'Blue team':12}: {team_to_player_name(queue.blue_team)}\n"
-                f"{'Map':12}: {emoji} {name}"
+                f"{'Id':10}: {id_game}\n"
+                f"{'Red team':10}: {team_to_player_name(queue.red_team)}\n"
+                f"{'Blue team':10}: {team_to_player_name(queue.blue_team)}\n"
+                f"{'Map':10}: {str_maps}"
                 f"```"
             ))
 

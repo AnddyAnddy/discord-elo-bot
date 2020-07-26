@@ -254,9 +254,8 @@ async def map_pick_reactions(reaction, user, game):
 
 
 async def add_emojis(msg, game, mode, id):
-    maps = game.available_maps
-    for map in game.maps_archive[mode][id]:
-        await msg.add_reaction(maps[map])
+    for _, emoji in game.maps_archive[mode][id]:
+        await msg.add_reaction(emoji)
 
 async def add_scroll(message):
     """Add ⏮️ ⬅️ ➡️ ⏭️ emojis to the message."""

@@ -396,16 +396,15 @@ class Game():
             return Embed(color=0x00FF00,
                 title="Only one map",
                 description=f"The bot randomly picked the map ** {emoji} {name}**")
-
         return Embed(title="Lobby maps",
             color=0x00FF00,
             description=\
                 "```\n" +
-                '\n'.join([f"{emoji} {name:40} "
+                '\n'.join([f"{str(emoji)} {name:40} "
                 for name, emoji in self.maps_archive[mode][id]]) +\
                 "\n```" + \
-                f"We need **{2 * mode + 1}** total votes or a map getting "\
-                f"**{mode + 2}** votes to keep going!"
+                f"We need **{2 * int(split_with_numbers(mode)[0]) + 1}** total votes or a map getting "\
+                f"**{int(split_with_numbers(mode)[0]) + 2}** votes to keep going!"
             )\
             .add_field(name="name", value="lobby_maps") \
             .add_field(name="-", value="-") \

@@ -149,9 +149,13 @@ class Queue():
             # game.maps_archive[mode][self.game_id] =\
             #     [choice(list(game.available_maps))]
         else:
+
             game.maps_archive[mode][self.game_id] =\
                 sample(list(game.available_maps),
                     min(3, len(game.available_maps)))
+            for i in range(len(game.maps_archive[mode][self.game_id])):
+                elem = game.maps_archive[mode][self.game_id][i]
+                game.maps_archive[mode][self.game_id][i] = (elem, game.available_maps[elem])
 
 
     async def get_captain_team(self, ctx, player):

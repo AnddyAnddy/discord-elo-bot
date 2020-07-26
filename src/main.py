@@ -47,7 +47,7 @@ def load_file_to_game(guild_id):
 def mode_to_mode_s(game):
     for k, v in game.__dict__.items():
         if isinstance(v, dict):
-            if any(e in v for e in range(1, 5)):
+            if any(e in v for e in range(1, 10)):
                 setattr(game, k, {f'{mode}s': val for mode, val in v.items() if str(mode).isdigit()})
     game.available_modes = set(game.leaderboards.keys())
 
@@ -61,7 +61,7 @@ async def on_ready():
         if GAMES[guild.id] is not None:
             # rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
             # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
-            # mode_to_mode_s(GAMES[guild.id])
+            mode_to_mode_s(GAMES[guild.id])
             # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
             for mode in GAMES[guild.id].maps_archive:
                 for id, elem in GAMES[guild.id].maps_archive[mode].items():
