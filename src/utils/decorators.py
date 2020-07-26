@@ -112,8 +112,6 @@ def check_captain_mode(games):
     def predicate(ctx):
         game = games[ctx.guild.id]
         mode = get_channel_mode(ctx)
-        if not mode.isdigit():
-            return False
         queue = game.queues[mode]
         if queue.mode < 2:
             raise commands.errors.BadArgument("This mode doesn't allow picks")
