@@ -80,14 +80,18 @@ class Admin(commands.Cog):
     @commands.command()
     @has_role_or_above('Elo Admin')
     @check_channel('bans')
-    async def ban(self, ctx, mention, time, unity, *reason):
+    async def ban(self, ctx, mention, timeUnity, *reason):
         """Bans the player for a certain time.
 
+        Example:
+        !ban @Anddy 2h code very badly
         unity must be in s, m, h, d (secs, mins, hours, days).
-        reason must be into " "
+
         """
 
         id = await get_id(ctx, mention)
+        time, unity = split_with_numbers(timeUnity)
+        print(time, unity)
         total_sec = await get_total_sec(ctx, time, unity)
         get_game(ctx).ban_player(id, total_sec, ' '.join(reason))
         await ctx.send(embed=Embed(color=0x00FF00,
