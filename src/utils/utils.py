@@ -201,16 +201,24 @@ async def autosubmit_reactions(reaction, user, game):
     if id not in game.undecided_games[mode]:
         return
     queue = game.undecided_games[mode][id]
+    role = discord.utils.get(reaction.message.guild.roles, name="Elo Admin")
+    is_admin = role is None or user.top_role >= role
+
     if user.id not in game.leaderboards[mode] or\
         game.leaderboards[mode][user.id] not in queue:
-        await reaction.message.remove_reaction(reaction.emoji, user)
-        return
+        if not is_admin:
+            await reaction.message.remove_reaction(reaction.emoji, user)
+            return
 
     reactions = reaction.message.reactions
-    maxi, index, emoji = 1, 0, str(reactions[0])
-    for i, elem in enumerate(reactions):
-        if elem.count > maxi:
-            maxi, index, emoji = elem.count, i, elem
+    maxi, index = 1, 0
+    if is_admin:
+        maxi, index = 127, ["🟢", "🔴", "🔵","❌"].index(reaction.emoji)
+
+    else:
+        for i, elem in enumerate(reactions):
+            if elem.count > maxi:
+                maxi, index = elem.count, i
     if maxi - 1 >= queue.max_queue // 2 + 1:
         if index <= 2: # a team won or a draw
             text, worked = game.add_archive(mode, id, index)
