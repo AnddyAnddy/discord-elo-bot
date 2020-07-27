@@ -66,7 +66,7 @@ class Init(commands.Cog):
             await guild.create_text_channel(name="Info_chat", category=base_cat)
             await guild.create_text_channel(name="Register", category=base_cat)
             await guild.create_text_channel(name="Submit", category=base_cat)
-            await guild.create_text_channel(name="Autosubmit", category=base_cat)
+            # await guild.create_text_channel(name="Autosubmit", category=base_cat)
             await guild.create_text_channel(name="Game_announcement",
                                             category=base_cat)
             await guild.create_text_channel(name="Bans",

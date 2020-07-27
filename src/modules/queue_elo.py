@@ -203,6 +203,15 @@ class Queue():
     def __contains__(self, elem):
         return elem in self.players or elem in self.red_team or elem in self.blue_team
 
+
+def announce_format_game(queue):
+    res = display_team(queue.red_team, "Red team", queue.max_queue // 2)
+    res += display_team(queue.blue_team, "Blue team", queue.max_queue // 2)
+    res += "\nCome back here after you finished your game !\n"
+    res += f"You need at least **{queue.max_queue // 2 + 2} reactions** to 🟢 🔴 🔵 ❌ "
+    res += "or **1 moderator** to have your game submitted (draw, red, blue, cancel)"
+    return res
+
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""
     return f'```\n{team_name:20} {"Positions":20} {"Elo":>5}\n' + \

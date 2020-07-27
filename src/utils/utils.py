@@ -2,16 +2,19 @@ import requests
 import discord
 import re
 from discord import Embed
+from datetime import datetime
 from utils.exceptions import send_error, get_picked_player
 from utils.exceptions import get_channel_mode
 from utils.exceptions import get_game, get_player_by_id, PassException
-from datetime import datetime
+from modules.queue_elo import announce_format_game
+
 
 def rename_attr(obj, old_name, new_name):
     if hasattr(obj, old_name):
         obj.__dict__[new_name] = obj.__dict__.pop(old_name)
         return True
     return False
+
 
 def split_with_numbers(name):
     return re.findall(r'[A-Za-z]+|[0-9]+', name)
@@ -106,7 +109,6 @@ def build_other_page(bot, game, reaction, user):
     return None
 
 
-
 def check_if_premium(game, before, after):
     if len(before.roles) < len(after.roles):
         new_role = next(
@@ -119,9 +121,8 @@ def check_if_premium(game, before, after):
 def cmds_embed(bot, startpage=1):
     nb_pages = 1 + len(bot.commands) // 15
     nl = '\n'
-    return Embed(color=0x00FF00, description=\
-          '```\n' +\
-         '\n'.join([f'{command.name:15}: {command.help.split(nl)[0]}'
+    return Embed(color=0x00FF00, description='```\n'
+         + '\n'.join([f'{command.name:15}: {command.help.split(nl)[0]}'
             for command in sorted(bot.commands, key=lambda c: c.name)[15 * (startpage - 1): 15 * startpage]
             if command.help is not None and not command.hidden]) + '```')\
             .add_field(name="name", value="commands") \
@@ -139,9 +140,8 @@ def most_stat_embed(game, mode, player, order_key="game", startpage=1, with_or_v
     order = ["games", "draws", "wins", "losses"].index(order_key)
     return Embed(title=f"Leaderboard of the most played games {with_or_vs} players",
         color=0x00FF00,
-        description=\
-        f'```\n{"name":20} {"game":7} {"draw":7} {"wins":7} {"losses":7}\n' +\
-        '\n'.join([
+        description=f'```\n{"name":20} {"game":7} {"draw":7} {"wins":7} {"losses":7}\n'
+        + '\n'.join([
             f"{name:20} {_with:<7} {d:<7} {w:<7} {l:<7}"
             for name, (_with, d, w, l) in sorted(most_played_with.items(),
                 key=lambda x: x[1][order], reverse=True)[cpage: npage]]) +
@@ -160,6 +160,7 @@ def get_player_lb_pos(leaderboard, player, key):
         res += getattr(p, "elo") > getattr(player, "elo")
     return res
 
+
 def build_most_played_with(game, mode, player, with_or_vs):
     most_played_with = {}
     archive = game.archive[mode]
@@ -176,6 +177,7 @@ def build_most_played_with(game, mode, player, with_or_vs):
     most_played_with.pop(player.name, None)
     return most_played_with
 
+
 def team_players_stats(team_player, me, most_played_with, win, queue):
     if team_player.name in most_played_with:
         most_played_with[team_player.name][0] += 1
@@ -189,41 +191,44 @@ def team_players_stats(team_player, me, most_played_with, win, queue):
     else:
         most_played_with[team_player.name][3] += 1
 
+
 async def autosubmit_reactions(reaction, user, game):
-    embed = get_elem_from_embed(reaction)
-    if embed["function"] != "autosubmit":
+    title = reaction.message.embeds[0].title.split()
+    if title[0] != "autosubmit":
         return
-    mode, id, winner = embed["mode"], embed["id"], int(embed["key"])
-    if id not in game.waiting_for_approval[mode]:
+    function, mode, id = title
+    id = int(id)
+    if id not in game.undecided_games[mode]:
         return
-    queue = game.waiting_for_approval[mode][id]
+    queue = game.undecided_games[mode][id]
     if user.id not in game.leaderboards[mode] or\
         game.leaderboards[mode][user.id] not in queue:
         await reaction.message.remove_reaction(reaction.emoji, user)
         return
 
-    if mode not in game.correctly_submitted:
-        game.correctly_submitted[mode] = set()
-    if id in game.correctly_submitted[mode]:
-        return
-    # The message got enough positive reaction (removing bot's one)
-    if reaction.message.reactions[0].count - 1 >= queue.max_queue // 2 + 1:
-        text, worked = game.add_archive(mode, id, winner)
-        if worked:
-            game.waiting_for_approval[mode].pop(id, None)
-            game.correctly_submitted[mode].add(id)
-        await reaction.message.channel.send(embed=Embed(color=0xFF0000 if winner == 1 else 0x0000FF,
-            description=text))
+    reactions = reaction.message.reactions
+    maxi, index, emoji = 1, 0, str(reactions[0])
+    for i, elem in enumerate(reactions):
+        if elem.count > maxi:
+            maxi, index, emoji = elem.count, i, elem
+    if maxi - 1 >= queue.max_queue // 2 + 1:
+        if index <= 2: # a team won or a draw
+            text, worked = game.add_archive(mode, id, index)
+            await reaction.message.channel.send(
+                embed=Embed(color=0xFF0000 if index == 1 else 0x0000FF,
+                    description=text))
+        else: # game was canceled
+            game.cancel(mode, id)
+            await reaction.message.channel.send(
+                embed=Embed(color=0x00FF00,
+                    description=f"The game {id} was canceled"))
+        await reaction.message.add_reaction("✅")
 
-        return
-    if reaction.message.reactions[1].count - 1 >= queue.max_queue // 2:
-        game.waiting_for_approval[mode].pop(id, None)
-        await reaction.message.channel.send(embed=Embed(color=0x000000,
-            description=f"The game {id} in the mode {mode} wasn't accepted.\n\
-                        Please submit again"))
+
 
 async def map_pick_reactions(reaction, user, game):
-    if reaction.message.embeds[0].title == "Only one map":
+    if reaction.message.embeds[0].title in "Only one map" or\
+        "autosubmit" in reaction.message.embeds[0].title:
         return
     embed = get_elem_from_embed(reaction)
     if embed["function"] != "lobby_maps":
@@ -240,28 +245,28 @@ async def map_pick_reactions(reaction, user, game):
     for i, r in enumerate(reaction.message.reactions):
         print(r.count - 1, queue.max_queue // 2 + 1)
         if r.count - 1 >= queue.max_queue // 2 + 1:
-            emoji, name = reaction.message.embeds[0].description.split('\n')[i + 1].split()
+            emoji, name = reaction.message.embeds[0].description.split('\n')[
+                                                                       i + 1].split()
             print(emoji, name)
             game.add_map_to_archive(mode, id, name, emoji)
             await reaction.message.channel.send(embed=Embed(color=0x00FF00,
-                description="Okay ! We got enough votes, the map is...\n"\
+                description="Okay ! We got enough votes, the map is...\n"
                     f"{emoji} {name}"
                 )
             )
             break
 
 
-
-
-
 async def add_emojis(msg, game, mode, id):
     for _, emoji in game.maps_archive[mode][id]:
         await msg.add_reaction(emoji)
+
 
 async def add_scroll(message):
     """Add ⏮️ ⬅️ ➡️ ⏭️ emojis to the message."""
     for e in ['⏮️', '⬅️', '➡️', '⏭️']:
         await message.add_reaction(e)
+
 
 async def set_map(ctx, game, queue, mode):
     if queue.mapmode != 0:
@@ -271,14 +276,17 @@ async def set_map(ctx, game, queue, mode):
             await add_emojis(msg, game, mode, queue.game_id)
 
 
-async def announce_game(ctx, res, queue):
+async def announce_game(ctx, res, queue, mode):
     if res != "Queue is full...":
-        await discord.utils.get(ctx.guild.channels,
-            name="game_announcement")\
-        .send(embed=Embed(color=0x00FF00,
-            description=res),
-            content=queue.ping_everyone())
-
+        emojis = ["🟢", "🔴", "🔵","❌"]
+        channel = discord.utils.get(ctx.guild.channels,
+            name="game_announcement")
+        msg = await channel.send(queue.ping_everyone(),
+                embed=Embed(color=0x00FF00,
+                title=f"autosubmit {mode} {queue.game_id}",
+                description=announce_format_game(queue)))
+        for elem in emojis:
+            await msg.add_reaction(elem)
 
 async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
     other_team_id = 1 if team_just_picked == 2 else 2
@@ -351,13 +359,14 @@ async def join_aux(ctx, player=None):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=game.add_game_to_be_played(queue, mode)))
         await set_map(ctx, game, queue, mode)
-        await announce_game(ctx, res, queue)
-
+        await announce_game(ctx, res, queue, mode)
 
 
 async def create_mode_discord(nb_p, catName, ctx):
     guild = ctx.message.guild
     cat = discord.utils.get(guild.categories, name=catName)
     await guild.create_text_channel(f'{nb_p}vs{nb_p}', category=cat)
+    await ctx.send(embed=Embed(color=0x00FF00,
+        description="The game mode has been added."))
     await ctx.send(embed=Embed(color=0x00FF00,
         description="The game mode has been added."))

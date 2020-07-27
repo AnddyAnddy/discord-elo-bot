@@ -27,7 +27,9 @@ class Match_process(commands.Cog):
         if user.id == self.bot.user.id or not reaction.message.embeds:
             return
         game = GAMES[user.guild.id]
-        if reaction.emoji in "✅❌":
+        # if reaction.emoji in "✅❌":
+        # red, blue, draw, cancel
+        if reaction.emoji in "🟢🔴🔵❌":
             await autosubmit_reactions(reaction, user, game)
             return
         if reaction.emoji in game.available_maps.values():

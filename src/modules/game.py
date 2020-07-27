@@ -47,7 +47,7 @@ class Game():
         self.archive[mode][queue.game_id] = (
             queue, winner, self.elo.red_rating)
         self.undecided_games[mode].pop(queue.game_id, None)
-        return f"The game has been submitted, thanks !\n"\
+        return f"The game n°{id} was submitted, thanks !\n"\
                 f"{team_name(winner)} won the game.\n"\
                 f"Red bonus: {self.elo.red_rating if winner else 0}, \n"\
                 f"Blue bonus: {self.elo.blue_rating if winner else 0}.", True
