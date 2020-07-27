@@ -309,11 +309,12 @@ async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
     if queue.is_finished():
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(queue)))
-        await discord.utils.get(ctx.guild.channels,
-            name="game_announcement")\
-                .send(embed=Embed(color=0x00FF00,
-                    description=str(queue)),
-                    content=queue.ping_everyone())
+        # await discord.utils.get(ctx.guild.channels,
+        #     name="game_announcement")\
+        #         .send(embed=Embed(color=0x00FF00,
+        #             description=str(queue)),
+        #             content=queue.ping_everyone())
+        await announce_game(ctx, "", game.queues[mode], mode)
         game.add_game_to_be_played(game.queues[mode], mode)
         if queue.mapmode != 0:
             msg = await ctx.send(queue.ping_everyone(),
