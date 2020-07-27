@@ -41,8 +41,8 @@ class Queue():
             await send_error(ctx, "Queue is full...")
             raise PassException()
         self.players.append(player)
-        TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
-        TIMEOUTS[player].start()
+        # TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
+        # TIMEOUTS[player].start()
         res = f'<@{player.id_user}> has been added to the queue. '\
             f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
@@ -88,9 +88,9 @@ class Queue():
     def on_queue_full(self, game, mode):
         """Set a game."""
         self.has_queue_been_full = True
-        for t in TIMEOUTS.values():
-            t.cancel()
-        TIMEOUTS = {}
+        # for t in TIMEOUTS.values():
+        #     t.cancel()
+        # TIMEOUTS = {}
         self.pick_fonction()
         self.map_pick(game, mode)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
