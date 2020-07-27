@@ -6,6 +6,7 @@ from utils.exceptions import send_error
 from utils.exceptions import PassException
 from utils.exceptions import get_channel_mode
 from discord import Embed
+from threading import Timer
 
 class Queue():
     """Docstring for Queue."""
@@ -14,7 +15,6 @@ class Queue():
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number > 2")
         self.players = []
-        self.timeout = {}
         self.red_team = []
         self.blue_team = []
         self.max_queue = max_queue
@@ -41,8 +41,8 @@ class Queue():
             await send_error(ctx, "Queue is full...")
             raise PassException()
         self.players.append(player)
-        # self.timeout[player] = Timer(60 * 10, self.remove_player, (player, ))
-        # self.timeout[player].start()
+        TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
+        TIMEOUTS[player].start()
         res = f'<@{player.id_user}> has been added to the queue. '\
             f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
@@ -81,12 +81,16 @@ class Queue():
                 **[{len(self.players)} / {int(self.max_queue)}]**'
         return f"<@{player.id_user}> can't be removed from the queue"
 
+    async def timeout_player(self, player, ctx):
+        self.remove_player(player)
+        await ctx.send(f"{player.name} was removed from the queue after a timeout")
+
     def on_queue_full(self, game, mode):
         """Set a game."""
         self.has_queue_been_full = True
-        # for t in self.timeout.values():
-        #     t.cancel()
-        self.timeout = {}
+        for t in TIMEOUTS.values():
+            t.cancel()
+        TIMEOUTS = {}
         self.pick_fonction()
         self.map_pick(game, mode)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
@@ -239,8 +243,8 @@ def team_to_player_name(team):
 def team_to_player_id(team):
     return "[" + ', '.join([f'<@{p.id_user}>' for p in team]) + "]"
 
+TIMEOUTS = {}
 
-HISTORIQUE = []
 if __name__ == '__main__':
     import doctest
 
