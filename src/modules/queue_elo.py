@@ -7,6 +7,7 @@ from utils.exceptions import PassException
 from utils.exceptions import get_channel_mode
 from discord import Embed
 from threading import Timer
+TIMEOUTS = {}
 
 class Queue():
     """Docstring for Queue."""
@@ -41,13 +42,13 @@ class Queue():
             await send_error(ctx, "Queue is full...")
             raise PassException()
         self.players.append(player)
-        # TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
-        # TIMEOUTS[player].start()
+        TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
+        TIMEOUTS[player].start()
         res = f'<@{player.id_user}> has been added to the queue. '\
             f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
-            res += self.on_queue_full(game, get_channel_mode(ctx))
+            res += self.on_queue_full(game, get_channel_mode(ctx), TIMEOUTS)
         return res
 
     async def add_players(self, ctx, players, game):
@@ -85,12 +86,12 @@ class Queue():
         self.remove_player(player)
         await ctx.send(f"{player.name} was removed from the queue after a timeout")
 
-    def on_queue_full(self, game, mode):
+    def on_queue_full(self, game, mode, timeouts={}):
         """Set a game."""
         self.has_queue_been_full = True
-        # for t in TIMEOUTS.values():
-        #     t.cancel()
-        # TIMEOUTS = {}
+        for t in timeouts.values():
+            t.cancel()
+        timeouts = {}
         self.pick_fonction()
         self.map_pick(game, mode)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
@@ -243,7 +244,6 @@ def team_to_player_name(team):
 def team_to_player_id(team):
     return "[" + ', '.join([f'<@{p.id_user}>' for p in team]) + "]"
 
-TIMEOUTS = {}
 
 if __name__ == '__main__':
     import doctest
