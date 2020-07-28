@@ -177,25 +177,14 @@ class Info_stats(commands.Cog):
         order_key must € [games, draws, wins, losses]
         is the key the table will be ordered by."""
         game = get_game(ctx)
-        # if ctx.author.id not in game.leaderboards[mode]:
-        #     await ctx.send(embed=Embed(color=0x000000,
-        #         description="You are not registered on the leaderboard."))
-        #     return
-        # name = str(ctx.author.id) if not name else name[3: -1]
-        # if not name.isdigit():
-        #     await ctx.send("You better ping the player !")
-        #     return
-        # name = int(name)
+
         player = await get_player_by_mention(ctx, mode, mention) if mention\
             else await get_player_by_id(ctx, mode, ctx.author.id)
-        # if name not in game.leaderboards[mode]:
-        #     await ctx.send(embed=Embed(color=0x000000,
-        #         description="You are not registered on the leaderboard."))
-        #     return
+
         if order_key not in ("games", "draws", "wins", "losses"):
-            raise commands.errors.MissingRequiredArgument(order_key)
+            raise commands.errors.BadArgument(order_key)
         if with_or_vs not in ("with", "vs"):
-            raise commands.errors.MissingRequiredArgument(with_or_vs)
+            raise commands.errors.BadArgument(with_or_vs)
 
         # most_played_with = build_most_played_with(game, mode, name)
         msg = await ctx.send(embed=most_stat_embed(game, mode, player,
