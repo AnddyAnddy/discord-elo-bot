@@ -59,17 +59,7 @@ async def on_ready():
         print(guild.name + " owned by: " + str(guild.owner))
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
-            # rename_attr(GAMES[guild.id], "maps_archuve", "maps_archive")
-            # setattr(GAMES[guild.id], "maps_archive", {mode: {} for mode in GAMES[guild.id].available_modes})
-            # mode_to_mode_s(GAMES[guild.id])
-            # # print('\n'.join([GAMES[guild.id].__dict__[x] for x in GAMES[guild.id].__dict__]))
-            # for mode in GAMES[guild.id].maps_archive:
-            #     for id, elem in GAMES[guild.id].maps_archive[mode].items():
-            #         if len(elem) == 1:
-            #             GAMES[guild.id].maps_archive[mode][id] = (elem[0], GAMES[guild.id].available_maps[elem[0]])
-            # GAMES[guild.id].save_to_file()
-            # test
-            # print(GAMES[guild.id].leaderboards.keys())
+            GAMES[guild.id].clear_undecided_reacted()
             print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -103,6 +93,7 @@ async def on_reaction_add(reaction, user):
     await reaction.message.edit(embed=res)
 
     await reaction.message.remove_reaction(reaction.emoji, user)
+
 
 
 @BOT.event

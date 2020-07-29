@@ -408,3 +408,24 @@ class Game():
             .add_field(name="mode", value=mode) \
             .add_field(name="id", value=id) \
             .set_footer(text=f"[ 1 / 1 ]")
+
+
+    def get_last_undecided_game_by(self, player, mode):
+        """Return the id of the last played game by a specific player."""
+        if player.id_user not in self.leaderboards[mode]:
+            return None
+
+        for id, queue in sorted(self.undecided_games[mode].items(), key=lambda x: x, reverse=True):
+            if player in queue:
+                return queue
+        return None
+
+    def clear_undecided_reacted(self):
+        """Used on ready to clear the undecided games reactions.
+
+        Because the bot doesn't parse old (before on ready) messages it can't
+        know if a user reacted.
+        """
+        for mode in self.available_modes:
+            for queue in self.undecided_games[mode].values():
+                queue.clear_reacted()

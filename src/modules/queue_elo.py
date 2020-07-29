@@ -26,6 +26,7 @@ class Queue():
         self.pick_fonction = self.modes[mode]
         self.mode = mode
         self.mapmode = mapmode
+        self.reacted = {0}
         self.game_id = last_id + 1
 
     def is_full(self):
@@ -193,6 +194,21 @@ class Queue():
         """Return True if the player won that game."""
         return winner == 1 and player in self.red_team or\
         winner == 2 and player in self.blue_team
+
+    def add_reacted(self, id):
+        """Add to self.reacted people who reacted to the current queue."""
+        if not hasattr(self, "reacted"):
+            setattr(self, "reacted", {0})
+        self.reacted.add(id)
+
+    def remove_reacted(self, id):
+        if not hasattr(self, "reacted"):
+            setattr(self, "reacted", {0})
+        self.reacted.discard(id)
+
+    def clear_reacted(self):
+        """Add to self.reacted people who reacted to the current queue."""
+        setattr(self, "reacted", set())
 
     def __str__(self):
         """ToString."""

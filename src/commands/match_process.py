@@ -38,6 +38,16 @@ class Match_process(commands.Cog):
 
         await reaction.message.remove_reaction(reaction.emoji, user)
 
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        if user.id == self.bot.user.id or not reaction.message.embeds:
+            return
+        game = GAMES[user.guild.id]
+        # red, blue, draw, cancel
+        await autosubmit_reactions(reaction, user, game, True)
+
+
     @commands.command(aliases=['as'])
     @check_channel('autosubmit')
     @is_arg_in_modes(GAMES)

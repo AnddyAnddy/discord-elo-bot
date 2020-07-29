@@ -192,7 +192,7 @@ def team_players_stats(team_player, me, most_played_with, win, queue):
         most_played_with[team_player.name][3] += 1
 
 
-async def autosubmit_reactions(reaction, user, game):
+async def autosubmit_reactions(reaction, user, game, removed=False):
     title = reaction.message.embeds[0].title.split()
     if title[0] != "autosubmit":
         return
@@ -201,6 +201,9 @@ async def autosubmit_reactions(reaction, user, game):
     if id not in game.undecided_games[mode]:
         return
     queue = game.undecided_games[mode][id]
+    if removed:
+        queue.remove_reacted(user.id)
+        return
     role = discord.utils.get(reaction.message.guild.roles, name="Elo Admin")
     is_admin = role is None or user.top_role >= role
 
@@ -232,6 +235,8 @@ async def autosubmit_reactions(reaction, user, game):
                     description=f"The game {id} was canceled"))
         await reaction.message.add_reaction("✅")
 
+    queue.add_reacted(user.id)
+
 
 
 async def map_pick_reactions(reaction, user, game):
@@ -251,11 +256,9 @@ async def map_pick_reactions(reaction, user, game):
         return
     emoji, name = "", ""
     for i, r in enumerate(reaction.message.reactions):
-        print(r.count - 1, queue.max_queue // 2 + 1)
         if r.count - 1 >= queue.max_queue // 2 + 1:
             emoji, name = reaction.message.embeds[0].description.split('\n')[
                                                                        i + 1].split()
-            print(emoji, name)
             game.add_map_to_archive(mode, id, name, emoji)
             await reaction.message.channel.send(embed=Embed(color=0x00FF00,
                 description="Okay ! We got enough votes, the map is...\n"
@@ -309,11 +312,7 @@ async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
     if queue.is_finished():
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(queue)))
-        # await discord.utils.get(ctx.guild.channels,
-        #     name="game_announcement")\
-        #         .send(embed=Embed(color=0x00FF00,
-        #             description=str(queue)),
-        #             content=queue.ping_everyone())
+
         await announce_game(ctx, "", game.queues[mode], mode)
         game.add_game_to_be_played(game.queues[mode], mode)
         if queue.mapmode != 0:
@@ -348,6 +347,29 @@ async def pick_players(ctx, queue, mode, team_id, p1, p2):
     for i in range(nb_p):
         await queue.set_player_team(ctx, team_id, lst[i])
 
+async def get_announce_with_id(channel, mode, id):
+    messages = await channel.history().flatten()
+    for message in messages:
+        if message.embeds and message.embeds[0].title\
+            and "autosubmit" in message.embeds[0].title:
+
+            m_mode, m_id = message.embeds[0].title.split()[1:]
+            if mode == m_mode and int(m_id) == id:
+                return message
+    return None
+
+
+async def check_if_submitted(ctx, game, mode, player):
+    start = datetime.now()
+    queue = game.get_last_undecided_game_by(player, mode)
+    if queue is None or not hasattr(queue, "reacted")\
+        or not queue.reacted or player.id_user in queue.reacted:
+        return True
+
+    await send_error(ctx, f"You must react to the game n°{queue.game_id} before joining a new queue.")
+    raise PassException()
+
+
 
 async def join_aux(ctx, player=None):
     game = get_game(ctx)
@@ -355,6 +377,7 @@ async def join_aux(ctx, player=None):
     queue = game.queues[mode]
     if player is None:
         player = await get_player_by_id(ctx, mode, ctx.author.id)
+        await check_if_submitted(ctx, game, mode, player)
 
     setattr(player, "last_join", datetime.now())
     is_queue_now_full = queue.has_queue_been_full
