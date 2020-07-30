@@ -62,7 +62,7 @@ class Core(commands.Cog):
         await ctx.send(embed=Embed(color=0x00FF00,
             description=f"<@{name}> has been registered for every mode."))
 
-    @commands.command(aliases=['quit'])
+    @commands.command(aliases=['quit'], enabled=False)
     @check_channel('register')
     async def quit_elo(self, ctx):
         """Delete the user from the registered players.

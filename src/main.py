@@ -35,7 +35,6 @@ BOT.load_extension('commands.graphs')
 BOT.load_extension('commands.premium')
 
 
-
 def load_file_to_game(guild_id):
     """Load the file from ./data/guild_id to Game if exists, return True."""
     try:
@@ -44,12 +43,15 @@ def load_file_to_game(guild_id):
     except IOError:
         print("The file couldn't be loaded")
 
+
 def mode_to_mode_s(game):
     for k, v in game.__dict__.items():
         if isinstance(v, dict):
             if any(e in v for e in range(1, 10)):
-                setattr(game, k, {f'{mode}s': val for mode, val in v.items() if str(mode).isdigit()})
+                setattr(game, k, {f'{mode}s': val for mode,
+                        val in v.items() if str(mode).isdigit()})
     game.available_modes = set(game.leaderboards.keys())
+
 
 @BOT.event
 async def on_ready():
@@ -73,10 +75,10 @@ async def on_guild_join(guild):
         if channel.type == discord.ChannelType.text)
     await channel.send(embed=Embed(color=0x00A000,
         title="Hey, let's play together !",
-        description="Oh hey i'm new around here !\n"\
-            "To set me up, someone will have to "\
-            "write `!init_elo_by_anddy` somewhere and the black magic "\
-            "will handle the rest.\n"\
+        description="Oh hey i'm new around here !\n"
+            "To set me up, someone will have to "
+            "write `!init_elo_by_anddy` somewhere and the black magic "
+            "will handle the rest.\n"
             "Any issue ? https://discord.gg/E2ZBNSx"))
 
 
@@ -95,7 +97,6 @@ async def on_reaction_add(reaction, user):
     await reaction.message.remove_reaction(reaction.emoji, user)
 
 
-
 @BOT.event
 async def on_member_update(before, after):
     if before.bot:
@@ -105,15 +106,17 @@ async def on_member_update(before, after):
         return
     if check_if_premium(GAMES[discord_id], before, after):
         channel = discord.utils.get(after.guild.channels, name="premium")
-        await channel.send(f"Hi <@{before.id}>, You got your {nb_games} double xp ! " \
-            "this is available for every mode you're registered."\
-            "You simply have to use !premium in your server."\
+        await channel.send(f"Hi <@{before.id}>, You got your {nb_games} double xp ! "
+            "this is available for every mode you're registered."
+            "You simply have to use !premium in your server."
             "Any issue ? PM Anddy#2086.")
+
 
 @BOT.event
 async def on_command_completion(ctx):
     """Save the data after every command."""
     GAMES[ctx.guild.id].save_to_file()
+
 
 @BOT.event
 async def on_command_error(ctx, error):
@@ -122,14 +125,13 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=Embed(color=0x000000,
            description="The command doesn't exist, check !cmds !"))
 
-
     elif isinstance(error, commands.errors.BadArgument):
         await send_error(ctx, error)
 
     elif isinstance(error, commands.errors.CheckFailure):
         await ctx.send(embed=Embed(color=0x000000,
-           description="You used this command with either a wrong channel " +\
-           "or a wrong argument. Or you don't have the permission...\n"))
+           description="You used this command with either a wrong channel "
+           + "or a wrong argument. Or you don't have the permission...\n"))
         await ctx.send_help(inv)
 
     elif isinstance(error, commands.errors.MissingPermissions):
@@ -139,7 +141,10 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send(embed=Embed(color=0x000000,
            description=f"{str(error)}\nCheck !help {inv}"))
-    elif isinstance(error.original, PassException):
+    elif isinstance(error, commands.DisabledCommand):
+        await ctx.send(embed=Embed(color=0x000000,
+            description="The command is disabled."))
+    elif hasattr(error, "original") and isinstance(error.original, PassException):
         pass
     else:
         print(ctx.invoked_with)
