@@ -211,6 +211,6 @@ class Core(commands.Cog):
                 await ctx.send(embed=Embed(color=0x00FF00,
                     description=game.add_game_to_be_played(queue, mode)))
                 await set_map(ctx, game, queue, mode)
-                await announce_game(ctx, res, queue)
+                await announce_game(ctx, res, queue, mode)
 def setup(bot):
     bot.add_cog(Core(bot))
