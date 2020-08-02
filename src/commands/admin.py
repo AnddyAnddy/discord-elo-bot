@@ -193,7 +193,7 @@ class Admin(commands.Cog):
             description=f"You kicked {start - end} members from the leaderboards"))
 
     @commands.command(hidden=True)
-    async def announce(self, ctx, *message):
+    async def announce(self, ctx, title, message):
         """Send a message to every server."""
         if ctx.author.id != 339349743488729088:
             await ctx.send("You need to be Anddy#2086 to use that command.")
@@ -203,13 +203,13 @@ class Admin(commands.Cog):
                 cat = discord.utils.get(guild.categories, name="Elo by Anddy")
                 announce_chan = discord.utils.get(ctx.guild.channels, name="announcements")
                 await announce_chan.send(embed=Embed(color=0x00FF00,
-                    title="New update!",
-                    description=f"{' '.join(message)}"))
+                    title=title,
+                    description=f"{message}"))
             except Exception:
                 await guild.owner.send(embed=Embed(color=0x00FF00,
-                    title="New update!",
+                    title=title,
                     description=f"Please create an 'announcements' channel in Elo by Anddy category\n"
-                        f"{' '.join(message)}"))
+                        f"{message}"))
 
 
 
