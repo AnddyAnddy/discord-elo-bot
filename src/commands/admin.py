@@ -201,7 +201,7 @@ class Admin(commands.Cog):
         for guild in self.bot.guilds:
             try:
                 cat = discord.utils.get(guild.categories, name="Elo by Anddy")
-                announce_chan = discord.utils.get(ctx.guild.channels, name="announcements")
+                announce_chan = discord.utils.get(cat.channels, name="announcements")
                 await announce_chan.send(embed=Embed(color=0x00FF00,
                     title=title,
                     description=f"{message}"))
