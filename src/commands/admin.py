@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
 from queue_elo import Queue
+from player import Player
 from utils.exceptions import get_player_by_mention
 from utils.exceptions import get_id
 from utils.exceptions import get_total_sec
@@ -120,6 +121,23 @@ class Admin(commands.Cog):
         get_game(ctx).set_elo(mode, int(name[3: -1]), int(elo))
         await ctx.send("Worked!")
 
+
+    @commands.command()
+    @check_channel('init')
+    @is_arg_in_modes(GAMES)
+    async def setstat(self, ctx, mode, mention, stat_name, value):
+        player = await get_player_by_mention(ctx, mode, mention)
+        if not value.isdigit():
+            await send_error(ctx, "Value must be an integer")
+            raise PassException()
+        if stat_name in Player.STATS[1: -2]:
+            old = getattr(player, stat_name)
+            setattr(player, stat_name, int(value))
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description=f"The stat {stat_name} was changed from {old} to {value}"))
+        else:
+            await send_error(ctx, "You can not modify this stat.")
+
     @commands.command()
     @check_channel('init')
     @is_arg_in_modes(GAMES)
@@ -149,14 +167,14 @@ class Admin(commands.Cog):
         player.wlr = player.wins / player.losses if player.losses != 0 else 0
         await ctx.send("Worked!")
 
-    @commands.command()
-    @check_channel('init')
-    async def setdoublexp(self, ctx, player, value):
-        game = get_game(ctx)
-        player = int(player[3: -1])
-        for mode in game.available_modes:
-            if player in game.leaderboards[mode]:
-                game.leaderboards[mode][player].double_xp = int(value)
+    # @commands.command()
+    # @check_channel('init')
+    # async def setdoublexp(self, ctx, player, value):
+    #     game = get_game(ctx)
+    #     player = int(player[3: -1])
+    #     for mode in game.available_modes:
+    #         if player in game.leaderboards[mode]:
+    #             game.leaderboards[mode][player].double_xp = int(value)
 
     @commands.command(aliases=['rmsp'])
     @check_channel('init')

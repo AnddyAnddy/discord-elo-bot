@@ -11,9 +11,9 @@ class IncorrectName(Exception):
 
     def __str__(self):
         return "Incorrect argument:\n" +\
-            f"You wrote {self.name} but it is not in my data.\n" +\
-            "You need to mention the user (ex: @Anddy) and be sure that " +\
-            "this user is on the leaderboard."
+            f"{self.name} is not in my data.\n" +\
+            "Maybe he did not register.\n"\
+            "Used as an argument, you need to mention the user (ex: @Anddy)."
 
 
 class PassException(Exception):

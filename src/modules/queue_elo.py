@@ -36,7 +36,7 @@ class Queue():
     async def add_player(self, ctx, player, game):
         """Add a player in the queue."""
         if player in self.players:
-            await send_error(ctx, "You can't join twice, maybe you're looking for !l")
+            await send_error(ctx, "You can't join twice, maybe you're looking for !l.")
             return
             # raise PassException()
         if self.is_full() or self.has_queue_been_full:
@@ -79,9 +79,9 @@ class Queue():
         """Remove a player from the queue."""
         if player in self.players and not self.has_queue_been_full:
             self.players.remove(player)
-            return f'<@{player.id_user}> was removed from the queue\
+            return f'<@{player.id_user}> was removed from the queue. \
                 **[{len(self.players)} / {int(self.max_queue)}]**'
-        return f"<@{player.id_user}> can't be removed from the queue"
+        return f"<@{player.id_user}> can't be removed from the queue."
 
     async def timeout_player(self, player, ctx):
         self.remove_player(player)
