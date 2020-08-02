@@ -33,7 +33,7 @@ def check_category(*names):
             if ctx_cat == to_be_cat:
                 return True
         raise commands.errors.BadArgument(
-            f"You should write this message in {name} category"
+            f"You should write this message in one of {names} category"
         )
 
     return commands.check(predicate)
