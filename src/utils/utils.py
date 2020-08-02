@@ -91,9 +91,8 @@ def build_other_page(bot, game, reaction, user):
         return getattr(game, embed["function"])(embed["mode"],
                                                startpage=startpage)
     elif embed["function"] == "history":
-        player = await get_player_by_id(embed["id"])
         return getattr(game, embed["function"])(embed["mode"],
-            player, startpage=startpage)
+            embed["id"], startpage=startpage)
 
     elif embed["function"] == "commands":
         return cmds_embed(bot, startpage)
