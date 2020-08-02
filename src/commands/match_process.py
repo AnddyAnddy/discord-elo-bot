@@ -45,7 +45,6 @@ class Match_process(commands.Cog):
             return
         game = GAMES[user.guild.id]
         # red, blue, draw, cancel
-        print(reaction.emoji)
         if reaction.emoji in "🟢🔴🔵❌":
             await autosubmit_reactions(reaction, user, game, True)
 
