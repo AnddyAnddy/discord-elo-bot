@@ -400,5 +400,3 @@ async def create_mode_discord(nb_p, catName, ctx):
     await guild.create_text_channel(f'{nb_p}vs{nb_p}', category=cat)
     await ctx.send(embed=Embed(color=0x00FF00,
         description="The game mode has been added."))
-    await ctx.send(embed=Embed(color=0x00FF00,
-        description="The game mode has been added."))
