@@ -212,5 +212,21 @@ class Core(commands.Cog):
                     description=game.add_game_to_be_played(queue, mode)))
                 await set_map(ctx, game, queue, mode)
                 await announce_game(ctx, res, queue, mode)
+
+    @commands.command(aliases=['lw'])
+    @check_category("Teams elo")
+    async def leave_with(self, ctx):
+        game = get_game(ctx)
+        mode = get_channel_mode(ctx)
+        queue = game.queues[mode]
+        player = await get_player_by_id(ctx, mode, ctx.author.id)
+        if player in queue.players:
+            # The queue is full after the second team gets added so they can't leave anyway
+            queue.players = queue.players[queue.max_queue // 2:]
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description="Your team was removed from the queue."))
+            return
+        await send_error(ctx, "You are not in the queue.")
+
 def setup(bot):
     bot.add_cog(Core(bot))
