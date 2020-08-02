@@ -42,7 +42,6 @@ class Admin(commands.Cog):
         Example: !force_quit @Anddy
         The command is the same than quit_elo except that the user has to make
         someone else quit the Elo.
-        This can be used only in Bye channel.
         Can't be undone."""
         game = get_game(ctx)
         id = await get_id(ctx, mention)
