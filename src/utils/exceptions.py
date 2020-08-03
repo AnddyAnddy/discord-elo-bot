@@ -21,8 +21,9 @@ class PassException(Exception):
 
 
 async def send_error(ctx, desc):
-    await ctx.send(embed=Embed(title="Error !", color=0x000000, description=str(desc)))
-    await ctx.send_help(ctx.invoked_with)
+    await ctx.send(embed=Embed(title="Error !", color=0x000000,
+        description=f"{str(desc)}\nRead !help {ctx.invoked_with}"))
+    # await ctx.author.send_help(ctx.invoked_with)
 
 
 def get_game(ctx):

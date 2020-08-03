@@ -132,7 +132,7 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=Embed(color=0x000000,
            description="You used this command with either a wrong channel "
            + "or a wrong argument. Or you don't have the permission...\n"))
-        await ctx.send_help(inv)
+        # await ctx.send_help(inv)
 
     elif isinstance(error, commands.errors.MissingPermissions):
         await ctx.send(embed=Embed(color=0x000000,
