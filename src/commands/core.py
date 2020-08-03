@@ -7,6 +7,7 @@ from modules.player import Player
 from main import GAMES
 from utils.utils import add_emojis, set_map, announce_game, finish_the_pick, team_name, pick_players, join_aux
 from utils.utils import split_with_numbers
+from utils.utils import join_team_reaction
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
 from utils.exceptions import get_picked_player
@@ -15,9 +16,32 @@ from utils.exceptions import get_channel_mode
 from utils.exceptions import send_error
 from utils.exceptions import PassException
 
+
 class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        """
+
+        @param user: discord.User
+        @type reaction: discord.Reaction
+        """
+        reaction.emoji = str(reaction)
+        if user.id == self.bot.user.id or not reaction.message.embeds:
+            return
+        game = GAMES[user.guild.id]
+        if reaction.emoji in "👍👎":
+            await join_team_reaction(reaction, user, game)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        if user.id == self.bot.user.id or not reaction.message.embeds:
+            return
+        game = GAMES[user.guild.id]
+        if reaction.emoji in "👍👎":
+            await join_team_reaction(reaction, user, game, True)
 
     @commands.command(aliases=['r', 'reg'])
     @check_channel('register')
@@ -145,7 +169,6 @@ class Core(commands.Cog):
         await pick_players(ctx, queue, mode, team_id, p1, p2)
         await finish_the_pick(ctx, game, queue, mode, team_id)
 
-
     @commands.command(aliases=['pos'])
     @check_channel('register')
     @is_arg_in_modes(GAMES)
@@ -162,7 +185,7 @@ class Core(commands.Cog):
         if len(args) > len(game.available_positions) or \
                 any(elem for elem in args if elem not in game.available_positions):
             await ctx.send(embed=Embed(color=0x000000,
-                description=f"Your positions couldn't be saved, "\
+                description=f"Your positions couldn't be saved, "
                     f"all of your args must be in {game.available_positions}"))
             return
 
@@ -204,14 +227,19 @@ class Core(commands.Cog):
             await send_error(ctx, f"You joined with {len(players)} player(s) but you need exactly {nb_players}")
             raise PassException()
 
-        res = await queue.add_players(ctx, players, game)
-        if res:
-            await ctx.send(embed=Embed(color=0x00FF00, description=res))
-            if queue.is_finished():
-                await ctx.send(embed=Embed(color=0x00FF00,
-                    description=game.add_game_to_be_played(queue, mode)))
-                await set_map(ctx, game, queue, mode)
-                await announce_game(ctx, res, queue, mode)
+        embed = Embed(title=f"Invitations for {mode} from {ctx.author.display_name}",
+            description="To join with your team, everyone involved have to confirm by clicking on 👍.\n"
+                "To deny, click on the 👎.")\
+            .add_field(name=f"Captain", value=ctx.author.mention)
+
+        for i in range(len(mentions)):
+            embed.add_field(name=f"Player n°{i + 1}", value=mentions[i])
+
+        msg = await ctx.send(embed=embed)
+        await msg.add_reaction("👍")
+        await msg.add_reaction("👎")
+
+
 
     @commands.command(aliases=['lw'])
     @check_category("Teams elo")

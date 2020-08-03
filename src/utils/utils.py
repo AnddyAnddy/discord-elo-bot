@@ -5,7 +5,7 @@ from discord import Embed
 from datetime import datetime
 from utils.exceptions import send_error, get_picked_player
 from utils.exceptions import get_channel_mode
-from utils.exceptions import get_game, get_player_by_id, PassException
+from utils.exceptions import get_game, get_player_by_id, get_player_by_mention, PassException
 from modules.queue_elo import announce_format_game
 
 
@@ -238,6 +238,46 @@ async def autosubmit_reactions(reaction, user, game, removed=False):
 
     queue.add_reacted(user.id)
 
+async def join_team_reaction(reaction, user, game, isLeaving=False):
+    embed = reaction.message.embeds[0]
+    title = embed.title
+    if not title:
+        return
+    title = title.split()
+    if title[0] != "Invitations":
+        return
+    if len(reaction.message.reactions) > 2:
+        return
+
+    mode = title[2]
+    queue = game.queues[mode]
+    players = [game.leaderboards[mode][int(embed.fields[0].value[2: -1])]]
+    for mention in embed.fields[1:]:
+        players.append(game.leaderboards[mode][int(mention.value[3: -1])])
+    if user.id not in [p.id_user for p in players]:
+        await reaction.message.remove_reaction(reaction.emoji, user)
+        return
+
+
+    if reaction.message.reactions[0].count == len(players):
+        await reaction.message.add_reaction("✅")
+        embed.title += f" (accepted)"
+        await reaction.message.edit(embed=embed)
+
+        ctx = reaction.message.channel
+        res = await queue.add_players(ctx, players, game, mode)
+        if res:
+            await ctx.send(embed=Embed(color=0x00FF00, description=res))
+            if queue.is_finished():
+                await ctx.send(embed=Embed(color=0x00FF00,
+                    description=game.add_game_to_be_played(queue, mode)))
+                await set_map(ctx, game, queue, mode)
+                await announce_game(ctx, res, queue, mode)
+
+    elif reaction.message.reactions[1].count > 1:
+        await reaction.message.add_reaction("❌")
+        embed.title += f" (refused by {user.display_name})"
+        await reaction.message.edit(embed=embed)
 
 
 async def map_pick_reactions(reaction, user, game):
@@ -266,7 +306,7 @@ async def map_pick_reactions(reaction, user, game):
                     f"{emoji} {name}"
                 )
             )
-            break
+            return
 
 
 async def add_emojis(msg, game, mode, id):

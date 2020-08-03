@@ -36,6 +36,8 @@ class Match_process(commands.Cog):
             await map_pick_reactions(reaction, user, game)
             return
 
+        if reaction.emoji in "👍👎":
+            return
         await reaction.message.remove_reaction(reaction.emoji, user)
 
 

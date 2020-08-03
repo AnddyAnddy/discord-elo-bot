@@ -52,7 +52,7 @@ class Queue():
             res += self.on_queue_full(game, get_channel_mode(ctx), TIMEOUTS)
         return res
 
-    async def add_players(self, ctx, players, game):
+    async def add_players(self, ctx, players, game, mode):
         """Add multiple players in the queue."""
         success = True
         len_at_start = len(self.players)
@@ -72,7 +72,7 @@ class Queue():
         res = ""
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
-            res += self.on_queue_full(game, get_channel_mode(ctx))
+            res += self.on_queue_full(game, mode)
         return res
 
     def remove_player(self, player):
