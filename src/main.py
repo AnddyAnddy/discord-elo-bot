@@ -57,14 +57,18 @@ def mode_to_mode_s(game):
 async def on_ready():
     """On ready event."""
     print(f'{BOT.user} has connected\n')
+    total_user = 0
     for guild in BOT.guilds:
-        print(guild.name + " owned by: " + str(guild.owner))
+        print(f'{guild.name:20} by + {str(guild.owner):20} {len(guild.members)} users')
+        total_user += len(guild.members)
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             GAMES[guild.id].clear_undecided_reacted()
-            print(f"The file from data/{guild.id}.data was correctly loaded.")
+            # print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
+
+    print(f'\n\n{total_user} users in total, with {len(BOT.guilds)} guilds')
 
 
 @BOT.event
