@@ -104,11 +104,11 @@ async def on_member_update(before, after):
     discord_id = DISCORD_MAIN_GUILD_ID
     if discord_id not in GAMES:
         return
-    if check_if_premium(GAMES[discord_id], before, after):
+    if before.guild.id == discord_id and check_if_premium(GAMES[discord_id], before, after):
         channel = discord.utils.get(after.guild.channels, name="premium")
         await channel.send(f"Hi <@{before.id}>, You got your {nb_games} double xp ! "
             "this is available for every mode you're registered."
-            "You simply have to use !premium in your server."
+            "You simply have to use !premium in #register in your server."
             "Any issue ? PM Anddy#2086.")
 
 

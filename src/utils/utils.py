@@ -133,6 +133,7 @@ def cmds_embed(bot, startpage=1):
 
 
 def most_stat_embed(game, mode, player, order_key="game", startpage=1, with_or_vs="with"):
+    player = game.leaderboards[mode][player] if str(player).isdigit() else player
     most_played_with = build_most_played_with(game, mode, player, with_or_vs)
     len_page = 20
     nb_pages = 1 + len(most_played_with) // len_page

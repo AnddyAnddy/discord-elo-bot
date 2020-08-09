@@ -4,6 +4,7 @@ from discord.ext import commands
 from main import GAMES, DISCORD_MAIN_GUILD_ID
 from utils.exceptions import get_player_by_id, get_player_by_mention
 from utils.exceptions import get_game
+from utils.decorators import check_channel
 
 
 class Premium(commands.Cog):
@@ -50,6 +51,7 @@ class Premium(commands.Cog):
 
 
     @commands.command()
+    @check_channel('register')
     async def premium(self, ctx):
         """Claim your premium after supporting on patreon.
 
