@@ -69,7 +69,7 @@ async def on_ready():
             GAMES[guild.id] = Game(guild.id)
 
     print(f'\n\n{total_user} users in total, with {len(BOT.guilds)} guilds')
-
+    await BOT.change_presence(activity=discord.Game(name=f"{len(BOT.guilds)} guilds with {total_user} users"))
 
 @BOT.event
 async def on_guild_join(guild):
