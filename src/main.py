@@ -41,7 +41,8 @@ def load_file_to_game(guild_id):
         with open(f"./data/{guild_id}.data", "rb") as file:
             return _pickle.load(file)
     except IOError:
-        print("The file couldn't be loaded")
+        pass
+        # print("The file couldn't be loaded")
 
 
 def mode_to_mode_s(game):
@@ -60,7 +61,9 @@ async def on_ready():
     total_user = 0
     for guild in BOT.guilds:
         print(f'{guild.name:20} by + {str(guild.owner):20} {len(guild.members)} users')
-        total_user += len(guild.members)
+        if guild.name != "Discord Bot List":
+            total_user += len(guild.members)
+
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             GAMES[guild.id].clear_undecided_reacted()
