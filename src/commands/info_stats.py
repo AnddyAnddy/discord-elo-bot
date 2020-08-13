@@ -76,7 +76,8 @@ class Info_stats(commands.Cog):
             color = 0xFF0000 if winner == 1 else 0x0000FF
             winner_str = team_name(winner)
             name, emoji = game.maps_archive[mode][id_game]\
-                if id_game in game.maps_archive[mode] else ['map', 'no']
+                if mode in game.maps_archive and id_game in game.maps_archive[mode]\
+                else ['map', 'no']
             await ctx.send(embed=Embed(color=color,
                                        description=f"```"
                 f"{'Id':12}: {id_game}\n"
