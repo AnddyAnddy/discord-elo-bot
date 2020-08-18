@@ -29,7 +29,8 @@ def check_category(*names):
         for name in names:
             to_be_cat = discord.utils.get(guild.categories, name=name)
             if to_be_cat is None:
-                raise ValueError(f"Parameter {name} isn't a real category")
+                raise ValueError(
+                    f"The category {name} doesn't exist or I can't see it.")
             if ctx_cat == to_be_cat:
                 return True
         raise commands.errors.BadArgument(
@@ -45,7 +46,8 @@ def check_channel(name):
         ctx_channel = ctx.channel
         to_be_channel = discord.utils.get(guild.channels, name=name)
         if to_be_channel is None:
-            raise ValueError(f"Parameter {name} isn't a real channel")
+            raise ValueError(
+                f"The channel {name} doesn't exist or I can't see it")
         if ctx_channel != to_be_channel:
             raise commands.errors.BadArgument(
                 f"You should write this command in #{name}.")
