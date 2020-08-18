@@ -53,6 +53,17 @@ def mode_to_mode_s(game):
                         val in v.items() if str(mode).isdigit()})
     game.available_modes = set(game.leaderboards.keys())
 
+@BOT.command(hidden=True)
+async def ubotdate(ctx):
+    res = '\n'.join([f'{guild.name:20} by + {str(guild.owner):20} {len(guild.members)} users'
+        for guild in BOT.guilds])
+    total_user = sum([len(guild.members) for guild in BOT.guilds])
+    await BOT.change_presence(activity=discord.Game(name=f"{len(BOT.guilds)} guilds with {total_user} users"))
+    await ctx.send(embed=Embed(color=0x00FF00,
+        title="Guilds infos",
+        description=res)
+    )
+
 
 @BOT.event
 async def on_ready():
