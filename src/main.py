@@ -57,7 +57,7 @@ def mode_to_mode_s(game):
 @BOT.command(hidden=True)
 async def ubotdate(ctx):
     res = '\n'.join([f'{guild.name:20} by + {str(guild.owner):20} {len(guild.members)} users'
-        for guild in BOT.guilds])
+        for guild in BOT.guilds if "discord" not in guild.name.lower()])
     total_user = sum([len(guild.members) for guild in BOT.guilds])
     await BOT.change_presence(activity=discord.Game(name=f"{len(BOT.guilds)} guilds with {total_user} users"))
     await ctx.send(embed=Embed(color=0x00FF00,
