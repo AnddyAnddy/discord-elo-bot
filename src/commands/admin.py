@@ -6,7 +6,7 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
-from queue_elo import Queue
+from queue_elo import Queue, TIMEOUTS
 from player import Player
 from utils.exceptions import get_player_by_mention
 from utils.exceptions import get_id
@@ -30,7 +30,8 @@ class Admin(commands.Cog):
         player = await get_player_by_mention(ctx, mode, mention)
         game = get_game(ctx)
         queue = game.queues[mode]
-        await ctx.send(queue.remove_player(player))
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description=queue.remove_player(player)))
 
     @commands.command()
     @has_role_or_above('Elo Admin')
@@ -69,6 +70,10 @@ class Admin(commands.Cog):
         mode = get_channel_mode(ctx)
         last_id = game.queues[mode].game_id
         if not game.queues[mode].has_queue_been_full:
+            for player in game.queues[mode].players:
+                if player in TIMEOUTS:
+                    TIMEOUTS[player].cancel()
+                    TIMEOUTS.pop(player, None)
             game.queues[mode] = Queue(
                 2 * int(split_with_numbers(mode)[0]), game.queues[mode].mode,
                 game.queues[mode].mapmode, last_id)

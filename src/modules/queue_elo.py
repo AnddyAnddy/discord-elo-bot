@@ -6,7 +6,7 @@ from utils.exceptions import send_error
 from utils.exceptions import PassException
 from utils.exceptions import get_channel_mode
 from discord import Embed
-from threading import Timer
+import asyncio
 TIMEOUTS = {}
 
 class Queue():
@@ -38,13 +38,11 @@ class Queue():
         if player in self.players:
             await send_error(ctx, "You can't join twice, maybe you're looking for !l.")
             return
-            # raise PassException()
         if self.is_full() or self.has_queue_been_full:
             await send_error(ctx, "Queue is full...")
             raise PassException()
         self.players.append(player)
-        TIMEOUTS[player] = Timer(10 * 60, self.remove_player, (player,))
-        TIMEOUTS[player].start()
+        TIMEOUTS[player] = asyncio.ensure_future(self.timeout_player(player, ctx))
         res = f'<@{player.id_user}> has been added to the queue. '\
             f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
@@ -75,24 +73,37 @@ class Queue():
             res += self.on_queue_full(game, mode)
         return res
 
-    def remove_player(self, player):
+    def remove_player(self, player, after_timeout=False):
         """Remove a player from the queue."""
         if player in self.players and not self.has_queue_been_full:
             self.players.remove(player)
+            if not after_timeout and player in TIMEOUTS:
+                TIMEOUTS[player].cancel()
+                TIMEOUTS.pop(player)
             return f'<@{player.id_user}> was removed from the queue. \
                 **[{len(self.players)} / {int(self.max_queue)}]**'
         return f"<@{player.id_user}> can't be removed from the queue."
 
     async def timeout_player(self, player, ctx):
-        self.remove_player(player)
-        await ctx.send(f"{player.name} was removed from the queue after a timeout")
+        await asyncio.sleep(10 * 60)
+        if player in self.players:
+            self.remove_player(player, True)
+            await ctx.send(f"<@{player.id_user}>",
+                embed=Embed(color=0xF1F360,
+                description=f"{player.name} was removed from the queue after a timeout. "\
+                    f'**[{len(self.players)} / {int(self.max_queue)}]**'))
+
 
     def on_queue_full(self, game, mode, timeouts={}):
         """Set a game."""
         self.has_queue_been_full = True
-        for t in timeouts.values():
-            t.cancel()
-        timeouts = {}
+        for player, timer in timeouts.items():
+            if player in self.players:
+                timer.cancel()
+
+        for p in self.players:
+            timeouts.pop(p, None)
+
         self.pick_fonction()
         self.map_pick(game, mode)
         return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
