@@ -2,6 +2,7 @@ import sys
 import _pickle
 import os
 import discord
+from datetime import datetime
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import Embed
@@ -162,10 +163,12 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.DisabledCommand):
         await ctx.send(embed=Embed(color=0x000000,
             description="The command is disabled."))
+    elif isinstance(error, discord.errors.Forbidden):
+        pass
     elif hasattr(error, "original") and isinstance(error.original, PassException):
         pass
     else:
-        print(ctx.invoked_with)
+        print(ctx.invoked_with, ctx.guild, datetime.now().strftime("%d %h %I h %M"))
         try:
             await discord.utils.get(ctx.guild.channels, name="bugs")\
                 .send(f"{ctx.invoked_with}: \n{error}")
