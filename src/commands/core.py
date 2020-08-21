@@ -16,7 +16,6 @@ from utils.exceptions import get_channel_mode
 from utils.exceptions import send_error
 from utils.exceptions import PassException
 
-
 class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -160,7 +159,6 @@ class Core(commands.Cog):
         !p @orp
         or
         !p 1
-        You can only pick players one by one, the index may change after a pick.
         """
         game = get_game(ctx)
         mode = get_channel_mode(ctx)
