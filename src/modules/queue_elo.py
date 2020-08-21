@@ -1,4 +1,6 @@
 """Simulation of queue."""
+import time
+import asyncio
 from random import shuffle
 from random import choice
 from random import sample
@@ -6,15 +8,42 @@ from utils.exceptions import send_error
 from utils.exceptions import PassException
 from utils.exceptions import get_channel_mode
 from discord import Embed
-import asyncio
-TIMEOUTS = {}
+TIMEOUTS = {} # player: task
+CAPTAINS = {} # queue: captains
+class Captain:
+    def __init__(self, time_left):
+        self.time_left = time_left
+        self.last_activity = None
+        self.timeout = None
+
+    async def start(self, ctx, game, mode, id, player):
+        self.last_activity = time.time()
+        self.timeout = asyncio.ensure_future(self.cancel(ctx, game, mode, id, player))
+
+    def stop(self):
+        now = time.time()
+        self.time_left -= int(now - self.last_activity)
+        self.last_activity = now
+        self.timeout.cancel()
+        # self.timeout = asyncio.ensure_future(self.timeout_cancel(ctx, game, mode, id, player))
+
+    async def cancel(self, ctx, game, mode, id, player):
+        await asyncio.sleep(self.time_left)
+        if game.cancel(mode, id):
+            await ctx.send(embed=Embed(title="Game automatically canceled",
+                color=0x000000,
+                description=f"<@{player.id_user}> couldn't pick in 2:30 mins."))
+
+
+
+
 
 class Queue():
     """Docstring for Queue."""
     def __init__(self, max_queue, mode, mapmode, last_id=0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
-            raise ValueError("The max queue must be an even number > 2")
+            raise ValueError("The max queue must be an even number >= 2")
         self.players = []
         self.red_team = []
         self.blue_team = []
@@ -48,6 +77,11 @@ class Queue():
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game, get_channel_mode(ctx), TIMEOUTS)
+            if self.mode >= 2:
+                CAPTAINS[self] = {1: Captain(120), 2: Captain(100)}
+                await CAPTAINS[self][1].start(ctx, game, get_channel_mode(ctx),
+                    self.game_id, self.red_team[0])
+
         return res
 
     async def add_players(self, ctx, players, game, mode):
@@ -106,10 +140,9 @@ class Queue():
 
         self.pick_fonction()
         self.map_pick(game, mode)
-        return f'Game n°{self.game_id}:\n' + message_on_queue_full(self.players,
-                                                                   self.red_team,
-                                                                   self.blue_team,
-                                                                   self.max_queue)
+        return f'Game n°{self.game_id}:\n' +\
+            message_on_queue_full(self.players, self.red_team,
+                self.blue_team, self.max_queue)
 
     def is_finished(self):
         """Return true if the teams are full based on the max_queue."""

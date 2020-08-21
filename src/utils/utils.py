@@ -6,7 +6,7 @@ from datetime import datetime
 from utils.exceptions import send_error, get_picked_player
 from utils.exceptions import get_channel_mode
 from utils.exceptions import get_game, get_player_by_id, get_player_by_mention, PassException
-from modules.queue_elo import announce_format_game
+from modules.queue_elo import announce_format_game, CAPTAINS
 
 
 def rename_attr(obj, old_name, new_name):
@@ -345,15 +345,25 @@ async def finish_the_pick(ctx, game, queue, mode, team_just_picked):
     other_team_id = 1 if team_just_picked == 2 else 2
     other_cap = queue.get_team_by_id(other_team_id)[0]
     nb_to_pick = nb_players_to_pick(queue, other_team_id)
+    if queue in CAPTAINS:
+        CAPTAINS[queue][team_just_picked].stop()
     if len(queue.players) == 1:
         await queue.set_player_team(ctx, other_team_id, queue.players[0])
+
     else:
+        if queue in CAPTAINS:
+            await CAPTAINS[queue][other_team_id].start(ctx, game, mode, queue.game_id, other_cap)
+
         await ctx.send(content=
-            f"<@{other_cap.id_user}> have to pick **{nb_to_pick}** players.",
+            f"<@{other_cap.id_user}> have to pick **{nb_to_pick}** players.\n"\
+            f"Time left: **{CAPTAINS[queue][other_team_id].time_left}** s",
             embed=Embed(color=0x00FF00, description=str(queue)))
+
     if queue.is_finished():
+        CAPTAINS.pop(queue, None)
         await ctx.send(embed=Embed(color=0x00FF00,
             description=str(queue)))
+
 
         await announce_game(ctx, "", game.queues[mode], mode)
         game.add_game_to_be_played(game.queues[mode], mode)
