@@ -71,6 +71,7 @@ class Init(commands.Cog):
 
             await ctx.send("Elo by Anddy created, init done, use !help !")
 
+
         if ctx.guild.id not in GAMES:
             GAMES[guild.id] = Game(guild.id)
 
@@ -114,6 +115,44 @@ class Init(commands.Cog):
             description="The mode has been deleted, please delete the channel."))
 
 
+
+
+    async def add_rank_aux(self, ctx, mode, name, image_url, from_points, to_points):
+        game = get_game(ctx)
+        from_points = int(from_points)
+        to_points = int(to_points)
+        if to_points < from_points:
+            await ctx.send("To points must be greater than from points")
+            return False
+        if not is_url_image(image_url):
+            await ctx.send("The url doesn't lead to an image. (png jpg jpeg)")
+            return False
+        if name in game.ranks[mode]:
+            await ctx.send("The rank couldn't be added, maybe it already exists.")
+            return False
+        game.ranks[mode][name] = Rank(mode, name, image_url, from_points, to_points)
+        return True
+
+
+    @commands.command()
+    @has_role_or_above('Elo Admin')
+    @check_channel('init')
+    async def set_default_ranks(self, ctx):
+        """Initialize the ranks to the defaults ones provided by Anddy.
+        """
+        game = get_game(ctx)
+        elos = [(0, 900)] + [(x, x + 50) for x in range(900, 1300, 50)] + [(1300, 9999)]
+        names = [f"{name}{i}" for name in ("Platinium", "Diamond", "Master") for i in range(3, 0, -1)] + ["Legend"]
+        with open("rank_links.txt") as f:
+            images = ([elem[:-1] for elem in f.readlines()])
+
+        for mode in game.leaderboards:
+            for (from_p, to_p), name, image in zip(elos, names, images):
+                await self.add_rank_aux(ctx, mode, name, image, from_p, to_p)
+
+        await ctx.send(embed=Embed(color=0x00FF00,
+            description="All the ranks were added ! check !ranks"))
+
     @commands.command()
     @has_role_or_above('Elo Admin')
     @check_channel('init')
@@ -129,20 +168,8 @@ class Init(commands.Cog):
         to_points is the max points of this rank.
         """
         game = get_game(ctx)
-        from_points = int(from_points)
-        to_points = int(to_points)
-        if to_points < from_points:
-            await ctx.send("To points must be greater than from points")
-            return
-        if not is_url_image(image_url):
-            await ctx.send("The url doesn't lead to an image. (png jpg jpeg)")
-            return
-        if name in game.ranks[mode]:
-            await ctx.send("The rank couldn't be added, maybe it already exists.")
-            return
-
-        game.ranks[mode][name] = Rank(mode, name, image_url, from_points, to_points)
-        await ctx.send("The rank was added and the players got updated.")
+        if self.add_rank_aux(ctx, mode, name, image_url, from_points, to_points):
+            await ctx.send("The rank was added and the players got updated.")
 
     @commands.command()
     @check_channel('init')
