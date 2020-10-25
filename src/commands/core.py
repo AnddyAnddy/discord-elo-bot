@@ -60,13 +60,18 @@ class Core(commands.Cog):
             await ctx.send(embed=Embed(color=0x000000,
                 description=f"There's already a played called <@{name}>."))
             return
-        game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
-        await ctx.send(embed=Embed(color=0x00FF00,
-            description=f"<@{name}> has been registered."))
-        num = split_with_numbers(mode)[0]
-        role = discord.utils.get(
-            ctx.guild.roles, name=f"{num}vs{num} Elo Player")
-        await ctx.author.add_roles(role)
+        if len(game.leaderboards[mode]) < game.limit_leaderboards:
+            game.leaderboards[mode][name] = Player(ctx.author.name, ctx.author.id)
+            await ctx.send(embed=Embed(color=0x00FF00,
+                description=f"<@{name}> has been registered."))
+            num = split_with_numbers(mode)[0]
+            role = discord.utils.get(
+                ctx.guild.roles, name=f"{num}vs{num} Elo Player")
+            await ctx.author.add_roles(role)
+        else:
+            await ctx.send(embed=Embed(color=0x000000,
+                description="This server doesn't have premium, hence, it is limited to 10 users only.\n\
+                    Get premium here: https://discord.gg/E2ZBNSx to get unlimited users !"))
 
     @commands.command(aliases=['r_all', 'reg_all'])
     @check_channel('register')
