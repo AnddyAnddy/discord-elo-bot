@@ -38,14 +38,6 @@ class Init(commands.Cog):
                 "layout of your roles, I let you put this new role above "\
                 "normal users.")
 
-        if not discord.utils.get(guild.roles, name="20 games double xp"):
-            for elem in (100, 50, 20):
-                await guild.create_role(name=f"{elem} games double xp",
-                    colour=discord.Colour(0x5AE78E))
-            await ctx.send("Premium roles created. Since I don't know the " \
-                "layout of your roles, I let you put this new role above "\
-                "normal users.")
-
         if not discord.utils.get(guild.categories, name='Elo by Anddy'):
             perms_secret_chan = {
                 guild.default_role:
