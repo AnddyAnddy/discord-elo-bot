@@ -6,8 +6,8 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions
 from GAMES import GAMES
-from queue_elo import Queue, TIMEOUTS
-from player import Player
+from modules.queue_elo import Queue, TIMEOUTS
+from modules.player import Player
 from utils.exceptions import get_player_by_mention
 from utils.exceptions import get_id
 from utils.exceptions import get_total_sec
