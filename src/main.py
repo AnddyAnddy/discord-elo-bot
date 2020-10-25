@@ -14,18 +14,17 @@ from utils.exceptions import PassException, send_error
 
 from modules import game, player, queue_elo, rank, elo, ban
 
-sys.modules['game'] = game
-sys.modules['player'] = player
-sys.modules['queue_elo'] = queue_elo
-sys.modules['rank'] = rank
-sys.modules['elo'] = elo
-sys.modules['ban'] = ban
+
 
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
+# test guild 
+# DISCORD_MAIN_GUILD_ID = 769915335968423997
 DISCORD_MAIN_GUILD_ID = 732326859039178882
-BOT = commands.Bot(command_prefix='!', case_insensitive=True)
+intents = discord.Intents.default()
+intents.members = True
+BOT = commands.Bot(command_prefix='!', case_insensitive=True, intents=intents)
 BOT.load_extension('commands.admin')
 BOT.load_extension('commands.core')
 BOT.load_extension('commands.helper')
@@ -37,7 +36,7 @@ BOT.load_extension('commands.premium')
 
 
 def load_file_to_game(guild_id):
-    """Load the file from ./data/guild_id to Game if exists, return True."""
+    """Load the file from ./data/guild_id to Game if exists."""
     try:
         with open(f"./data/{guild_id}.data", "rb") as file:
             return _pickle.load(file)
@@ -60,7 +59,8 @@ async def ubotdate(ctx):
         for guild in BOT.guilds if "discord" not in guild.name.lower()])
     total_user = sum([len(guild.members) for guild in BOT.guilds])
     await BOT.change_presence(activity=discord.Game(name=f"{len(BOT.guilds)} guilds with {total_user} users"))
-    await ctx.send(embed=Embed(color=0x00FF00,
+    await ctx.send(
+        embed=Embed(color=0x00FF00,
         title="Guilds infos",
         description=res)
     )
