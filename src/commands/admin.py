@@ -157,7 +157,7 @@ class Admin(commands.Cog):
             current_lose_streak]
             The wlr will anyway be calculated at the end.
         """
-        player = get_game(ctx).leaderboard(mode)[int(name[3: -1])]
+        player = get_game(ctx).leaderboards(mode)[int(name[3: -1])]
         stats_name = Player.STATS[1: -2]
         if len(stats) > len(stats_name):
             await ctx.send("Too much arguments ! I'll cancel in case you messed up")

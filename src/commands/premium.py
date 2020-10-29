@@ -27,7 +27,7 @@ class Premium(commands.Cog):
     async def set_premium(ctx):
         game = get_game(ctx)
         game.limit_leaderboards = math.inf
-        time_to_add = 60 * 60 * 24 * 30
+        time_to_add = 60
         if game.date_premium_end == 0:
             game.date_premium_end = time.time() + time_to_add
             print(time.time(), game.date_premium_end)

@@ -22,7 +22,7 @@ class Game:
         self.guild_id = guild_id
         self.available_positions = []
         self.archive = {}
-        self.leaderboards = [{}]
+        self.leaderboards = {}
         self.tmp_leaderboards = {}
         self.limit_leaderboards = 10
         self.undecided_games = {}
@@ -37,11 +37,6 @@ class Game:
         self.map_pick_mode = 0
         self.date_premium_end = 0
         self.elo = Elo()
-
-
-    @property
-    def leaderboards(self):
-        return self.leaderboards[-1]
 
     @property
     def available_modes(self):
@@ -217,7 +212,7 @@ class Game:
         index = i
         end = 20 * start_page
         while i < end and i < len(lst) and index < len(lst):
-            v: Player = lst[index]
+            v = lst[index]
             if v.nb_matches > 20 and key == "wlr":
                 res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key):.2f}\n'
                 i += 1
@@ -225,7 +220,7 @@ class Game:
                 res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {getattr(v, key).strftime("%d/%m/%Y")}\n'
                 i += 1
 
-            elif v.nb_matches > 1 and key != "wlr":
+            elif key != "wlr":
                 res += f'{"0" if i < 9 else ""}{i + 1}) {v.name:<20} {str(getattr(v, key)):>10}\n'
                 i += 1
 

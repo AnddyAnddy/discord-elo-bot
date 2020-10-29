@@ -59,12 +59,12 @@ class Core(commands.Cog):
 
         game = get_game(ctx)
         name = ctx.author.id
-        if name in game.leaderboard(mode):
+        if name in game.leaderboards(mode):
             await ctx.send(embed=Embed(color=0x000000,
                                        description=f"There's already a played called <@{name}>."))
             return
-        if len(game.leaderboard(mode)) < game.limit_leaderboards:
-            game.leaderboard(mode)[name] = Player(ctx.author.name, ctx.author.id)
+        if len(game.leaderboards(mode)) < game.limit_leaderboards:
+            game.leaderboards(mode)[name] = Player(ctx.author.name, ctx.author.id)
             await ctx.send(embed=Embed(color=0x00FF00,
                                        description=f"<@{name}> has been registered."))
             num = split_with_numbers(mode)[0]
@@ -85,8 +85,8 @@ class Core(commands.Cog):
         game = get_game(ctx)
         name = ctx.author.id
         for mode in game.leaderboards:
-            if name not in game.leaderboard(mode):
-                game.leaderboard(mode)[name] = Player(
+            if name not in game.leaderboards(mode):
+                game.leaderboards(mode)[name] = Player(
                     ctx.author.name, ctx.author.id)
             num = int(split_with_numbers(mode)[0])
             role = discord.utils.get(
@@ -220,8 +220,8 @@ class Core(commands.Cog):
         if not new_name:
             new_name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
         for mode in game.leaderboards:
-            if ctx.author.id in game.leaderboard(mode):
-                game.leaderboard(mode)[ctx.author.id].name = new_name
+            if ctx.author.id in game.leaderboards(mode):
+                game.leaderboards(mode)[ctx.author.id].name = new_name
         await ctx.send(f"You have been renamed to {new_name}")
 
     @commands.command(aliases=['jw'])
