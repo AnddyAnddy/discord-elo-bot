@@ -30,9 +30,9 @@ load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 # test guild 
-DISCORD_MAIN_GUILD_ID = 769915335968423997
+# DISCORD_MAIN_GUILD_ID = 769915335968423997
 # real guild
-# DISCORD_MAIN_GUILD_ID = 732326859039178882
+DISCORD_MAIN_GUILD_ID = 732326859039178882
 intents = discord.Intents.default()
 intents.members = True
 BOT: Bot = commands.Bot(command_prefix='!', case_insensitive=True, intents=intents)
