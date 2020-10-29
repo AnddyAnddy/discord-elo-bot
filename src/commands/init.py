@@ -253,6 +253,13 @@ class Init(commands.Cog):
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description=f"The pick mode is set to: {pick_modes[pick_mode]}."))
 
+    @commands.command()
+    @check_channel('init')
+    @is_arg_in_modes()
+    @commands.guild_only()
+    async def new_season(self, ctx):
+        game: Game = get_game(ctx)
+
 
 def setup(bot):
     bot.add_cog(Init(bot))

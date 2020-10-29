@@ -17,7 +17,7 @@ from src.modules.game import Game
 from src.utils.exceptions import PassException, send_error
 from src.utils.utils import build_other_page
 
-sys.modules['modules'] = src.modules
+sys.modules['src.classes'] = src.modules
 sys.modules['modules.game'] = game
 sys.modules['modules.player'] = player
 sys.modules['modules.queue_elo'] = queue_elo
@@ -161,7 +161,6 @@ async def on_command_error(ctx, error):
     elif hasattr(error, "original") and isinstance(error.original, PassException):
         pass
     else:
-        print(ctx)
         print(ctx.invoked_with, ctx.guild, datetime.now().strftime("%d %h %I h %M"))
         try:
             await discord.utils.get(ctx.guild.channels, name="bugs") \
@@ -169,8 +168,7 @@ async def on_command_error(ctx, error):
             raise error
         except AttributeError:
             await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
-        return
-
+            raise error
     try:
         await ctx.author.send(embed)
         await ctx.message.delete(delay=3)

@@ -63,7 +63,7 @@ class InfoStats(commands.Cog):
         player = await get_player_by_mention(ctx, mode, mention) if mention \
             else await get_player_by_id(ctx, mode, ctx.author.id)
 
-        pos = get_player_lb_pos(game.leaderboards(mode), player)
+        pos = get_player_lb_pos(game.leaderboard(mode), player)
         await ctx.send(embed=Embed(color=0x00FF00,
                                    title=game.get_rank_name(mode, player.elo, player),
                                    description=str(player))
