@@ -1,7 +1,6 @@
-from random import randint
 
 
-class Rank():
+class Rank:
     def __init__(self, mode, name, url, min_points, max_points):
         self.mode = mode
         self.name = name

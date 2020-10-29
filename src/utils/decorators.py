@@ -1,11 +1,12 @@
 import discord
-from utils.utils import list_to_int, is_url_image
 from discord.ext import commands
-from utils.exceptions import get_game
-from utils.exceptions import get_channel_mode
+
+from src.utils.exceptions import get_channel_mode
+from src.utils.exceptions import get_game
+from src.utils.utils import list_to_int, is_url_image
 
 
-def is_arg_in_modes(games):
+def is_arg_in_modes():
     def predicate(ctx):
         args = ctx.message.content.split(' ')
         if len(args) < 2:
@@ -30,7 +31,7 @@ def check_category(*names):
             to_be_cat = discord.utils.get(guild.categories, name=name)
             if to_be_cat is None:
                 raise ValueError(
-                    f"The category {name} doesn't exist or I can't see it.")
+                    f"The category {name} does not exist or I can't see it.")
             if ctx_cat == to_be_cat:
                 return True
         raise commands.errors.BadArgument(
@@ -47,7 +48,7 @@ def check_channel(name):
         to_be_channel = discord.utils.get(guild.channels, name=name)
         if to_be_channel is None:
             raise ValueError(
-                f"The channel {name} doesn't exist or I can't see it")
+                f"The channel {name} does not exist or I can't see it")
         if ctx_channel != to_be_channel:
             raise commands.errors.BadArgument(
                 f"You should write this command in #{name}.")
@@ -63,7 +64,7 @@ def check_channel(name):
 #     return commands.check(predicate)
 
 
-def rank_update(GAMES, lst_pos_args):
+def rank_update(games, lst_pos_args):
     def args_at_pos_digits(args):
         return all(i < len(args) and args[i].isdigit() for i in lst_pos_args)
 
@@ -75,7 +76,7 @@ def rank_update(GAMES, lst_pos_args):
         return is_url_image(args[2])
 
     def name_in_rank(ctx, args):
-        return args[1] not in GAMES[ctx.guild.id].ranks[int(args[0])]
+        return args[1] not in games[ctx.guild.id].ranks[int(args[0])]
 
     def predicate(ctx):
         args = ctx.message.content.split()[1:]
@@ -85,14 +86,14 @@ def rank_update(GAMES, lst_pos_args):
     return commands.check(predicate)
 
 
-def has_role_or_above(roleName):
+def has_role_or_above(role_name):
     def predicate(ctx):
-        role = discord.utils.get(ctx.guild.roles, name=roleName)
+        role = discord.utils.get(ctx.guild.roles, name=role_name)
         if role is None or ctx.author.top_role >= role:
             return True
         raise commands.errors.BadArgument(
             f"You don't have the permission to run this command.\n"
-            f"You must be at least {roleName}."
+            f"You must be at least {role_name}."
         )
     return commands.check(predicate)
 
@@ -118,7 +119,7 @@ def check_captain_mode(games):
             return False
         queue = game.queues[mode]
         if queue.mode < 2:
-            raise commands.errors.BadArgument("This mode doesn't allow picks")
+            raise commands.errors.BadArgument("This mode does not allow picks")
         if not queue.has_queue_been_full:
             raise commands.errors.BadArgument(
                 "The pick session hasn't started")

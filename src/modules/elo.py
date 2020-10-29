@@ -1,7 +1,7 @@
 """Elo."""
 
 
-class Elo():
+class Elo:
     """Docstring for elo."""
 
     def __init__(self):
@@ -38,7 +38,7 @@ class Elo():
     def update_elo(self, queue, winners):
         """Update the elo of every players.
 
-        :param: queue must be a queue in undecided games
+        :param: queue must be a queue in embed_undecided games
         :param: winners must be the id of the winning team [1, 2]
         """
         winners -= 1
@@ -53,18 +53,6 @@ class Elo():
                 queue.red_team[i].win_lose_update(self.red_rating, not winners)
                 queue.blue_team[i].win_lose_update(self.blue_rating, winners)
 
-
-    def undo_elo(self, queue, winners, rating):
-        """Reversed operation of update_elo."""
-        winners -= 1
-        for i in range(len(queue.red_team)):
-            if winners == -1:
-                queue.red_team[i].draw_update(-1)
-                queue.blue_team[i].draw_update(-1)
-            else:
-                queue.red_team[i].win_lose_update(rating, not winners, -1)
-                queue.blue_team[i].win_lose_update(-1 * rating, winners, -1)
-
     def update(self, queue, winners):
         """Update the stats after a game for every player."""
         self.handle_elo_calc(queue)
@@ -78,3 +66,15 @@ def get_average_rank(team):
     team must contain object having elo attribute.
     """
     return sum(p.elo for p in team) / len(team)
+
+
+def undo_elo(queue, winners, rating):
+    """Reversed operation of update_elo."""
+    winners -= 1
+    for i in range(len(queue.red_team)):
+        if winners == -1:
+            queue.red_team[i].draw_update(-1)
+            queue.blue_team[i].draw_update(-1)
+        else:
+            queue.red_team[i].win_lose_update(rating, not winners, -1)
+            queue.blue_team[i].win_lose_update(-1 * rating, winners, -1)

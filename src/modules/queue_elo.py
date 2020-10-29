@@ -1,15 +1,20 @@
 """Simulation of queue."""
-import time
 import asyncio
-from random import shuffle
+import time
 from random import choice
 from random import sample
-from utils.exceptions import send_error
-from utils.exceptions import PassException
-from utils.exceptions import get_channel_mode
+from random import shuffle
+
 from discord import Embed
-TIMEOUTS = {} # player: task
-CAPTAINS = {} # queue: captains
+
+from src.utils.exceptions import PassException
+from src.utils.exceptions import get_channel_mode
+from src.utils.exceptions import send_error
+
+TIMEOUTS = {}  # player: task
+CAPTAINS = {}  # queue: captains
+
+
 class Captain:
     def __init__(self, time_left):
         self.time_left = time_left
@@ -25,22 +30,21 @@ class Captain:
         self.time_left -= int(now - self.last_activity)
         self.last_activity = now
         self.timeout.cancel()
-        # self.timeout = asyncio.ensure_future(self.timeout_cancel(ctx, game, mode, id, player))
 
     async def cancel(self, ctx, game, mode, id, player):
-        await asyncio.sleep(self.time_left)
+        await asyncio.sleep(self.time_left - 10)
+        await ctx.send(f"You have 10 secs left to pick <@{player.id_user}.")
+        await asyncio.sleep(10)
         if game.cancel(mode, id):
             await ctx.send(embed=Embed(title="Game automatically canceled",
-                color=0x000000,
-                description=f"<@{player.id_user}> couldn't pick in 2:30 mins."))
+                                       color=0x000000,
+                                       description=f"<@{player.id_user}> could not pick in 2:30 mins."))
 
 
-
-
-
-class Queue():
+class Queue:
     """Docstring for Queue."""
-    def __init__(self, max_queue, mode, mapmode, last_id=0):
+
+    def __init__(self, max_queue, mode, map_mode, last_id=0):
         """Initialize the queue."""
         if max_queue < 2 or max_queue % 2 == 1:
             raise ValueError("The max queue must be an even number >= 2")
@@ -50,11 +54,11 @@ class Queue():
         self.max_queue = max_queue
         self.has_queue_been_full = False
         self.modes = [self.random_team, self.balanced_random,
-            self.random_cap, self.best_cap, self.random_cap,
-            self.best_cap, self.top_bottom]
-        self.pick_fonction = self.modes[mode]
+                      self.random_cap, self.best_cap, self.random_cap,
+                      self.best_cap, self.top_bottom]
+        self.pick_function = self.modes[mode]
         self.mode = mode
-        self.mapmode = mapmode
+        self.map_mode = map_mode
         self.reacted = {0}
         self.game_id = last_id + 1
 
@@ -72,15 +76,15 @@ class Queue():
             raise PassException()
         self.players.append(player)
         TIMEOUTS[player] = asyncio.ensure_future(self.timeout_player(player, ctx))
-        res = f'<@{player.id_user}> has been added to the queue. '\
-            f'**[{len(self.players)}/{int(self.max_queue)}]**'
+        res = f'<@{player.id_user}> has been added to the queue. ' \
+              f'**[{len(self.players)}/{int(self.max_queue)}]**'
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
             res += self.on_queue_full(game, get_channel_mode(ctx), TIMEOUTS)
             if self.mode >= 2:
                 CAPTAINS[self] = {1: Captain(120), 2: Captain(100)}
                 await CAPTAINS[self][1].start(ctx, game, get_channel_mode(ctx),
-                    self.game_id, self.red_team[0])
+                                              self.game_id, self.red_team[0])
 
         return res
 
@@ -99,8 +103,8 @@ class Queue():
                 self.players.pop()
             await send_error(ctx, "One or more of your players cannot be added,\n")
             raise PassException()
-        await ctx.send(embed=Embed(color=0x00FF00, description=\
-            f"Your team: {team_to_player_id(players)} was correctly added."))
+        await ctx.send(embed=Embed(color=0x00FF00, description=
+        f"Your team: {team_to_player_id(players)} was correctly added."))
         res = ""
         if self.is_full():
             res += "\nQueue is full, let's start the next session.\n"
@@ -123,13 +127,13 @@ class Queue():
         if player in self.players:
             self.remove_player(player, True)
             await ctx.send(f"<@{player.id_user}>",
-                embed=Embed(color=0xF1F360,
-                description=f"{player.name} was removed from the queue after a timeout. "\
-                    f'**[{len(self.players)} / {int(self.max_queue)}]**'))
+                           embed=Embed(color=0xF1F360,
+                                       description=f"{player.name} was removed from the queue after a timeout. "
+                                                   f'**[{len(self.players)} / {int(self.max_queue)}]**'))
 
-
-    def on_queue_full(self, game, mode, timeouts={}):
+    def on_queue_full(self, game, mode, timeouts=None):
         """Set a game."""
+        timeouts = {} or timeouts
         self.has_queue_been_full = True
         for player, timer in timeouts.items():
             if player in self.players:
@@ -138,11 +142,11 @@ class Queue():
         for p in self.players:
             timeouts.pop(p, None)
 
-        self.pick_fonction()
+        self.pick_function()
         self.map_pick(game, mode)
-        return f'Game n°{self.game_id}:\n' +\
-            message_on_queue_full(self.players, self.red_team,
-                self.blue_team, self.max_queue)
+        return f'Game n°{self.game_id}:\n' + \
+               message_on_queue_full(self.players, self.red_team,
+                                     self.blue_team, self.max_queue)
 
     def is_finished(self):
         """Return true if the teams are full based on the max_queue."""
@@ -154,7 +158,7 @@ class Queue():
         If the mode is random then the list must be randomized first.
         If the mode is balanced then the list must be sorted by elo first.
         """
-        while self.players != []:
+        while self.players:
             self.red_team.append(self.players.pop())
             self.blue_team.append(self.players.pop())
 
@@ -188,25 +192,23 @@ class Queue():
         for _ in range(len(self.players)):
             self.red_team.append(self.players.pop())
 
-
     def map_pick(self, game, mode):
         """Do the process of picking a map."""
-        if self.mapmode == 0 or not game.available_maps:
+        if self.map_mode == 0 or not game.available_maps:
             return None
-        if self.mapmode == 1:
+        if self.map_mode == 1:
             name = choice(list(game.available_maps))
             game.add_map_to_archive(mode, self.game_id, name, game.available_maps[name])
             # game.maps_archive[mode][self.game_id] =\
             #     [choice(list(game.available_maps))]
         else:
 
-            game.maps_archive[mode][self.game_id] =\
+            game.maps_archive[mode][self.game_id] = \
                 sample(list(game.available_maps),
-                    min(3, len(game.available_maps)))
+                       min(3, len(game.available_maps)))
             for i in range(len(game.maps_archive[mode][self.game_id])):
                 elem = game.maps_archive[mode][self.game_id][i]
                 game.maps_archive[mode][self.game_id][i] = (elem, game.available_maps[elem])
-
 
     async def get_captain_team(self, ctx, player):
         """Return 1 if red, 2 if blue, 0 if none."""
@@ -225,10 +227,9 @@ class Queue():
         team = self.red_team if team_id == 1 else self.blue_team
         try:
             team.append(self.players.pop(self.players.index(player)))
-        except Exception as e:
-            await send_error(ctx, f"Couldn't find <@{player.id_user}> here.")
+        except Exception:
+            await send_error(ctx, f"Could not find <@{player.id_user}> here.")
             raise PassException()
-
 
     def ping_everyone(self):
         """Ping everyone present in the queue."""
@@ -236,8 +237,8 @@ class Queue():
 
     def player_in_winners(self, winner, player):
         """Return True if the player won that game."""
-        return winner == 1 and player in self.red_team or\
-        winner == 2 and player in self.blue_team
+        return winner == 1 and player in self.red_team or \
+               winner == 2 and player in self.blue_team
 
     def add_reacted(self, id):
         """Add to self.reacted people who reacted to the current queue."""
@@ -264,7 +265,6 @@ class Queue():
                                            self.blue_team,
                                            self.max_queue)
 
-
     def __contains__(self, elem):
         return elem in self.players or elem in self.red_team or elem in self.blue_team
 
@@ -276,6 +276,7 @@ def announce_format_game(queue):
     res += f"You need at least **{queue.max_queue // 2 + 2} reactions** to 🟢 🔴 🔵 ❌ "
     res += "or **1 moderator** to have your game submitted (draw, red, blue, cancel)"
     return res
+
 
 def display_team(team, team_name, max_queue):
     """Show the player list of a specific team."""

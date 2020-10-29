@@ -1,9 +1,8 @@
 
-from discord import Embed
 from discord.ext import commands
-from main import GAMES
-from utils.utils import cmds_embed
-from utils.utils import add_scroll
+
+from src.utils.utils import add_scroll
+from src.utils.utils import cmds_embed
 
 
 class Helper(commands.Cog):
@@ -11,6 +10,7 @@ class Helper(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['cmds'])
+    @commands.guild_only()
     async def all_commands(self, ctx):
         """Show every command."""
 
