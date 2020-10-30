@@ -40,7 +40,7 @@ class InfoStats(commands.Cog):
         """Show the current limit to amount of users."""
         game = get_game(ctx)
         msg = '\n'.join([f"{mode}: **[{len(users)} / {game.limit_leaderboards}]** players"
-                         for mode, users in game.leaderboards.items()])
+                         for mode, users in game.get_leaderboards().items()])
         await ctx.send(embed=Embed(color=0x00FF00,
                                    title="Amount of users",
                                    description=msg

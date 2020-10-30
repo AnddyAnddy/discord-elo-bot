@@ -38,6 +38,12 @@ class Game:
         self.date_premium_end = 0
         self.elo = Elo()
 
+    def get_leaderboards(self):
+        if not hasattr(self, "limit_leaderboards"):
+            setattr(self, "limit_leaderboards", 10)
+            setattr(self, "tmp_leaderboards", {})
+        return self.tmp_leaderboards if self.limit_leaderboards == 10 else self.leaderboards
+
     @property
     def available_modes(self):
         """Return the available modes of this guild."""
@@ -456,6 +462,5 @@ class Game:
         if not hasattr(self, "date_premium_end"):
             setattr(self, "date_premium_end", 0)
         if time.time() >= self.date_premium_end:
-            print(time.time(), self.date_premium_end)
             self.limit_leaderboards = 10
             self.date_premium_end = 0

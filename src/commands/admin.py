@@ -181,13 +181,13 @@ class Admin(commands.Cog):
         """Remove people that aren't in the server anymore."""
         game = get_game(ctx)
         guild = self.bot.get_guild(ctx.guild.id)
-        start = sum(len(v) for mode, v in game.leaderboards.items())
+        start = sum(len(v) for mode, v in game.get_leaderboards().items())
         for mode in game.available_modes:
             game.leaderboard[mode] = {
                 id: player for id, player in game.leaderboard(mode).items()
                 if guild.get_member(id) is not None
             }
-        end = sum(len(v) for mode, v in game.leaderboards.items())
+        end = sum(len(v) for mode, v in game.get_leaderboards().items())
 
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description=f"You kicked {start - end} members from the leaderboards"))

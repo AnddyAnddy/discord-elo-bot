@@ -93,7 +93,7 @@ def build_other_page(bot, game, reaction, user):
         return getattr(game, embed["function"])(embed["mode"],
                                                 startpage=start_page)
     elif embed["function"] == "embed_history":
-        player = game.leaderboards[embed["mode"]][embed["id"]]
+        player = game.leaderboard(embed["mode"])[embed["id"]]
         return getattr(game, embed["function"])(embed["mode"],
                                                 player, startpage=start_page)
 
