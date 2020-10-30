@@ -91,11 +91,11 @@ def build_other_page(bot, game, reaction, user):
                                       start_page)
     elif embed["function"] in ["embed_archived", "embed_undecided", "embed_canceled"]:
         return getattr(game, embed["function"])(embed["mode"],
-                                                startpage=start_page)
+                                                start_page=start_page)
     elif embed["function"] == "embed_history":
         player = game.leaderboard(embed["mode"])[embed["id"]]
         return getattr(game, embed["function"])(embed["mode"],
-                                                player, startpage=start_page)
+                                                player, start_page=start_page)
 
     elif embed["function"] == "commands":
         return cmds_embed(bot, start_page)
