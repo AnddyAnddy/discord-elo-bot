@@ -144,7 +144,7 @@ class Init(commands.Cog):
         with open("rank_links.txt") as f:
             images = ([elem[:-1] for elem in f.readlines()])
 
-        for mode in game.leaderboards:
+        for mode in game.get_leaderboards():
             for (from_p, to_p), name, image in zip(elo_spread, names, images):
                 await self.add_rank_aux(ctx, mode, name, image, from_p, to_p)
 

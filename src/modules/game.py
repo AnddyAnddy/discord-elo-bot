@@ -247,8 +247,10 @@ class Game:
             return False
         if not hasattr(self, "tmp_leaderboards"):
             setattr(self, "tmp_leaderboards", {})
-        self.tmp_leaderboards[mode] = {}
-        self.leaderboards[mode] = {}
+        if self.limit_leaderboards == 10:
+            self.tmp_leaderboards[mode] = {}
+        else:
+            self.leaderboards[mode] = {}
         self.undecided_games[mode] = {}
         self.archive[mode] = {}
         self.ranks[mode] = {}
@@ -261,7 +263,7 @@ class Game:
 
     def remove_mode(self, mode):
         """Totally delete the mode in the data."""
-        self.leaderboards.pop(mode)
+        self.get_leaderboards().pop(mode)
         self.queues.pop(mode)
         self.undecided_games.pop(mode, None)
 
@@ -289,7 +291,7 @@ class Game:
 
     def erase_player_from_leaderboards(self, name):
         """Remove the player from every leaderboards."""
-        for mode in self.leaderboards:
+        for mode in self.get_leaderboards():
             self.leaderboard(mode).pop(name, None)
 
     def all_bans(self):

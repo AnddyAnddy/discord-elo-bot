@@ -84,7 +84,7 @@ class Core(commands.Cog):
         """Register to every available modes in one command."""
         game = get_game(ctx)
         name = ctx.author.id
-        for mode in game.leaderboards:
+        for mode in game.get_leaderboards():
             if name not in game.leaderboard(mode):
                 game.leaderboard(mode)[name] = Player(
                     ctx.author.name, ctx.author.id)
@@ -219,7 +219,7 @@ class Core(commands.Cog):
         game = get_game(ctx)
         if not new_name:
             new_name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
-        for mode in game.leaderboards:
+        for mode in game.get_leaderboards():
             if ctx.author.id in game.leaderboard(mode):
                 game.leaderboard(mode)[ctx.author.id].name = new_name
         await ctx.send(f"You have been renamed to {new_name}")

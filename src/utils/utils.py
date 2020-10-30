@@ -61,7 +61,7 @@ def get_start_page(reaction, embed):
 
 def add_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
-    for mode in game.leaderboards:
+    for mode in game.get_leaderboards():
         for player in game.leaderboard(mode):
             if not hasattr(game.leaderboard(mode)[player], attr_name):
                 setattr(game.leaderboard(mode)[player], attr_name, value)
@@ -69,7 +69,7 @@ def add_attribute(game, attr_name, value):
 
 def reset_attribute(game, attr_name, value):
     """Add an attribute to every player when I manually update."""
-    for mode in game.leaderboards:
+    for mode in game.get_leaderboards():
         for player in game.leaderboard(mode):
             setattr(game.leaderboard(mode)[player], attr_name, value)
 
