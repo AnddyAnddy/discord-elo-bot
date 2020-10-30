@@ -169,10 +169,10 @@ async def on_command_error(ctx, error):
             raise error
         except AttributeError:
             await ctx.send(f"{ctx.invoked_with}: \n{error}\n")
-        return
+            raise error
 
     try:
-        await ctx.author.send(embed)
+        await ctx.author.send(embed=embed)
         await ctx.message.delete(delay=3)
 
     except Exception:
