@@ -36,8 +36,8 @@ def get_game(ctx):
 
 async def get_player_by_id(ctx, mode, id):
     game = get_game(ctx)
-    if str(id).isdigit() and int(id) in game.leaderboards[mode]:
-        return game.leaderboards[mode][int(id)]
+    if str(id).isdigit() and int(id) in game.leaderboard(mode):
+        return game.leaderboard(mode)[int(id)]
 
     await send_error(ctx, IncorrectName(f"<@{id}>"))
     raise PassException()

@@ -1,4 +1,5 @@
 import discord
+import random
 from discord import Embed
 from discord.ext import commands
 
@@ -89,9 +90,16 @@ class Core(commands.Cog):
                 game.leaderboard(mode)[name] = Player(
                     ctx.author.name, ctx.author.id)
             num = int(split_with_numbers(mode)[0])
-            role = discord.utils.get(
-                ctx.guild.roles, name=f"{num}vs{num} Elo Player")
-            await ctx.author.add_roles(role)
+
+            role = discord.utils.get(ctx.guild.roles, name=f"{num}vs{num} Elo Player")
+            # role may have been deleted...
+            if role is not None:
+                await ctx.author.add_roles(role)
+            else:
+                await ctx.message.guild.create_role(name=f"{num}vs{num} Elo Player",
+                                                    colour=discord.Colour(random.randint(0, 0xFFFFFF)))
+                await ctx.author.add_roles(role)
+
         await ctx.send(embed=Embed(color=0x00FF00,
                                    description=f"<@{name}> has been registered for every mode."))
 

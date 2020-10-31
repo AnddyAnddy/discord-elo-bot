@@ -236,7 +236,7 @@ async def auto_submit_reactions(reaction, user, game, removed=False):
             game.cancel(mode, id)
             await reaction.message.channel.send(
                 embed=Embed(color=0x00FF00,
-                            description=f"The game {id} was embed_canceled"))
+                            description=f"The game {id} was canceled"))
         await reaction.message.add_reaction("✅")
 
     queue.add_reacted(user.id)

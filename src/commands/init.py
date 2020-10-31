@@ -91,10 +91,8 @@ class Init(commands.Cog):
             if num.isdigit() and int(num) > 0 and vs_mode in ("s", "t"):
                 if get_game(ctx).add_mode(mode):
                     guild = ctx.message.guild
-                    await create_mode_discord(num,
-                                              {"s": "Solo elo", "t": "Teams elo"}[vs_mode], ctx)
-                    if not discord.utils.get(guild.roles,
-                                             name=f"{num}vs{num} Elo Player"):
+                    await create_mode_discord(num, {"s": "Solo elo", "t": "Teams elo"}[vs_mode], ctx)
+                    if not discord.utils.get(guild.roles, name=f"{num}vs{num} Elo Player"):
                         await guild.create_role(name=f"{num}vs{num} Elo Player",
                                                 colour=discord.Colour(random.randint(0, 0xFFFFFF)))
                         await ctx.send(f"{num}vs{num} Elo Player role created")

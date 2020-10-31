@@ -33,7 +33,7 @@ class Captain:
 
     async def cancel(self, ctx, game, mode, id, player):
         await asyncio.sleep(self.time_left - 10)
-        await ctx.send(f"You have 10 secs left to pick <@{player.id_user}.")
+        await ctx.send(f"You have 10 secs left to pick <@{player.id_user}>.")
         await asyncio.sleep(10)
         if game.cancel(mode, id):
             await ctx.send(embed=Embed(title="Game automatically canceled",
