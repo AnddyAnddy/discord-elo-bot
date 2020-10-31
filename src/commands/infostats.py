@@ -15,15 +15,15 @@ class InfoStats(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['lb'])
+    @commands.guild_only()
     # @set_default_mode
     @is_arg_in_modes()
     @check_channel('info_chat')
-    @commands.guild_only()
     async def leaderboard(self, ctx, mode, stat_key="elo"):
-        """Show current embed_leaderboard.
+        """Show current leaderboard.
 
         Example: !lb 1 wins
-        Will show the embed_leaderboard of the mode 1vs1 based on the wins.
+        Will show the leaderboard of the mode 1vs1 based on the wins.
         [mode] can be any mode in !modes.
         [stats key] can be any stat in !info. e.g:
         name, elo, wins, losses, nb_matches, wlr
@@ -69,7 +69,6 @@ class InfoStats(commands.Cog):
                                    title=game.get_rank_name(mode, player.elo, player),
                                    description=str(player))
                        .set_thumbnail(url=game.get_rank_url(mode, player.elo, player))
-                       .set_footer(text=f"Position on embed_leaderboard: {pos}"))
                        .set_footer(text=f"Position on leaderboard: {pos}"))
 
     @commands.command(aliases=['match'])
@@ -187,7 +186,7 @@ class InfoStats(commands.Cog):
         """Show who you played the most with.
 
         Example: !most losses @Anddy with
-        Will show the embed_leaderboard of the people with who you lost the most.
+        Will show the leaderboard of the people with who you lost the most.
         order_key must € [games, draws, wins, losses]
         is the key the table will be ordered by."""
         game = get_game(ctx)
