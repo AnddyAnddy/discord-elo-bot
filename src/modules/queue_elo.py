@@ -70,7 +70,7 @@ class Queue:
         """Add a player in the queue."""
         if player in self.players:
             await send_error(ctx, "You can't join twice, maybe you're looking for !l.")
-            return
+            raise PassException()
         if self.is_full() or self.has_queue_been_full:
             await send_error(ctx, f"Queue n° {self.game_id} is full...")
             raise PassException()
