@@ -15,6 +15,7 @@ class InfoStats(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['lb'])
+    # @set_default_mode
     @is_arg_in_modes()
     @check_channel('info_chat')
     @commands.guild_only()
@@ -69,6 +70,7 @@ class InfoStats(commands.Cog):
                                    description=str(player))
                        .set_thumbnail(url=game.get_rank_url(mode, player.elo, player))
                        .set_footer(text=f"Position on embed_leaderboard: {pos}"))
+                       .set_footer(text=f"Position on leaderboard: {pos}"))
 
     @commands.command(aliases=['match'])
     @check_channel('info_chat')

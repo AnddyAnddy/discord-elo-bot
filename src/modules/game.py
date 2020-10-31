@@ -71,7 +71,7 @@ class Game:
         if mode not in self.available_modes:
             return "Mode isn't in available modes, check !modes", False
         if id not in self.undecided_games[mode]:
-            return "Id of the game isn't in embed_undecided games, check !u [mode]", False
+            return "Id of the game isn't in undecided games, check !u [mode]", False
         if winner not in range(3):
             return "The winner must be 0(draw), 1 (red) or 2 (blue)", False
         queue = self.undecided_games[mode][id]
@@ -91,11 +91,11 @@ class Game:
             return "The game couldn't be found"
         self.undecided_games[mode][id] = game[0]
         undo_elo(game[0], game[1], game[2])
-        return f"The game has been undone, the stats got embed_canceled " \
-               f"{game[2]} elo points embed_canceled."
+        return f"The game has been undone, the stats got canceled " \
+               f"{game[2]} elo points canceled."
 
     def add_game_to_be_played(self, queue, mode):
-        """Add a game to embed_undecided games."""
+        """Add a game to undecided games."""
         last_id = self.queues[mode].game_id
         self.undecided_games[mode][last_id] = queue
         self.queues[mode] = Queue(2 * int(split_with_numbers(mode)[0]),
@@ -103,7 +103,7 @@ class Game:
         return "The teams have been made, a new queue is starting!"
 
     def cancel(self, mode, id):
-        """Cancel the game and return true if it was correctly embed_canceled."""
+        """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
             self.queues[mode] = Queue(
@@ -117,7 +117,7 @@ class Game:
         return True
 
     def uncancel(self, mode, id):
-        """Remove the game to cancel and put it in embed_undecided.
+        """Remove the game to cancel and put it in undecided.
 
         Slightly similar to undo"""
         game = self.cancels[mode].pop(id, None)
@@ -127,20 +127,20 @@ class Game:
         return "The game has been uncanceled"
 
     def embed_canceled(self, mode, start_page=1):
-        """Return an embed of all embed_canceled games."""
+        """Return an embed of all canceled games."""
         nb_pages = 1 + len(self.cancels[mode]) // 20
 
         return Embed(color=0x00FF00,
                      description="```\n - " + '\n - '.join([f"Id: {str(id)}"
                                                             for id in sorted(self.cancels[mode])
                                                             [20 * (start_page - 1): 20 * start_page]]) + "```") \
-            .add_field(name="name", value="embed_canceled") \
+            .add_field(name="name", value="canceled") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
 
     def embed_undecided(self, mode, start_page=1):
-        """Return string of embed_undecided game ids."""
+        """Return string of undecided game ids."""
         nb_pages = 1 + len(self.undecided_games[mode]) // 25
         return Embed(color=0x00FF00,
                      description=f"\n```{'Id':5} {'Red captain':20} {'Blue captain':20}\n"
@@ -149,7 +149,7 @@ class Game:
                                               f"{queue.blue_team[0].name:20}"
                                               for id, queue in sorted(self.undecided_games[mode].items())
                                               [25 * (start_page - 1): 25 * start_page] if queue.red_team]) + "```") \
-            .add_field(name="name", value="embed_undecided") \
+            .add_field(name="name", value="undecided") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
@@ -168,13 +168,13 @@ class Game:
                                               for id, (queue, winner, elo_boost) in
                                               sorted(self.archive[mode].items())[current_page:next_page]]) +
                                  "\n```") \
-            .add_field(name="name", value="embed_archived") \
+            .add_field(name="name", value="archived") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
 
     def embed_history(self, mode, player, start_page=1):
-        """Return the string showing the embed_history of the chosen mode."""
+        """Return the string showing the history of the chosen mode."""
         len_page = 10
         current_page = len_page * (start_page - 1)  # current page
         next_page = len_page * start_page  # next page
@@ -192,23 +192,20 @@ class Game:
                                                          for id, (queue, winner, elo) in
                                                          history[current_page:next_page]]) +
                                  "\n```") \
-            .add_field(name="name", value="embed_history") \
+            .add_field(name="name", value="history") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .add_field(name="id", value=player.id_user) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
 
     def embed_leaderboard(self, mode, key="elo", start_page=1):
-        """Return the string showing the embed_leaderboard of the chosen mode."""
-        if mode not in self.available_modes:
-            return "Empty embed_leaderboard."
-
+        """Return the string showing the leaderboard of the chosen mode."""
         res = '```\n'
         if key not in Player.STATS:
             res += "Argument not found so imma show you the elo lb !\n"
             key = "elo"
         if key == "wlr":
-            res += "Only showing > 20 games played for wlr embed_leaderboard\n"
+            res += "Only showing > 20 games played for wlr leaderboard\n"
 
         lst = sorted(self.leaderboard(mode).values(),
                      reverse=True,
@@ -234,9 +231,11 @@ class Game:
 
         res += '```'
         nb_pages = 1 + len(self.leaderboard(mode)) // 20
+
         return Embed(color=0x00AAFF,
-                     title=f"**Elo by Anddy {mode}vs{mode} embed_leaderboard**",
-                     description=res).add_field(name="name", value="embed_leaderboard") \
+                     title=f"**Elo by Anddy {mode}vs{mode} leaderboard**",
+                     description=res)\
+            .add_field(name="name", value="leaderboard") \
             .add_field(name="key", value=key) \
             .add_field(name="mode", value=mode) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
@@ -319,7 +318,7 @@ class Game:
                 self.add_archive(mode, id, winner)
 
     def get_game(self, mode, id):
-        """Try to find the game in embed_archived, embed_undecided or embed_canceled dict."""
+        """Try to find the game in archived, undecided or canceled dict."""
         if id in self.archive[mode]:
             return self.archive[mode][id], 0
         if id in self.cancels[mode]:
@@ -372,7 +371,7 @@ class Game:
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
 
     def add_map(self, emoji, name):
-        """Add the map in the available embed_maps."""
+        """Add the map in the available maps."""
         if emoji not in UNICODE_EMOJI:
             return "The emoji couldn't be found."
         if name in self.available_maps or emoji in self.available_maps.values():
@@ -382,11 +381,11 @@ class Game:
         return f"{emoji} {name} was correctly added !"
 
     def delete_map(self, name):
-        """Delete the map from the available embed_maps."""
+        """Delete the map from the available maps."""
         if name not in self.available_maps:
-            return f"The map does not exist with that name {name}, check !embed_maps"
+            return f"The map does not exist with that name {name}, check !maps"
         emoji = self.available_maps.pop(name, None)
-        return f"{emoji} {name} was correctly removed from the embed_maps."
+        return f"{emoji} {name} was correctly removed from the maps."
 
     def embed_maps(self, start_page=1):
         """Return the available_maps."""
@@ -401,19 +400,19 @@ class Game:
                                             sorted(self.available_maps.items())[current_page:next_page]])
                                  + "```"
                      ) \
-            .add_field(name="name", value="embed_maps") \
+            .add_field(name="name", value="maps") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=0) \
             .set_footer(text=f"[ {start_page} / {nb_pages} ]")
 
     def add_map_to_archive(self, mode, id, name, emoji):
-        """Add the map to the map to the played embed_maps.
+        """Add the map to the map to the played maps.
 
         Called on game announce."""
         self.maps_archive[mode][id] = (name, emoji)
 
     def delete_map_from_archive(self, mode, id):
-        """Delete the map from the played embed_maps.
+        """Delete the map from the played maps.
 
         Called on game cancel."""
         self.maps_archive[mode].pop(id, None)
@@ -424,7 +423,7 @@ class Game:
             return Embed(color=0x00FF00,
                          title="Only one map",
                          description=f"The bot randomly picked the map ** {emoji} {name}**")
-        return Embed(title="Lobby embed_maps",
+        return Embed(title="Lobby maps",
                      color=0x00FF00,
                      description="```\n" +
                                  '\n'.join([f"{str(emoji)} {name:40} "
@@ -433,7 +432,7 @@ class Game:
                                  f"We need **{2 * int(split_with_numbers(mode)[0]) + 1}** total votes or a map getting "
                                  f"**{int(split_with_numbers(mode)[0]) + 2}** votes to keep going!"
                      ) \
-            .add_field(name="name", value="embed_lobby_maps") \
+            .add_field(name="name", value="lobby_maps") \
             .add_field(name="-", value="-") \
             .add_field(name="mode", value=mode) \
             .add_field(name="id", value=id) \
@@ -450,7 +449,7 @@ class Game:
         return None
 
     def clear_undecided_reacted(self):
-        """Used on ready to clear the embed_undecided games reactions.
+        """Used on ready to clear the undecided games reactions.
 
         Because the bot doesn't parse old (before on ready) messages it can't
         know if a user reacted.

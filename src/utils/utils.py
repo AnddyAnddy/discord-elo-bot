@@ -81,18 +81,18 @@ def build_other_page(bot, game, reaction, user):
         return
     embed = get_elem_from_embed(reaction)
 
-    if embed["function"] not in ["embed_leaderboard", "embed_archived", "embed_undecided",
-                                 "embed_canceled", "commands", "ranks", "embed_history", "most", "embed_maps"]:
+    if embed["function"] not in ["leaderboard", "archived", "undecided",
+                                 "canceled", "commands", "ranks", "history", "most", "maps"]:
         return None
 
     start_page = get_start_page(reaction, embed)
-    if embed["function"] == "embed_leaderboard":
+    if embed["function"] == "leaderboard":
         return game.embed_leaderboard(embed["mode"], embed["key"],
                                       start_page)
-    elif embed["function"] in ["embed_archived", "embed_undecided", "embed_canceled"]:
+    elif embed["function"] in ["archived", "undecided", "canceled"]:
         return getattr(game, embed["function"])(embed["mode"],
                                                 start_page=start_page)
-    elif embed["function"] == "embed_history":
+    elif embed["function"] == "history":
         player = game.leaderboard(embed["mode"])[embed["id"]]
         return getattr(game, embed["function"])(embed["mode"],
                                                 player, start_page=start_page)
@@ -100,7 +100,7 @@ def build_other_page(bot, game, reaction, user):
     elif embed["function"] == "commands":
         return cmds_embed(bot, start_page)
 
-    elif embed["function"] == "embed_maps":
+    elif embed["function"] == "maps":
         return getattr(game, embed["function"])(start_page)
 
     elif embed["function"] == "most":
@@ -159,7 +159,7 @@ def most_stat_embed(game, mode, player, order_key="game", start_page=1, with_or_
 
 
 def get_player_lb_pos(leaderboard, player):
-    """Return the player position in the embed_leaderboard based on the key O(n)."""
+    """Return the player position in the leaderboard based on the key O(n)."""
     res = 1
     for _, p in leaderboard.items():
         res += getattr(p, "elo") > getattr(player, "elo")
@@ -232,7 +232,7 @@ async def auto_submit_reactions(reaction, user, game, removed=False):
             await reaction.message.channel.send(
                 embed=Embed(color=0xFF0000 if index == 1 else 0x0000FF,
                             description=text))
-        else:  # game was embed_canceled
+        else:  # game was canceled
             game.cancel(mode, id)
             await reaction.message.channel.send(
                 embed=Embed(color=0x00FF00,
@@ -288,7 +288,7 @@ async def map_pick_reactions(reaction, user, game):
             "auto_submit" in reaction.message.embeds[0].title:
         return
     embed = get_elem_from_embed(reaction)
-    if embed["function"] != "embed_lobby_maps":
+    if embed["function"] != "lobby_maps":
         return
     mode, id = embed["mode"], embed["id"]
     if id in game.maps_archive[mode] and isinstance(game.maps_archive[mode][id], tuple):

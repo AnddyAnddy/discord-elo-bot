@@ -16,6 +16,7 @@ def is_arg_in_modes():
             raise commands.errors.BadArgument(
                 f"The mode is incorrect, you wrote {args[1]}\n"
                 f"But it must be in {str(get_game(ctx).available_modes)}"
+                f"But it must be in {str(list(get_game(ctx).available_modes))}"
             )
 
         return True
