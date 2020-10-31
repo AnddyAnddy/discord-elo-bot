@@ -106,6 +106,8 @@ class Game:
         """Cancel the game and return true if it was correctly canceled."""
         last_id = self.queues[mode].game_id
         if id == last_id:
+            if not hasattr(self.queues[mode], "map_mode"):
+                setattr(self.queues[mode], "map_mode", 0)
             self.queues[mode] = Queue(
                 2 * int(split_with_numbers(mode)[0]), self.queues[mode].mode,
                 self.queues[mode].map_mode, last_id)

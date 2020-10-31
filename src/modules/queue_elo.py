@@ -72,7 +72,7 @@ class Queue:
             await send_error(ctx, "You can't join twice, maybe you're looking for !l.")
             return
         if self.is_full() or self.has_queue_been_full:
-            await send_error(ctx, "Queue is full...")
+            await send_error(ctx, f"Queue n° {self.game_id} is full...")
             raise PassException()
         self.players.append(player)
         TIMEOUTS[player] = asyncio.ensure_future(self.timeout_player(player, ctx))
