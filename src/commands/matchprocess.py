@@ -80,7 +80,7 @@ class MatchProcess(commands.Cog):
         Example: !undo 1 7
         in the mode 1vs1, in the 7th game.
         This will reset the ranking updates of this match.
-        The game will be in embed_undecided.
+        The game will be in undecided.
         """
         game = get_game(ctx)
         await ctx.send(embed=Embed(color=0x00FF00,
@@ -100,7 +100,7 @@ class MatchProcess(commands.Cog):
         game = get_game(ctx)
         if game.cancel(mode, int(id_game)):
             await ctx.send(embed=Embed(color=0x00FF00,
-                                       description=f"The game {id_game} has been embed_canceled"))
+                                       description=f"The game {id_game} has been canceled"))
         else:
             await ctx.send(embed=Embed(color=0x000000,
                                        description=f"Could not find the game {id_game} in the current games."))
@@ -125,10 +125,10 @@ class MatchProcess(commands.Cog):
     @is_arg_in_modes()
     @commands.guild_only()
     async def undecided(self, ctx, mode):
-        """Display every embed_undecided games.
+        """Display every undecided games.
 
-        Example: !embed_undecided 2
-        Will show every embed_undecided games in 2vs2, with the format below.
+        Example: !undecided 2
+        Will show every undecided games in 2vs2, with the format below.
         id: [id], Red team: [player1, player2], Blue team: [player3, player4]."""
         game = get_game(ctx)
         msg = await ctx.send(embed=game.embed_undecided(mode))
@@ -139,10 +139,10 @@ class MatchProcess(commands.Cog):
     @is_arg_in_modes()
     @commands.guild_only()
     async def canceled(self, ctx, mode):
-        """Display every embed_canceled games of a specific mode.
+        """Display every canceled games of a specific mode.
 
         Example: !cl 2
-        Will show every embed_canceled games in 2vs2.
+        Will show every canceled games in 2vs2.
         """
         game = get_game(ctx)
         msg = await ctx.send(embed=game.embed_canceled(mode))
@@ -155,7 +155,7 @@ class MatchProcess(commands.Cog):
     async def archived(self, ctx, mode):
         """Display every games of a specific mode.
 
-        Example: !embed_archived 2
+        Example: !archived 2
         Will show every games in 2vs2, with the format below.
         id: [id], Winner: Team Red/Blue, Red team: [player1, player2],
         Blue team: [player3, player4]."""
