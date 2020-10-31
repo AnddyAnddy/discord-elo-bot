@@ -218,7 +218,7 @@ class Core(commands.Cog):
     @commands.command()
     @check_channel('register')
     @commands.guild_only()
-    async def rename(self, ctx, new_name=""):
+    async def rename(self, ctx, *new_name):
         """Will rename the user in every leaderboards.
 
         With no argument, the user will have his name reset.
@@ -226,7 +226,9 @@ class Core(commands.Cog):
         """
         game = get_game(ctx)
         if not new_name:
-            new_name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
+            new_name = ctx.author.display_name
+        else:
+            new_name = ' '.join(new_name)
         for mode in game.get_leaderboards():
             if ctx.author.id in game.leaderboard(mode):
                 game.leaderboard(mode)[ctx.author.id].name = new_name
