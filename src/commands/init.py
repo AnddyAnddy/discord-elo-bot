@@ -158,14 +158,27 @@ class Init(commands.Cog):
     @commands.guild_only()
     async def add_rank(self, ctx, mode, name, image_url, from_points, to_points):
         """Add a rank and set this rank to everyone having required points.
-
         mode is the N in NvsN.
         name is the name of the rank. Must be in " "
         from_points is the points required to have this rank.
         to_points is the max points of this rank.
         """
-        if self.add_rank_aux(ctx, mode, name, image_url, from_points, to_points):
+        if await self.add_rank_aux(ctx, mode, name, image_url, from_points, to_points):
             await ctx.send("The rank was added and the players got updated.")
+
+
+
+    @commands.command()
+    @check_channel('init')
+    @is_arg_in_modes()
+    @commands.guild_only()
+    async def del_rank(self, ctx, mode, name):
+        """Delete the rank of a specific mode via its name."""
+        game = get_game(ctx)
+        if game.ranks[mode].pop(name, None) is None:
+            await ctx.send("The rank couldn't be found.")
+        else:
+            await ctx.send(f"The rank {name} was successfully deleted from mode {mode}.")
 
     @commands.command()
     @check_channel('init')

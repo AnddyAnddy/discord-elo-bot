@@ -12,7 +12,7 @@ from src.modules.player import Player
 from src.modules.queue_elo import Queue
 from src.modules.queue_elo import team_to_player_name
 from src.utils.utils import team_name, split_with_numbers
-
+DEBUG_UNTIL_BETTER = []
 
 class Game:
     """Represent the game available."""
@@ -52,6 +52,7 @@ class Game:
             setattr(self, "tmp_leaderboards", {})
         return self.tmp_leaderboards.keys() if self.limit_leaderboards == 10 else self.leaderboards.keys()
 
+
     def leaderboard(self, mode):
         """Return leaderboard depending on whether the guild is premium."""
         # doing that for retro compatibility issues
@@ -60,6 +61,9 @@ class Game:
             setattr(self, "tmp_leaderboards", {})
         if self.limit_leaderboards == 10:
             if mode not in self.tmp_leaderboards:
+                if mode in self.leaderboards:
+                    DEBUG_UNTIL_BETTER.append(True)
+
                 raise ValueError(f"Mode ({mode}) not in leaderboard ({self.tmp_leaderboards.keys()})")
             return self.tmp_leaderboards[mode]
         if mode not in self.leaderboards:

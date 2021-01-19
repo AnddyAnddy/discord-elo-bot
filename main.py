@@ -16,6 +16,8 @@ from src.modules import game, player, queue_elo, rank, elo, ban
 from src.modules.game import Game
 from src.utils.exceptions import PassException, send_error
 from src.utils.utils import build_other_page
+from src.modules.game import DEBUG_UNTIL_BETTER
+
 
 sys.modules['modules'] = src.modules
 sys.modules['modules.game'] = game
@@ -27,9 +29,8 @@ sys.modules['modules.ban'] = ban
 
 
 load_dotenv()
-
 TOKEN = os.getenv('DISCORD_TOKEN')
-# test guild 
+# test guild
 # DISCORD_MAIN_GUILD_ID = 769915335968423997
 # real guild
 DISCORD_MAIN_GUILD_ID = 732326859039178882
@@ -75,13 +76,13 @@ async def on_ready():
     total_user = 0
     for guild in BOT.guilds:
         print(f'{guild.name:20} by + {str(guild.owner):20} {len(guild.members)} users')
-        if guild.name != "Discord Bot List":
+        if guild.name.lower() != "top.gg":
             total_user += len(guild.members)
 
         GAMES[guild.id] = load_file_to_game(guild.id)
         if GAMES[guild.id] is not None:
             GAMES[guild.id].clear_undecided_reacted()
-            GAMES[guild.id].check_for_premium()
+            #GAMES[guild.id].check_for_premium()
             # print(f"The file from data/{guild.id}.data was correctly loaded.")
         else:
             GAMES[guild.id] = Game(guild.id)
@@ -124,11 +125,23 @@ async def on_reaction_add(reaction, user):
 async def on_command_completion(ctx):
     """Save the data after every command."""
     GAMES[ctx.guild.id].save_to_file()
+    GAMES[ctx.guild.id].check_for_premium()
+
+@BOT.event
+async def on_command(ctx):
+    if DEBUG_UNTIL_BETTER != []:
+        await ctx.send(embed = Embed(color=0x000000,
+                      description="The server was premium and it is not anymore... This leaderboard can still be reached if the premium is back. You can add this mode with the temporary leaderboard, it will not erase past data."))
+        DEBUG_UNTIL_BETTER.clear()
+        return
+
 
 @BOT.event
 async def on_command_error(ctx, error):
     inv = ctx.invoked_with
     embed = ""
+
+
     if isinstance(error, commands.errors.CommandNotFound):
         embed = Embed(color=0x000000,
                       description="The command doesn't exist, check !cmds !")
@@ -154,6 +167,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.DisabledCommand):
         embed = Embed(color=0x000000,
                       description="The command is disabled.")
+
     elif isinstance(error, discord.errors.Forbidden):
         embed = Embed(color=0x000000,
                       description="I don't have permissions to do that.")
@@ -176,7 +190,7 @@ async def on_command_error(ctx, error):
         await ctx.message.delete(delay=3)
 
     except Exception:
-        await ctx.send(f"Please {ctx.author.mention}, allow my dms.")
-
+#        await ctx.send(f"Please {ctx.author.mention}, allow my dms.")
+        pass
 
 BOT.run(TOKEN)
