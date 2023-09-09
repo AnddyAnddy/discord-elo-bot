@@ -29,6 +29,20 @@ class Graph(commands.Cog):
         return y_list
 
     @staticmethod
+    def build_rolling_wlr_graph(values, player, window_size=20):
+        results = []
+
+        for q, w, _ in values:
+            if w == 1 and player in q.red_team or w == 2 and player in q.blue_team:
+                results.append(1)
+            elif w == 2 and player in q.red_team or w == 1 and player in q.blue_team:
+                results.append(0)
+
+        results = np.array(results)
+
+        return [results[max(0,i-window_size):i].mean() for i in range(1,len(results)+1)]
+
+    @staticmethod
     def build_elo_graph(values, player):
         y_list = []
         elo_running = player.elo
@@ -64,6 +78,8 @@ class Graph(commands.Cog):
             y_list = self.build_elo_graph(values, player)
         elif stat_key == "wlr":
             y_list = self.build_wlr_graph(values, player)
+        elif stat_key == "rolling_wlr":
+            y_list = self.build_rolling_wlr_graph(values, player)
 
         x_list = [x for x in range(len(y_list))]
 
